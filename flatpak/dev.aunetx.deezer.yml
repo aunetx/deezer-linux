@@ -1,0 +1,84 @@
+app-id: dev.aunetx.deezer
+runtime: org.freedesktop.Platform
+runtime-version: '21.08'
+sdk: org.freedesktop.Sdk
+base: org.electronjs.Electron2.BaseApp
+base-version: '21.08'
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.node14
+command: run.sh
+separate-locales: false
+finish-args:
+  - --share=ipc
+  - --socket=x11
+  - --socket=pulseaudio
+  - --share=network
+build-options:
+  append-path: /usr/lib/sdk/node14/bin
+  cflags: -O2 -g
+  cxxflags: -O2 -g
+  env:
+    NPM_CONFIG_LOGLEVEL: info
+modules:
+  - name: deezer
+    buildsystem: simple
+    build-options:
+      env:
+        XDG_CACHE_HOME: /run/build/deezer/flatpak-node/cache
+        ELECTRON_CACHE: '/run/build/deezer/flatpak-node/electron-cache'
+        npm_config_cache: /run/build/deezer/flatpak-node/npm-cache
+        npm_config_nodedir: /usr/lib/sdk/node14
+        npm_config_offline: 'true'
+    subdir: main
+    sources:
+      # The windows executable to extract the app from
+      - type: archive
+        archive-type: 7z
+        url: https://www.deezer.com/desktop/download/artifact/win32/x86/5.30.0
+        sha256: 1c00d286f209de69ff5fee811a5662b8d7114046a9c74348c31ce955352b5856
+        dest: main/source
+      # The 7zip app to extract
+      - type: file
+        path: 7zz
+        sha256: f0aa616367bdd39e4c4d704c164b17ddbf35b8e8d5509ee3df9cdb1ba1d856eb
+        dest: main/7z
+      # The asar utility
+      - type: archive
+        archive-type: 7z
+        path: asar-3.1.0.7z
+        sha256: 7ddb5a00206ab10b0b04442dbc4707fa45f0ba10a9a9ba00f857046de8ac3ae0
+        dest: main/asar
+      # The electron-packager utility
+      - type: archive
+        archive-type: 7z
+        path: electron-packager-15.4.0.7z
+        sha256: eea5a92e990f6f50cdaac03466a995801901d5206c618812ffe64cdcfc4d05db
+        dest: main/electron-packager
+      # The npm generated sources
+      - generated-sources.json
+      # Wrapper to launch the app
+      - type: script
+        dest-filename: run.sh
+        commands:
+          - zypak-wrapper electron /bin/app.asar "$@"
+    build-commands:
+      # Extract app content
+      - 7z/7zz x -y -bsp0 -bso0 source/app-32.7z -oexe
+      # Install asar
+      - npm install --engine-strict --prefer-offline asar
+      - npm install --prefix=deezer --offline --cache=$FLATPAK_BUILDER_BUILDDIR/flatpak-node/npm-cache'
+      # Extract app source
+      - node_modules/.bin/asar extract exe/resources/app.asar resources/app
+
+      - mkdir -p resources/app/resources/linux/
+      - install -Dm644 exe/resources/win/systray.png resources/app/resources/linux/
+      - node_modules/.bin/asar pack resources/app ../app.asar
+
+      # Install electron-packager
+      #- npm install --save-dev --prefer-offline electron-packager
+      - . flatpak-node/electron-builder-arch-args.sh
+
+      #- node_modules/.bin/electron-packager --electron-version=12.0.10 resources/app ../deezer
+
+      - install -Dm755 -t /app/bin/ ../app.asar
+      - install -Dm755 -t /app/bin/ ../run.sh
