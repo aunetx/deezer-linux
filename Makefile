@@ -13,6 +13,14 @@ json_add = '},\
   "devDependencies": {\
     "electron": "^12.0.11",\
 	"electron-builder": "^22.13.1"\
+  },\
+  "build": {\
+  	"files": [\
+      "**"\
+    ],\
+    "directories": {\
+      "buildResources": "build"\
+    }\
   }\
 }'
 
@@ -43,7 +51,7 @@ prepare: install_build_deps
 
 
 build: prepare
-	cd flatpak && flatpak-builder build dev.aunetx.deezer.yml --install --force-clean --user
+	cd flatpak && flatpak-builder build dev.aunetx.deezer.yml -/*", "build/assets/*-install --force-clean --user
 
 
 clean:
