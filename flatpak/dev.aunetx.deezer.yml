@@ -13,8 +13,6 @@ finish-args:
   - --socket=x11
   - --socket=pulseaudio
   - --share=network
-  - --device=dri
-  - --device=all
 build-options:
   append-path: /usr/lib/sdk/node14/bin
   cflags: -O2 -g
@@ -27,7 +25,7 @@ modules:
     build-options:
       env:
         XDG_CACHE_HOME: /run/build/deezer/flatpak-node/cache
-        #npm_config_cache: /run/build/deezer/flatpak-node/npm-cache
+        npm_config_cache: /run/build/deezer/flatpak-node/npm-cache
         npm_config_nodedir: /usr/lib/sdk/node14
         npm_config_offline: 'true'
     subdir: main
@@ -36,11 +34,10 @@ modules:
       - type: dir
         path: ../app
         dest: main
-      # The systray icon
-      - type: file
-        path: ../systray.png
-        dest: main
-        dest-filename: systray.png
+      # The extra resources
+      - type: dir
+        path: ../extra
+        dest: extra
       # The npm generated sources
       - generated-sources.json
       # Wrapper to launch the app
@@ -50,16 +47,15 @@ modules:
           - zypak-wrapper /app/main/deezer-desktop "$@"
     build-commands:
       # Install dependencies
-      - npm install --offline --cache=/run/build/deezer/flatpak-node/npm-cache
+      - npm install --offline
 
-      # Build the app; in this example the `dist` script
-      # in package.json runs electron-builder
+      # Build the app; the `dist` script in package.json runs electron-builder
       - |
         . ../flatpak-node/electron-builder-arch-args.sh
         npm run dist -- $ELECTRON_BUILDER_ARCH_ARGS  --linux --dir
+
       # Bundle app and dependencies
       - cp -a dist/linux*unpacked /app/main
-      - mkdir /app/main/resources/linux/
-      - cp systray.png /app/main/resources/linux/
+
       # Install app wrapper
       - install -Dm755 -t /app/bin/ ../run.sh
