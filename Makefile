@@ -11,7 +11,7 @@ json_add = '},\
 	"start": "electron ."\
   },\
   "devDependencies": {\
-    "electron": "^12.0.11",\
+    "electron": "^13.5.1",\
 	"electron-builder": "^22.13.1"\
   },\
   "build": {\
@@ -24,8 +24,11 @@ json_add = '},\
   }\
 }'
 
+
 install_build_deps:
 	npm install --engine-strict asar
+	npm install prettier
+
 
 prepare: install_build_deps
 	wget -c $(BASE_URL) -O $(EXE_NAME)
@@ -36,23 +39,33 @@ prepare: install_build_deps
 	
 	asar extract source/resources/app.asar app
 	
-	mkdir -p app/resources/linux/
-	install -Dm644 source/resources/win/systray.png app/resources/linux/
+	cp source/resources/win/systray.png .
 	
-	# prettier --write "app/build/*.js"
+	prettier --write "app/build/*.js"
 	# Hide to tray (https://github.com/SibrenVasse/deezer/issues/4)
-	# patch -p1 -dresources/app < quit.patch
+	patch -p1 -dapp < quit.patch
+	# Add start in tray cli option (https://github.com/SibrenVasse/deezer/pull/12)
+	patch -p1 -dapp < start-hidden-in-tray.patch
 
 	head -n -2 app/package.json > tmp.txt && mv tmp.txt app/package.json
 	echo  $(json_add) | tee -a app/package.json
 
+
+build_flatpak: prepare
 	npm i --prefix=app --package-lock-only
 	./flatpak-node-generator.py npm app/package-lock.json -o flatpak/generated-sources.json --electron-node-headers --xdg-layout
 
+	cd flatpak && flatpak-builder build dev.aunetx.deezer.yml --install --force-clean --user
 
-build: prepare
-	cd flatpak && flatpak-builder build dev.aunetx.deezer.yml -/*", "build/assets/*-install --force-clean --user
+
+build_appimage: prepare
+	npm install --prefix=app
+	npm run dist --prefix=app
+
+
+run_flatpak:
+	flatpak run dev.aunetx.deezer
 
 
 clean:
-	rm -rf app flatpak/{.flatpak-builder,build} node_modules source app-32.7z app.7z deezer-*.exe package-lock.json
+	rm -rf app flatpak/{.flatpak-builder,build} node_modules source app-32.7z app.7z deezer-*.exe package-lock.json systray.png

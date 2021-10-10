@@ -1,0 +1,19 @@
+diff --git a/build/main.js b/build/main.js
+index 5066eef..592a6bc 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -3122,8 +3122,12 @@
+                   finalMinSize[1]
+                 );
+             }
+-            isDev() ? this.window.showInactive() : this.window.show(),
+-              this.thumbar.init();
++            if (!process.argv.some(arg => arg === '--start-in-tray')) {
++                isDev() ? this.window.showInactive() : this.window.show(),
++                  this.thumbar.init();
++            } else {
++              this.window.hide();
++            }
+           }),
+           this.appService.enableDevMode();
+       }
