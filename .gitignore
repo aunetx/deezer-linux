@@ -10,3 +10,5 @@ deezer-*.exe
 package-lock.json
 package.json
 app.7z
+repo
+*.AppImage
