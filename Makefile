@@ -47,11 +47,11 @@ build_flatpak: prepare_flatpak
 
 export_flatpak: prepare_flatpak
 	# Build the flatpak package and export it to the repo
-	flatpak-builder --gpg-sign=$(GPG_KEY_ID) --repo=flatpak/repo --state-dir=flatpak/flatpak-builder --force-clean flatpak/build $(APPNAME).yml
+	flatpak-builder --gpg-sign=$(GPG_KEY_ID) --repo=docs --state-dir=flatpak/flatpak-builder --force-clean flatpak/build $(APPNAME).yml
 
 flatpak_bundle: build_flatpak
 	# Create a flatpak bundle
-	flatpak build-bundle --gpg-sign=$(GPG_KEY_ID) --state-dir=flatpak/flatpak-builder flatpak/repo deezer.flatpak $(APPNAME)
+	flatpak build-bundle --gpg-sign=$(GPG_KEY_ID) --state-dir=flatpak/flatpak-builder docs deezer.flatpak $(APPNAME)
 
 install_flatpak: prepare_flatpak
 	# Build and install locally the flatpak image
