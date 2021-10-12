@@ -61,17 +61,14 @@ prepare: install_build_deps
 	cd source && 7z x -y -bsp0 -bso0 app-32.7z
 	# Extract app sources from the app
 	asar extract source/resources/app.asar app
-	
-	# Add extra resources to be used at runtime
-	mkdir -p extra/linux
-	cp source/resources/win/systray.png extra/linux/
-	
+
 	# Prettier the sources to patch successfully
 	prettier --write "app/build/*.js"
-	# Patch hide to tray (https://github.com/SibrenVasse/deezer/issues/4)
-	patch -p1 -dapp < quit.patch
-	# Add start in tray cli option (https://github.com/SibrenVasse/deezer/pull/12)
-	patch -p1 -dapp < start-hidden-in-tray.patch
+
+	# Apply patches from ./patches, default ones:
+	# Hide to tray when closing (https://github.com/SibrenVasse/deezer/issues/4)
+	# Start in tray cli option (https://github.com/SibrenVasse/deezer/pull/12)
+	$(foreach p, $(wildcard ./patches/*), patch -p1 -dapp < $(p);)
 
 	# Append `pkg_json_append` to the `package.json` of the app
 	# Adds electron, elecron-builder dependencies, and build directives
@@ -110,4 +107,4 @@ run_flatpak:
 	flatpak run dev.aunetx.deezer
 
 clean:
-	rm -rf app extra flatpak/{.flatpak-builder,build} node_modules source app-32.7z app.7z deezer-*.exe package-lock.json
+	rm -rf app flatpak/{.flatpak-builder,build} node_modules source app-32.7z app.7z deezer-*.exe package-lock.json
