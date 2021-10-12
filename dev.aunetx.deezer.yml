@@ -42,24 +42,24 @@ modules:
     sources:
       # The deezer electron source
       - type: dir
-        path: ../app
+        path: app
         dest: main
       # The extra resources
       - type: dir
-        path: ../extra
+        path: extra
         dest: extra
       # The application datas
       - type: file
-        path: ../dev.aunetx.deezer.appdata.xml
+        path: dev.aunetx.deezer.appdata.xml
         dest: main
       - type: file
-        path: ../dev.aunetx.deezer.svg
+        path: dev.aunetx.deezer.svg
         dest: main
       - type: file
-        path: ../dev.aunetx.deezer.desktop
+        path: dev.aunetx.deezer.desktop
         dest: main
       # The npm generated sources
-      - generated-sources.json
+      - flatpak/generated-sources.json
       # Wrapper to launch the app
       - type: script
         dest-filename: run.sh

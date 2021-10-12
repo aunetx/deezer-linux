@@ -83,11 +83,11 @@ prepare_flatpak: prepare
 
 build_flatpak: prepare_flatpak
 	# Build the flatpak image
-	cd flatpak && flatpak-builder --force-clean build dev.aunetx.deezer.yml
+	flatpak-builder --force-clean build dev.aunetx.deezer.yml
 
 export_flatpak: prepare_flatpak
 	# Build the flatpak package and export it to the repo
-	cd flatpak && flatpak-builder --gpg-sign=5A7D3B06F15FB60238941027EB3A799E7EE716EB --repo=repo --force-clean build dev.aunetx.deezer.yml
+	flatpak-builder --gpg-sign=5A7D3B06F15FB60238941027EB3A799E7EE716EB --repo=repo --force-clean build dev.aunetx.deezer.yml
 
 flatpak_bundle: build_flatpak
 	# Create a flatpak bundle
@@ -95,7 +95,7 @@ flatpak_bundle: build_flatpak
 
 install_flatpak: prepare_flatpak
 	# Build and install locally the flatpak image
-	cd flatpak && flatpak-builder --force-clean --user --install build dev.aunetx.deezer.yml
+	flatpak-builder --force-clean --user --install build dev.aunetx.deezer.yml
 
 build_appimage: prepare
 	# Install required dependencies to pack them with AppImage
@@ -107,4 +107,4 @@ run_flatpak:
 	flatpak run dev.aunetx.deezer
 
 clean:
-	rm -rf app flatpak/{.flatpak-builder,build} node_modules source app-32.7z app.7z deezer-*.exe package-lock.json
+	rm -rf app flatpak node_modules source package-lock.json

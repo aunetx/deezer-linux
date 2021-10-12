@@ -1,13 +1,5 @@
 node_modules
-.flatpak-builder
-build
-repo
-generated-sources.json
+flatpak
 source
 app
-app-32.7z
-deezer-*.exe
 package-lock.json
-package.json
-app.7z
-*.AppImage
