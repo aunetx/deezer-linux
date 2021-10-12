@@ -20,7 +20,7 @@
     <kudo>HiDpiIcon</kudo>
   </kudos>
   <releases>
-    <release version="5.30.0.alpha" date="2021-10-10" />
+    <release version="5.30.0.beta" date="2021-10-13" />
   </releases>
   <content_rating type="oars-1.1" />
   <update_contact>me_at_aunetx.dev</update_contact>
