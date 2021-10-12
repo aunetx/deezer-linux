@@ -29,7 +29,20 @@ pkg_json_append = '},\
           "**"\
         ]\
       }\
-    ]\
+    ],\
+    "linux": {\
+      "maintainer": "aunetx <me@aunetx.dev>",\
+      "icon": "../icons",\
+      "category": "Utility;AudioVideo;Audio;Player;Music;",\
+      "desktop": {\
+        "Name": "Deezer",\
+        "Type": "Application",\
+        "GenericName": "Online music streaming service",\
+        "Comment": "Listen and download all your favorite music",\
+        "MimeType": "x-scheme-handler/deezer;",\
+        "Keywords": "Music;Player;Streaming;Online;"\
+      }\
+    }\
   }\
 }'
 
@@ -92,7 +105,6 @@ build_appimage: prepare
 	npm i --prefix=app
 	# Build the AppImage package
 	npm run dist --prefix=app
-	mv app/dist/*.AppImage .
 
 run_flatpak:
 	flatpak run dev.aunetx.deezer
