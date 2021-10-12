@@ -22,7 +22,7 @@ finish-args:
   # Fs access: music/downloads to send mp3, pictures to change profile picture
   - --filesystem=xdg-music:ro
   - --filesystem=xdg-pictures
-  - --filesystem=xdg-downloads:ro
+  - --filesystem=xdg-download:ro
 build-options:
   append-path: /usr/lib/sdk/node14/bin
   cflags: -O2 -g
