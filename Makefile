@@ -38,7 +38,6 @@ install_build_deps:
 	npm install --engine-strict asar
 	npm install prettier
 
-
 prepare: install_build_deps
 	mkdir -p source
 	# Download installer
@@ -66,27 +65,37 @@ prepare: install_build_deps
 	head -n -2 app/package.json > tmp.txt && mv tmp.txt app/package.json
 	echo  $(pkg_json_append) | tee -a app/package.json
 
-
-build_flatpak: prepare
+prepare_flatpak: prepare
 	# Generate npm sources (without installing them)
 	npm i --prefix=app --package-lock-only
 	# Package the sources to use them in flatpak-builder offline
 	./flatpak-node-generator.py npm app/package-lock.json -o flatpak/generated-sources.json --electron-node-headers --xdg-layout
 
-	# Build the Flatpak app
-	cd flatpak && flatpak-builder build dev.aunetx.deezer.yml --install --force-clean --user
+build_flatpak: prepare_flatpak
+	# Build the flatpak image
+	cd flatpak && flatpak-builder --force-clean build dev.aunetx.deezer.yml
 
+export_flatpak: prepare_flatpak
+	# Build the flatpak package and export it to the repo
+	cd flatpak && flatpak-builder --gpg-sign=5A7D3B06F15FB60238941027EB3A799E7EE716EB --repo=repo --force-clean build dev.aunetx.deezer.yml
+
+flatpak_bundle: build_flatpak
+	# Create a flatpak bundle
+	flatpak build-bundle --gpg-sign=5A7D3B06F15FB60238941027EB3A799E7EE716EB flatpak/repo deezer.flatpak dev.aunetx.deezer
+
+install_flatpak: prepare_flatpak
+	# Build and install locally the flatpak image
+	cd flatpak && flatpak-builder --force-clean --user --install build dev.aunetx.deezer.yml
 
 build_appimage: prepare
 	# Install required dependencies to pack them with AppImage
 	npm i --prefix=app
 	# Build the AppImage package
 	npm run dist --prefix=app
-
+	mv app/dist/*.AppImage .
 
 run_flatpak:
 	flatpak run dev.aunetx.deezer
-
 
 clean:
 	rm -rf app extra flatpak/{.flatpak-builder,build} node_modules source app-32.7z app.7z deezer-*.exe package-lock.json
