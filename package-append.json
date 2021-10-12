@@ -1,0 +1,37 @@
+ ,"scripts": {
+    "dist": "electron-builder",
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^13.5.1",
+    "electron-builder": "^22.13.1"
+  },
+  "build": {
+    "files": [
+      "**"
+    ],
+    "directories": {
+      "buildResources": "build"
+    },
+    "extraResources": [
+      {
+        "from": "../extra/",
+        "to": ".",
+        "filter": ["**"]
+      }
+    ],
+    "linux": {
+      "maintainer": "aunetx <me@aunetx.dev>",
+      "icon": "../icons",
+      "category": "Utility;AudioVideo;Audio;Player;Music;",
+      "desktop": {
+        "Name": "Deezer",
+        "Type": "Application",
+        "GenericName": "Online music streaming service",
+        "Comment": "Listen and download all your favorite music",
+        "MimeType": "x-scheme-handler/deezer;",
+        "Keywords": "Music;Player;Streaming;Online;"
+      }
+    }
+  }
+}
