@@ -1,7 +1,7 @@
 # Maintainer: Aurélien Hamy <aunetx@yandex.com>
 
 APPNAME = dev.aunetx.deezer
-PKGVER = 5.30.0
+PKGVER = 5.30.80
 BASE_URL = https://www.deezer.com/desktop/download/artifact/win32/x86/$(PKGVER)
 GPG_KEY_ID = 5A7D3B06F15FB60238941027EB3A799E7EE716EB
 
@@ -34,6 +34,8 @@ prepare: install_build_deps
 	head -n -1 app/package.json > tmp.txt && mv tmp.txt app/package.json
 	cat package-append.json | tee -a app/package.json
 
+
+#! FLATPAK
 prepare_flatpak: prepare
 	# Generate npm sources (without installing them)
 	npm i --prefix=app --package-lock-only
@@ -57,14 +59,34 @@ install_flatpak: prepare_flatpak
 	# Build and install locally the flatpak image
 	flatpak-builder --force-clean --state-dir=flatpak/flatpak-builder --user --install flatpak/build $(APPNAME).yml
 
-build_appimage: prepare
-	# Install required dependencies to pack them with AppImage
-	npm i --prefix=app
-	# Build the AppImage package
-	npm run dist --prefix=app
-
 run_flatpak:
 	flatpak run $(APPNAME)
 
+
+#! APPIMAGE
+install_deps: prepare
+	# Install npm dependencies to pack them later
+	npm i --prefix=app
+
+build_appimage: install_deps
+	# Build the AppImage package
+	npm run build-appimage --prefix=app
+
+
+#! PKGS
+build_pkgs: install_deps
+	# Build everything
+	npm run build --prefix=app
+
+
+build_pkgs_arm64: install_deps
+	# Build everything
+	npm run build-arm --prefix=app
+
+build_pkgs_x86: install_deps
+	# Build everything
+	npm run build-x86 --prefix=app
+
+
 clean:
-	rm -rf app flatpak node_modules source package-lock.json
+	rm -rf app flatpak node_modules source artifacts package-lock.json
