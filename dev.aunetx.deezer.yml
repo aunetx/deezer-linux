@@ -18,7 +18,7 @@ finish-args:
   - --env=TMPDIR=/var/tmp
   # DBus permissions
   - --talk-name=org.freedesktop.Notifications
-  - --own-name=org.mpris.MediaPlayer2.deezer
+  - --own-name=org.mpris.MediaPlayer2.deezer-desktop
   # Fs access: music/downloads to send mp3, pictures to change profile picture
   - --filesystem=xdg-music:ro
   - --filesystem=xdg-pictures
@@ -72,7 +72,7 @@ modules:
       # Build the app; the `dist` script in package.json runs electron-builder
       - |
         . ../flatpak-node/electron-builder-arch-args.sh
-        npm run dist -- $ELECTRON_BUILDER_ARCH_ARGS  --linux --dir
+        npm run prepare-flatpak -- $ELECTRON_BUILDER_ARCH_ARGS
 
       # Bundle app and dependencies
       - cp -a dist/linux*unpacked /app/main
