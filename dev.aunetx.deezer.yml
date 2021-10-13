@@ -75,7 +75,9 @@ modules:
         npm run prepare-flatpak -- $ELECTRON_BUILDER_ARCH_ARGS
 
       # Bundle app and dependencies
-      - cp -a ../artifacts/${ELECTRON_BUILDER_ARCH_ARGS:2}/linux*unpacked /app/main
+      - |
+        . ../flatpak-node/electron-builder-arch-args.sh
+        cp -a ../artifacts/${ELECTRON_BUILDER_ARCH_ARGS:2}/linux*unpacked /app/main
 
       # Install app wrapper
       - install -Dm755 -t /app/bin/ ../run.sh
