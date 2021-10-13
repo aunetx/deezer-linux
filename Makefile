@@ -80,6 +80,16 @@ build_pkgs: install_deps
 	npm run build --prefix=app
 
 
+build_rpm: install_deps
+	# Build rpm package
+	npm run build-rpm --prefix=app
+
+
+build_deb: install_deps
+	# Build deb package
+	npm run build-deb --prefix=app
+
+
 build_pkgs_arm64: install_deps
 	# Build everything
 	npm run build-arm --prefix=app
