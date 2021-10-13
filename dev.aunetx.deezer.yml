@@ -18,7 +18,7 @@ finish-args:
   - --env=TMPDIR=/var/tmp
   # DBus permissions
   - --talk-name=org.freedesktop.Notifications
-  - --own-name=org.mpris.MediaPlayer2.deezer-desktop
+  - --own-name=org.mpris.MediaPlayer2.chromium.*
   # Fs access: music/downloads to send mp3, pictures to change profile picture
   - --filesystem=xdg-music:ro
   - --filesystem=xdg-pictures
