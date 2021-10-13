@@ -50,6 +50,7 @@ build_flatpak: prepare_flatpak
 export_flatpak: prepare_flatpak
 	# Build the flatpak package and export it to the repo
 	flatpak-builder --gpg-sign=$(GPG_KEY_ID) --repo=docs --state-dir=flatpak/flatpak-builder --force-clean flatpak/build $(APPNAME).yml
+	flatpak build-update-repo --generate-static-deltas --gpg-sign=$(GPG_KEY_ID) docs
 
 flatpak_bundle: build_flatpak
 	# Create a flatpak bundle
