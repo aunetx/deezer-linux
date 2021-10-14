@@ -1,6 +1,8 @@
 # Deezer for linux
 
-This repo is an UNOFFICIAL linux port of the official windows-only Deezer app. It packages the app in a number of formats:
+This repo is an UNOFFICIAL linux port of the official windows-only Deezer app. Being based on the windows app, it allows downloading your songs to listen to them offline!
+
+It packages the app in a number of formats:
 
 - Flatpak
 - Snap (not tested yet)
