@@ -4,3 +4,4 @@ source
 app
 package-lock.json
 artifacts
+package.json
