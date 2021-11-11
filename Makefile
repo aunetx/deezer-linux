@@ -1,7 +1,7 @@
 # Maintainer: Aurélien Hamy <aunetx@yandex.com>
 
 APPNAME = dev.aunetx.deezer
-PKGVER = 5.30.80
+PKGVER = 5.30.100
 BASE_URL = https://www.deezer.com/desktop/download/artifact/win32/x86/$(PKGVER)
 GPG_KEY_ID = 5A7D3B06F15FB60238941027EB3A799E7EE716EB
 
@@ -100,4 +100,4 @@ build_pkgs_x86: install_deps
 
 
 clean:
-	rm -rf app flatpak node_modules source artifacts package-lock.json
+	rm -rf app flatpak node_modules source artifacts package-lock.json package.json
