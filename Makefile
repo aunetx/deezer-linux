@@ -77,34 +77,25 @@ build_pkgs: install_deps
 	yarn --cwd=app run build-appimage
 	yarn --cwd=app run build-7z
 
-build_deb: install_deps
+build_deb:
 	# Build deb package
 	yarn --cwd=app run build-deb
 
-build_rpm: install_deps
+build_rpm:
 	# Build rpm package
 	yarn --cwd=app run build-rpm
 
-build_snap: install_deps
+build_snap:
 	# Build deb package
 	yarn --cwd=app run build-snap
 
-build_appimage: install_deps
+build_appimage:
 	# Build the AppImage package
 	yarn --cwd=app run build-appimage
 
-build_7z: install_deps
+build_7z:
 	# Build 7z archive
 	yarn --cwd=app run build-7z
-
-
-build_pkgs_arm64: install_deps
-	# Build everything
-	yarn --cwd=app run build-arm
-
-build_pkgs_x86: install_deps
-	# Build everything
-	yarn --cwd=app run build-x86
 
 
 clean:
