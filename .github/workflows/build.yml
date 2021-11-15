@@ -1,18 +1,19 @@
+name: Build
+
 on:
   release:
     types: [created]
   workflow_dispatch:
-name: Build
+
 jobs:
   flatpak:
     name: "Flatpak"
     runs-on: ubuntu-latest
-    container:
-      image: bilelmoussaoui/flatpak-github-actions:freedesktop-21.08
-      options: --privileged
     steps:
-    - uses: actions/checkout@v2
+    - name: checkout repo
+      uses: actions/checkout@v2
     - uses: actions/setup-node@v2
       with:
         node-version: 14
-    - run: make install_build_deps
+    - name: build application
+      run: make install_build_deps
