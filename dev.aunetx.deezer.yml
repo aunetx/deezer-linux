@@ -18,6 +18,8 @@ finish-args:
   - --env=TMPDIR=/var/tmp
   # DBus permissions
   - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.gnome.SettingsDaemon
+  - --talk-name=org.gnome.SessionManager
   - --own-name=org.mpris.MediaPlayer2.chromium.*
   # Fs access: music/downloads to send mp3, pictures to change profile picture
   - --filesystem=xdg-music:ro

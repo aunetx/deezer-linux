@@ -20,7 +20,7 @@
     "build-7z-arm": "electron-builder --arm64 --linux 7z",
     "build-tar.gz-arm": "electron-builder --arm64 --linux tar.gz",
     "build-zip-arm": "electron-builder --arm64 --linux zip",
-    
+
     "build-x86": "electron-builder --ia32 --linux deb",
     "build-deb-x86": "electron-builder --ia32 --linux deb",
     "build-7z-x86": "electron-builder --ia32 --linux 7z",
