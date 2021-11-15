@@ -38,7 +38,7 @@ prepare: install_build_deps
 #! FLATPAK
 prepare_flatpak: prepare
 	# Generate yarn sources (without installing them)
-	yarn install --cwd=app --mode update-lockfile
+	yarn --cwd=app install --mode update-lockfile
 	# Package the sources to use them in flatpak-builder offline
 	mkdir -p flatpak
 	./flatpak-node-generator.py yarn app/yarn.lock -o flatpak/generated-sources.json --electron-node-headers --xdg-layout
@@ -67,36 +67,36 @@ run_flatpak:
 #! APPIMAGE
 install_deps: prepare
 	# Install yarn dependencies to pack them later
-	yarn install --cwd=app
+	yarn --cwd=app install
 
 build_appimage: install_deps
 	# Build the AppImage package
-	yarn run build-appimage --cwd=app
+	yarn --cwd=app run build-appimage
 
 
 #! PKGS
 build_pkgs: install_deps
 	# Build everything
-	yarn run build --cwd=app
+	yarn --cwd=app run build
 
 
 build_rpm: install_deps
 	# Build rpm package
-	yarn run build-rpm --cwd=app
+	yarn --cwd=app run build-rpm
 
 
 build_deb: install_deps
 	# Build deb package
-	yarn run build-deb --cwd=app
+	yarn --cwd=app run build-deb
 
 
 build_pkgs_arm64: install_deps
 	# Build everything
-	yarn run build-arm --cwd=app
+	yarn --cwd=app run build-arm
 
 build_pkgs_x86: install_deps
 	# Build everything
-	yarn run build-x86 --cwd=app
+	yarn --cwd=app run build-x86
 
 
 clean:
