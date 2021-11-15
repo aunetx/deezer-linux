@@ -1,6 +1,6 @@
  ,"scripts": {
     "copy-resources": "mkdir -p resources/linux && cp ../extra/linux/* ./resources/linux",
-    "start": "npm copy-resources && electron .",
+    "start": "yarn run copy-resources && electron .",
     "prepare-flatpak": "electron-builder --linux --dir",
 
     "build": "electron-builder --x64 --linux deb rpm snap AppImage 7z tar.gz zip",
