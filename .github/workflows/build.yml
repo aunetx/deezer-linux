@@ -15,10 +15,42 @@ jobs:
     - uses: actions/setup-node@v2
       with:
         node-version: 14
-    - name: build
-      run: make build_pkgs
-    - name: upload artifacts
+  
+    - name: install_deps
+      run: make install_deps
+    - name: build_deb
+      run: make build_deb
+    - name: build_rpm
+      run: make build_rpm
+    - name: build_snap
+      run: make build_snap
+    - name: build_appimage
+      run: make build_appimage
+    - name: build_7z
+      run: make build_7z
+
+    - name: upload_deb
       uses: actions/upload-artifact@v2
       with:
-        name: packages
-        path: artifacts/x64/*.*
+        name: artifacts/x64/*.deb
+        path: artifacts/x64/*.deb
+    - name: upload_rpm
+      uses: actions/upload-artifact@v2
+      with:
+        name: artifacts/x64/*.rpm
+        path: artifacts/x64/*.rpm
+    - name: upload_snap
+      uses: actions/upload-artifact@v2
+      with:
+        name: artifacts/x64/*.snap
+        path: artifacts/x64/*.snap
+    - name: upload_appimage
+      uses: actions/upload-artifact@v2
+      with:
+        name: artifacts/x64/*.AppImage
+        path: artifacts/x64/*.AppImage
+    - name: upload_7z
+      uses: actions/upload-artifact@v2
+      with:
+        name: artifacts/x64/*.7z
+        path: artifacts/x64/*.7z
