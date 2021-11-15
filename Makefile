@@ -64,30 +64,38 @@ run_flatpak:
 	flatpak run $(APPNAME)
 
 
-#! APPIMAGE
+#! PKGS
 install_deps: prepare
 	# Install yarn dependencies to pack them later
 	yarn --cwd=app install
 
-build_appimage: install_deps
-	# Build the AppImage package
-	yarn --cwd=app run build-appimage
-
-
-#! PKGS
 build_pkgs: install_deps
 	# Build everything
-	yarn --cwd=app run build
+	yarn --cwd=app run build-rpm
+	yarn --cwd=app run build-deb
+	yarn --cwd=app run build-snap
+	yarn --cwd=app run build-appimage
+	yarn --cwd=app run build-7z
 
+build_deb: install_deps
+	# Build deb package
+	yarn --cwd=app run build-deb
 
 build_rpm: install_deps
 	# Build rpm package
 	yarn --cwd=app run build-rpm
 
-
-build_deb: install_deps
+build_snap: install_deps
 	# Build deb package
-	yarn --cwd=app run build-deb
+	yarn --cwd=app run build-snap
+
+build_appimage: install_deps
+	# Build the AppImage package
+	yarn --cwd=app run build-appimage
+
+build_7z: install_deps
+	# Build 7z archive
+	yarn --cwd=app run build-7z
 
 
 build_pkgs_arm64: install_deps
