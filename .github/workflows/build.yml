@@ -15,5 +15,5 @@ jobs:
     - uses: actions/setup-node@v2
       with:
         node-version: 14
-    - name: build application
-      run: make install_build_deps
+    - name: build rpm
+      run: make build_rpm
