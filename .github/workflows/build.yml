@@ -1,0 +1,23 @@
+on:
+  push:
+    tags:        
+      - '*'
+name: Build
+jobs:
+  flatpak:
+    name: "Flatpak"
+    runs-on: ubuntu-latest
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:freedesktop-21.08
+      options: --privileged
+    steps:
+    - uses: actions/checkout@v2
+    - uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v4
+      with:
+        bundle: palette.flatpak
+        manifest-path: org.gnome.zbrown.Palette.yml
+        cache-key: flatpak-builder-${{ github.sha }}
+    - uses: actions/setup-node@v2
+      with:
+        node-version: 14
+    - run: make install_build_deps
