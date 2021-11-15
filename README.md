@@ -66,6 +66,7 @@ Please not that in order to export the built flatpak image to your local repo or
 To build the AppImage image from source, call:
 
 ```sh
+make install_deps
 make build_appimage
 ```
 
@@ -86,6 +87,11 @@ And you should be automatically logged in.
 To generate the `rpm`/`deb`/`snap`/`7z` packages, you can call:
 
 ```sh
+# prepare the build
+make install_deps
+
+# and then
+
 make build_deb
 # or
 make build_rpm
@@ -95,7 +101,7 @@ make build_snap
 make build_7z
 ```
 
-Everything should be generated in `artifacts/x64`.
+Note that you don't need to call `make install_deps` everytime you start a build, but you need to call it at least once. Everything should be generated in `artifacts/x64`.
 
 If you generate the 7z package, you can run it directly by extracting to a directory, and calling `./deezer-desktop` from there.
 
