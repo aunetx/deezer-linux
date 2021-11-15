@@ -1,0 +1,19 @@
+name: Build
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+jobs:
+  flatpak:
+    name: "Flatpak"
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout repo
+      uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+      with:
+        node-version: 14
+    - name: build rpm
+      run: make build_rpm
