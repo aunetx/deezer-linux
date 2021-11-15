@@ -37,11 +37,11 @@ prepare: install_build_deps
 
 #! FLATPAK
 prepare_flatpak: prepare
-	# Generate npm sources (without installing them)
-	npm i --prefix=app --package-lock-only
+	# Generate yarn sources (without installing them)
+	yarn install --cwd=app --mode update-lockfile
 	# Package the sources to use them in flatpak-builder offline
 	mkdir -p flatpak
-	./flatpak-node-generator.py npm app/package-lock.json -o flatpak/generated-sources.json --electron-node-headers --xdg-layout
+	./flatpak-node-generator.py yarn app/yarn.lock -o flatpak/generated-sources.json --electron-node-headers --xdg-layout
 
 build_flatpak: prepare_flatpak
 	# Build the flatpak image
@@ -66,37 +66,37 @@ run_flatpak:
 
 #! APPIMAGE
 install_deps: prepare
-	# Install npm dependencies to pack them later
-	npm i --prefix=app
+	# Install yarn dependencies to pack them later
+	yarn install --cwd=app
 
 build_appimage: install_deps
 	# Build the AppImage package
-	npm run build-appimage --prefix=app
+	yarn run build-appimage --cwd=app
 
 
 #! PKGS
 build_pkgs: install_deps
 	# Build everything
-	npm run build --prefix=app
+	yarn run build --cwd=app
 
 
 build_rpm: install_deps
 	# Build rpm package
-	npm run build-rpm --prefix=app
+	yarn run build-rpm --cwd=app
 
 
 build_deb: install_deps
 	# Build deb package
-	npm run build-deb --prefix=app
+	yarn run build-deb --cwd=app
 
 
 build_pkgs_arm64: install_deps
 	# Build everything
-	npm run build-arm --prefix=app
+	yarn run build-arm --cwd=app
 
 build_pkgs_x86: install_deps
 	# Build everything
-	npm run build-x86 --prefix=app
+	yarn run build-x86 --cwd=app
 
 
 clean:

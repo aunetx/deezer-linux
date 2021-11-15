@@ -58,7 +58,7 @@ modules:
       - type: file
         path: dev.aunetx.deezer.desktop
         dest: main
-      # The npm generated sources
+      # The yarn generated sources
       - flatpak/generated-sources.json
       # Wrapper to launch the app
       - type: script
@@ -66,13 +66,16 @@ modules:
         commands:
           - zypak-wrapper /app/main/deezer-desktop "$@"
     build-commands:
+      # Have Yarn use the offline mirror.
+      - 'HOME=$PWD yarn config --offline set yarn-offline-mirror $FLATPAK_BUILDER_BUILDDIR/flatpak-node/yarn-mirror'
+
       # Install dependencies
-      - npm install --offline
+      - yarn --offline
 
       # Build the app; the `dist` script in package.json runs electron-builder
       - |
         . ../flatpak-node/electron-builder-arch-args.sh
-        npm run prepare-flatpak -- $ELECTRON_BUILDER_ARCH_ARGS
+        yarn run --offline prepare-flatpak -- $ELECTRON_BUILDER_ARCH_ARGS
 
       # Bundle app and dependencies
       - |
