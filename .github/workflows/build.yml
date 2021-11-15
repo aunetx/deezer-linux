@@ -12,11 +12,6 @@ jobs:
       options: --privileged
     steps:
     - uses: actions/checkout@v2
-    - uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v4
-      with:
-        bundle: palette.flatpak
-        manifest-path: org.gnome.zbrown.Palette.yml
-        cache-key: flatpak-builder-${{ github.sha }}
     - uses: actions/setup-node@v2
       with:
         node-version: 14
