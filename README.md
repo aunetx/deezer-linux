@@ -1,5 +1,8 @@
 # Deezer for linux
 
+[![Build](https://github.com/aunetx/deezer-linux/actions/workflows/build.yml/badge.svg)](https://github.com/aunetx/deezer-linux/actions/workflows/build.yml)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/aunetx/deezer-linux)](https://github.com/aunetx/deezer-linux/releases/latest)
+
 This repo is an UNOFFICIAL linux port of the official windows-only Deezer app. Being based on the windows app, it allows downloading your songs to listen to them offline!
 
 It packages the app in a number of formats:
@@ -9,40 +12,58 @@ It packages the app in a number of formats:
 - AppImage (can't automatically login without desktop integration)
 - `rpm` (Fedora, Red Hat, CentOS, openSUSE, ...)
 - `deb` (Debian, Ubuntu, Pop!_OS, elementary OS, ...)
-- `tar.gz`/`zip`/`7z` to install anywhere else
+- `7z` to install anywhere else
 
 It was done thanks to the hard work of [SibrenVasse](https://github.com/SibrenVasse), who [packaged the app for the AUR](https://github.com/SibrenVasse/deezer).
 
-Please note that it is still in alpha stage, and you will probably need to install some things in order to generate the packages from source (`nodejs` and `npm` at least).
 
-## Flatpak
+## Installation
 
-The main point of the project is the flatpak image.
+You can find all of the installation medium in [the release pages](https://github.com/aunetx/deezer-linux/releases/latest).
 
-You can install it thanks to [the `flatpakref` file](https://github.com/aunetx/deezer-linux/releases/download/v5.30.80-beta.1/deezer.flatpakref).
+[The flatpak file,`deezer.flatpakref`](https://github.com/aunetx/deezer-linux/releases/download/v5.30.100-1/deezer.flatpakref), can be installed directly by clicking on it; your package manager's GUI should prompt you to install it.
 
-To build it from source, you can one of the following commands:
+Other packages can be installed from you package manager, either by clicking on them or from command-line.
+
+Please note that eventhough it is automatically generated, the snapcraft package has never been tested; please tell me if there is any issue with it!
+
+## From source
+
+You will probably need to install some things in order to generate the packages from source: `nodejs` and `npm`, and `yarn` at least; and `flatpak-builder` to build the flatpak version.
+
+### Flatpak
+
+To build it and install it:
 
 ```sh
-# To build it and install it
 make install_flatpak
-
-# To just build it, but do nothing with it
-make build_flatpak
-
-# To build it and install it in the local repo (which you can import later)
-make export_flatpak
 ```
 
 And when it is installed, you can run it with `flatpak run dev.aunetx.deezer`, or from the desktop icon.
 
-## AppImage
+To just build it, but do nothing with it (testing):
 
-This project also generates an AppImage file, which can be used as a stand-alone application.
+```sh
+make build_flatpak
+```
 
-To use it, you must build it from source for the moment: the package size is randomly big, which prevents me from making a public release.
+To build it and install it in the local repo (which you can import later):
 
-To generate it from source, call:
+```sh
+make export_flatpak
+```
+
+To build it and create a bundle, which is then installable offline:
+
+```sh
+make flatpak_bundle
+```
+
+Please not that in order to export the built flatpak image to your local repo or create a bundle, you will need to change `$(GPG_KEY_ID)` in the `Makefile` to use your gpg key.
+
+### AppImage
+
+To build the AppImage image from source, call:
 
 ```sh
 make build_appimage
@@ -60,26 +81,23 @@ deezer-desktop-*.AppImage deezer://autolog/...
 
 And you should be automatically logged in.
 
-## rpm / deb / tar.gz / 7z / zip / snap
+## rpm / deb / snap / 7z
 
-To generate the `rpm`/`deb`/`tar.gz`/`7z`/`zip`/`snap` packages, you can call `make build_pkgs`, everything should be generated in `artifacts/x64`.
-
-Please note that generating all at once will take a very long time, and it oddly results in big package sizes for the moment.
-
-The `tar.gz` is not a pacman package by the way, but just an archive containing the executable (like for `7z` and `zip`).
-I can't get to generate pacman packages for the moment (throws an error, will investigate later).
-
-To only generate `rpm` or `deb`, call:
+To generate the `rpm`/`deb`/`snap`/`7z` packages, you can call:
 
 ```sh
+make build_deb
+# or
 make build_rpm
 # or
-make build_deb
+make build_snap
+# or
+make build_7z
 ```
 
-## Wthout package manager
+Everything should be generated in `artifacts/x64`.
 
-*This will be soon supported, but you can install it by hand with one of the generated `7z`/`zip`/`tar.gz` archive*
+If you generate the 7z package, you can run it directly by extracting to a directory, and calling `./deezer-desktop` from there.
 
 ## **IMPORTANT NOTICE**
 
