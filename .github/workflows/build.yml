@@ -16,18 +16,6 @@ jobs:
     - uses: actions/setup-node@v2
       with:
         node-version: 14
-      
-    - name: create draft release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: ${{ github.ref }}
-        body: Show changes in this release
-        draft: true
-        prerelease: false
   
     - name: install_deps
       run: make install_deps
@@ -41,3 +29,17 @@ jobs:
       run: make build_appimage
     - name: build_7z
       run: make build_7z
+
+    - name: create draft release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: ${{ github.ref }}
+        body: Show changes in this release
+        draft: true
+        files: |
+            artifacts/x64/*.deb
+            artifacts/x64/*.rpm
+            artifacts/x64/*.snap
+            artifacts/x64/*.AppImage
+            artifacts/x64/*.7z
