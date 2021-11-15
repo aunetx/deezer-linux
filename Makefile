@@ -36,6 +36,7 @@ prepare: install_build_deps
 
 
 #! FLATPAK
+
 prepare_flatpak: prepare
 	# Generate yarn sources (without installing them)
 	yarn --cwd=app install --mode update-lockfile
@@ -64,7 +65,8 @@ run_flatpak:
 	flatpak run $(APPNAME)
 
 
-#! PKGS
+#! PACKAGES
+
 install_deps: prepare
 	# Install yarn dependencies to pack them later
 	yarn --cwd=app install
