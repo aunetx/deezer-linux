@@ -34,10 +34,10 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ github.ref }}
-        release_name: ${{ github.ref }}
         body: Show changes in this release
         draft: true
         files: |
+            deezer.flatpakref
             artifacts/x64/*.deb
             artifacts/x64/*.rpm
             artifacts/x64/*.snap
