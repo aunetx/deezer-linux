@@ -19,10 +19,10 @@ prepare: install_build_deps
 	# Extract app from app archive
 	cd source && 7z x -y -bsp0 -bso0 app-32.7z
 	# Extract app sources from the app
-	asar extract source/resources/app.asar app
+	node_modules/asar/bin/asar.js extract source/resources/app.asar app
 
 	# Prettier the sources to patch successfully
-	prettier --write "app/build/*.js"
+	node_modules/prettier/bin-prettier.js --write "app/build/*.js"
 
 	# Apply patches from ./patches, default ones:
 	# Hide to tray when closing (https://github.com/SibrenVasse/deezer/issues/4)
