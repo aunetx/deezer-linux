@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  flatpak:
-    name: "Flatpak"
+  packages:
+    name: "Build packages"
     runs-on: ubuntu-latest
     steps:
     - name: checkout repo
@@ -15,5 +15,10 @@ jobs:
     - uses: actions/setup-node@v2
       with:
         node-version: 14
-    - name: build rpm
-      run: make build_rpm
+    - name: build
+      run: make build_pkgs
+    - name: upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: packages
+        path: artifacts/x64/*.*
