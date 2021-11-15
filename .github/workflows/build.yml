@@ -1,7 +1,7 @@
 on:
-  push:
-    tags:        
-      - '*'
+  release:
+    types: [created]
+  workflow_dispatch:
 name: Build
 jobs:
   flatpak:
