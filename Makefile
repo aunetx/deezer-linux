@@ -13,7 +13,7 @@ install_build_deps:
 prepare: install_build_deps
 	mkdir -p source
 	# Download installer
-	wget -c $(BASE_URL) -O source/deezer-setup-$(PKGVER).exe
+	wget -nv -c $(BASE_URL) -O source/deezer-setup-$(PKGVER).exe
 	# Extract app archive from installer
 	cd source && 7z x -so deezer-setup-$(PKGVER).exe '$$PLUGINSDIR/app-32.7z' > app-32.7z
 	# Extract app from app archive
