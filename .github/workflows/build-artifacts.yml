@@ -3,7 +3,7 @@ name: Build artifacts
 on:
   push:
     tags:
-      - 'v*'
+      - '*'
   workflow_dispatch:
 
 jobs:
@@ -34,7 +34,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ github.ref }}
-        body: Show changes in this release
+        body: ''
         draft: true
         files: |
             deezer.flatpakref
