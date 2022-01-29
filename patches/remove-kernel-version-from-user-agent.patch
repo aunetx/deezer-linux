@@ -1,0 +1,83 @@
+From: Dorian Stoll <dorian.stoll@tmsp.io>
+Date: Sat, 29 Jan 2022 12:30:00 +0100
+Subject: [PATCH] Remove kernel version from User-Agent
+
+The application sends the kernel version as part of the User-Agent.
+However, the Deezer API seems to assume the number to follow semver,
+and can get confused when it doesn't. This then leads to some features
+like dark mode being reported as unavailable.
+
+e.g: 5.11.0-16-generic works, while 5.15.14-200.fc35.x86_64 doesn't.
+
+The solution is to ignore the actual version and send bogus data that
+is known to work.
+---
+ build/main.js     | 4 +++-
+ build/preload.js  | 4 +++-
+ build/renderer.js | 4 +++-
+ build/titlebar.js | 4 +++-
+ 4 files changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/build/main.js b/build/main.js
+index b8e2459..2da2ed1 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -5,7 +5,9 @@
+         module.exports = require("macos-version");
+       },
+       87: (module) => {
+-        module.exports = require("os");
++        var m = require("os");
++        m.release = function() { return "0.0.0"; }
++        module.exports = m;
+       },
+     },
+     __webpack_module_cache__ = {};
+diff --git a/build/preload.js b/build/preload.js
+index 912f8ee..a8bb8d6 100644
+--- a/build/preload.js
++++ b/build/preload.js
+@@ -5,7 +5,9 @@
+         module.exports = require("macos-version");
+       },
+       87: (module) => {
+-        module.exports = require("os");
++        var m = require("os");
++        m.release = function() { return "0.0.0"; }
++        module.exports = m;
+       },
+     },
+     __webpack_module_cache__ = {};
+diff --git a/build/renderer.js b/build/renderer.js
+index 6e7787f..026c052 100644
+--- a/build/renderer.js
++++ b/build/renderer.js
+@@ -5,7 +5,9 @@
+         module.exports = require("macos-version");
+       },
+       87: (module) => {
+-        module.exports = require("os");
++        var m = require("os");
++        m.release = function() { return "0.0.0"; }
++        module.exports = m;
+       },
+     },
+     __webpack_module_cache__ = {};
+diff --git a/build/titlebar.js b/build/titlebar.js
+index 3d2aaca..052553b 100644
+--- a/build/titlebar.js
++++ b/build/titlebar.js
+@@ -5,7 +5,9 @@
+         module.exports = require("macos-version");
+       },
+       87: (module) => {
+-        module.exports = require("os");
++        var m = require("os");
++        m.release = function() { return "0.0.0"; }
++        module.exports = m;
+       },
+     },
+     __webpack_module_cache__ = {};
+-- 
+2.34.1
+
