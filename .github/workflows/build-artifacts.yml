@@ -29,13 +29,17 @@ jobs:
       run: make build_appimage
     - name: build_7z
       run: make build_7z
+    
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
 
     - name: create draft release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ github.ref }}
-        body: ''
-        draft: true
+        tag_name: ${{ steps.get_version.outputs.VERSION }}
+        body: 'Update to version ${{ steps.get_version.outputs.VERSION }}'
+        draft: false
         files: |
             deezer.flatpakref
             artifacts/x64/*.deb
