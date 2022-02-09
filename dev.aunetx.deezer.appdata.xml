@@ -20,6 +20,10 @@
     <kudo>HiDpiIcon</kudo>
   </kudos>
   <releases>
+    <release version="5.30.160-5" date="2022-2-9" />
+    <release version="5.30.160-4" date="2022-2-1" />
+    <release version="5.30.160-3" date="2022-2-1" />
+    <release version="5.30.160-2" date="2022-2-1" />
     <release version="5.30.160-1" date="2022-2-1" />
     <release version="5.30.150-1" date="2022-1-30" />
     <release version="5.30.130-1" date="2021-12-28" />
