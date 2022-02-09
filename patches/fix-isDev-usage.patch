@@ -1,0 +1,54 @@
+From: Dorian Stoll <dorian.stoll@tmsp.io>
+Date: Sat, 5 Feb 2022 07:05:16 +0100
+Subject: [PATCH] Fix isDev() usage
+
+This stops the excessive logging, since parts of the app will not run in development
+mode anymore. It also stops the app from logging the urls for the mp3 files, which is
+against the Deezer TOS.
+---
+ build/main.js    | 6 +++---
+ build/preload.js | 2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/build/main.js b/build/main.js
+index 2da2ed1..88135ae 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -1979,7 +1979,7 @@
+           tags: Object.assign(
+             { country: user.country, offerId: user.offerId },
+             {
+-              environment: isDev ? "development" : "production",
++              environment: isDev() ? "development" : "production",
+               os: `${external_os_default().type()} ${external_os_default().release()}`,
+               "os.name": external_os_default().type(),
+               arch: process.arch,
+@@ -3268,10 +3268,10 @@
+       (external_electron_log_default().transports.console.format = `{h}:{i}:{s}.{ms} ({processType}/{level}) ${
+         isPlatform(PLATFORM.WINDOWS) ? ">" : "›"
+       }  {text}`),
+-      (external_electron_log_default().transports.console.level = isDev
++      (external_electron_log_default().transports.console.level = isDev()
+         ? "silly"
+         : "warn"),
+-      (external_electron_log_default().transports.file.level = isDev
++      (external_electron_log_default().transports.file.level = isDev()
+         ? "silly"
+         : "warn"),
+       (external_electron_log_default().transports.sentry = function (msg) {
+diff --git a/build/preload.js b/build/preload.js
+index a8bb8d6..73dc8b4 100644
+--- a/build/preload.js
++++ b/build/preload.js
+@@ -490,7 +490,7 @@
+         }
+         getSentryTags() {
+           return {
+-            environment: isDev ? "development" : "production",
++            environment: isDev() ? "development" : "production",
+             os: `${external_os_default().type()} ${external_os_default().release()}`,
+             "os.name": external_os_default().type(),
+             arch: process.arch,
+-- 
+2.34.1
+
