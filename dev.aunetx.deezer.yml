@@ -5,7 +5,7 @@ sdk: org.freedesktop.Sdk
 base: org.electronjs.Electron2.BaseApp
 base-version: '21.08'
 sdk-extensions:
-  - org.freedesktop.Sdk.Extension.node14
+  - org.freedesktop.Sdk.Extension.node16
 command: run.sh
 separate-locales: false
 finish-args:
@@ -27,7 +27,7 @@ finish-args:
   - --filesystem=xdg-pictures
   - --filesystem=xdg-download:ro
 build-options:
-  append-path: /usr/lib/sdk/node14/bin
+  append-path: /usr/lib/sdk/node16/bin
   cflags: -O2 -g
   cxxflags: -O2 -g
   env:
@@ -39,7 +39,7 @@ modules:
       env:
         XDG_CACHE_HOME: /run/build/deezer/flatpak-node/cache
         npm_config_cache: /run/build/deezer/flatpak-node/npm-cache
-        npm_config_nodedir: /usr/lib/sdk/node14
+        npm_config_nodedir: /usr/lib/sdk/node16
         npm_config_offline: 'true'
     subdir: main
     sources:
