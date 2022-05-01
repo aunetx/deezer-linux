@@ -60,16 +60,13 @@ export_flatpak: prepare_flatpak
 	@flatpak-builder --gpg-sign=$(GPG_KEY_ID) --repo=docs --state-dir=flatpak/flatpak-builder --force-clean flatpak/build $(APPNAME).yml
 	@flatpak build-update-repo --generate-static-deltas --gpg-sign=$(GPG_KEY_ID) docs
 
-flatpak_bundle: build_flatpak
+bundle_flatpak: build_flatpak
 	@echo "Create a flatpak bundle"
 	@flatpak build-bundle --gpg-sign=$(GPG_KEY_ID) --state-dir=flatpak/flatpak-builder docs deezer.flatpak $(APPNAME)
 
 install_flatpak: prepare_flatpak
 	@echo "Build and install locally the flatpak image"
 	@flatpak-builder --force-clean --state-dir=flatpak/flatpak-builder --user --install flatpak/build $(APPNAME).yml
-
-run_flatpak:
-	@flatpak run $(APPNAME)
 
 
 #! PACKAGES
