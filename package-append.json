@@ -22,8 +22,8 @@
     "build-7z-x86": "electron-builder --ia32 --linux 7z"
   },
   "devDependencies": {
-    "electron": "^13.5.1",
-    "electron-builder": "^22.13.1"
+    "electron": "^13.6.9",
+    "electron-builder": "^23.0.3"
   },
   "build": {
     "files": [
