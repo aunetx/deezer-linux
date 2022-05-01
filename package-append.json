@@ -50,7 +50,8 @@
         "GenericName": "Online music streaming service",
         "Comment": "Listen and download all your favorite music",
         "MimeType": "x-scheme-handler/deezer;",
-        "Keywords": "Music;Player;Streaming;Online;"
+        "Keywords": "Music;Player;Streaming;Online;",
+        "StartupWMClass": "Deezer"
       },
       "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
