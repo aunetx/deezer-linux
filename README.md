@@ -56,7 +56,7 @@ make export_flatpak
 To build it and create a bundle, which is then installable offline:
 
 ```sh
-make flatpak_bundle
+make bundle_flatpak
 ```
 
 Please not that in order to export the built flatpak image to your local repo or create a bundle, you will need to change `$(GPG_KEY_ID)` in the `Makefile` to use your gpg key.
