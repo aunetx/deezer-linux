@@ -1,0 +1,18 @@
+diff --git a/build/main.js b/build/main.js
+index de51acb..e2c0b9e 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -2897,12 +2897,7 @@
+                 this.tray.init(),
+                 this.updater.init(),
+                 this.network.watch(),
+-                this.powerSave.check(),
+-                this.deepLink.getSchemes().forEach((scheme) => {
+-                  external_electron_namespaceObject.app.setAsDefaultProtocolClient(
+-                    scheme
+-                  );
+-                });
++                this.powerSave.check();
+               const dzrFilter = { urls: ["*://*/*"] },
+                 DOMAINS_WHITELIST = [
+                   "deezer.com",
