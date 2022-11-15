@@ -29,7 +29,15 @@ Please note that eventhough it is automatically generated, the snapcraft package
 
 ## From source
 
-You will probably need to install some things in order to generate the packages from source: `nodejs` and `npm`, and `yarn` at least; and `flatpak-builder` to build the flatpak version.
+You will probably need to install some things in order to generate the packages from source:
+
+- nodejs
+- npm
+- yarn
+- 7z by installing `p7zip` and `p7zip-full`
+- make
+- wget
+- `flatpak-builder` (only to build the flatpak version)
 
 ### Flatpak
 
