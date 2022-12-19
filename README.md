@@ -92,6 +92,8 @@ And you should be automatically logged in.
 
 **IMPORTANT:** if you want to open an issue about this, please do NOT share your own `deezer://autolog/...` link, as it would permit anybody to log into your account without the need for a password!
 
+See [this issue](https://github.com/aunetx/deezer-linux/issues/29) for more informations about login in AppImage.
+
 ## rpm / deb / snap / 7z
 
 To generate the `rpm`/`deb`/`snap`/`7z` packages, you can call:
