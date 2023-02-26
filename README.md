@@ -29,7 +29,15 @@ Please note that eventhough it is automatically generated, the snapcraft package
 
 ## From source
 
-You will probably need to install some things in order to generate the packages from source: `nodejs` and `npm`, and `yarn` at least; and `flatpak-builder` to build the flatpak version.
+You will probably need to install some things in order to generate the packages from source:
+
+- nodejs
+- npm
+- yarn
+- 7z by installing `p7zip` and `p7zip-full`
+- make
+- wget
+- `flatpak-builder` (only to build the flatpak version)
 
 ### Flatpak
 
@@ -81,6 +89,10 @@ deezer-desktop-*.AppImage deezer://autolog/...
 ```
 
 And you should be automatically logged in.
+
+**IMPORTANT:** if you want to open an issue about this, please do NOT share your own `deezer://autolog/...` link, as it would permit anybody to log into your account without the need for a password!
+
+See [this issue](https://github.com/aunetx/deezer-linux/issues/29) for more informations about login in AppImage.
 
 ## rpm / deb / snap / 7z
 
