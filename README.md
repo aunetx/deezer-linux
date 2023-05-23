@@ -3,7 +3,7 @@
 [![Build](https://github.com/aunetx/deezer-linux/actions/workflows/build.yml/badge.svg)](https://github.com/aunetx/deezer-linux/actions/workflows/build.yml)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/aunetx/deezer-linux)](https://github.com/aunetx/deezer-linux/releases/latest)
 
-This repo is an UNOFFICIAL linux port of the official windows-only Deezer app. Being based on the windows app, it allows downloading your songs to listen to them offline!
+This repo is an UNOFFICIAL linux port of the official windows-only Deezer app. Being based on the native Windows app, it allows downloading your songs to listen to them offline!
 
 It packages the app in a number of formats:
 
@@ -19,13 +19,13 @@ It was done thanks to the hard work of [SibrenVasse](https://github.com/SibrenVa
 
 ## Installation
 
-You can find all of the installation medium in [the release pages](https://github.com/aunetx/deezer-linux/releases/latest).
+You can find all of the packages on [the release page](https://github.com/aunetx/deezer-linux/releases/latest).
 
 [The flatpak file,`deezer.flatpakref`](https://github.com/aunetx/deezer-linux/releases/download/v5.30.100-1/deezer.flatpakref), can be installed directly by clicking on it; your package manager's GUI should prompt you to install it.
 
-Other packages can be installed from you package manager, either by clicking on them or from command-line.
+Other packages can be installed from you package manager, either by clicking on them or from the command-line.
 
-Please note that eventhough it is automatically generated, the snapcraft package has never been tested; please tell me if there is any issue with it!
+Please note that even though it is automatically generated, the snapcraft package has never been tested; Please tell me if there is any issue with it!
 
 ## From source
 
@@ -49,7 +49,7 @@ make install_flatpak
 
 And when it is installed, you can run it with `flatpak run dev.aunetx.deezer`, or from the desktop icon.
 
-To just build it, but do nothing with it (testing):
+To just build it, for testing purposes:
 
 ```sh
 make build_flatpak
@@ -71,7 +71,7 @@ Please not that in order to export the built flatpak image to your local repo or
 
 ### AppImage
 
-To build the AppImage image from source, call:
+To build the AppImage image from source, use:
 
 ```sh
 make install_deps
@@ -80,9 +80,9 @@ make build_appimage
 
 And the image should be in the `artifacts/x64` folder.
 
-Because of the way AppImage work, excepted if you use `appimaged`, you will not be able to login from the browser: the you are not redirected to the application.
-To make it work, you must open a first instance of the app, and copy the link shown in `https://www.deezer.com/desktop/login/electron/callback`. In a terminal
-(where the `.AppImage file is), call:
+Because of the way AppImage works, except if you use `appimaged`, you will not be able to login from the browser; then you are not redirected to the application.
+To make it work, you must first open a instance of the app, and copy the link shown in `https://www.deezer.com/desktop/login/electron/callback`. In a terminal
+(where the .AppImage file is), use:
 
 ```sh
 deezer-desktop-*.AppImage deezer://autolog/...
@@ -90,13 +90,13 @@ deezer-desktop-*.AppImage deezer://autolog/...
 
 And you should be automatically logged in.
 
-**IMPORTANT:** if you want to open an issue about this, please do NOT share your own `deezer://autolog/...` link, as it would permit anybody to log into your account without the need for a password!
+**IMPORTANT:** If you want to open an issue about this, please do NOT share your own `deezer://autolog/...` link, as it would permit anybody to log into your account without the need for a password!
 
 See [this issue](https://github.com/aunetx/deezer-linux/issues/29) for more informations about login in AppImage.
 
 ## rpm / deb / snap / 7z
 
-To generate the `rpm`/`deb`/`snap`/`7z` packages, you can call:
+To generate the `rpm`/`deb`/`snap`/`7z` packages, you can use:
 
 ```sh
 # prepare the build
@@ -113,13 +113,13 @@ make build_snap
 make build_7z
 ```
 
-Note that you don't need to call `make install_deps` everytime you start a build, but you need to call it at least once. Everything should be generated in `artifacts/x64`.
+Note that you don't need to use `make install_deps` everytime you start a build, but you need to call it at least once. Everything should be generated in `artifacts/x64`.
 
 If you generate the 7z package, you can run it directly by extracting to a directory, and calling `./deezer-desktop` from there.
 
 ## **IMPORTANT NOTICE**
 
-This work is UNOFFICIAL, and Deezer does not officially support linux yet.
+This work is UNOFFICIAL, and Deezer does not officially support Linux yet.
 
 Installing/using this is consequently outside of the scope of the Deezer EULA, and I am not responsible for your usage of this.
 
