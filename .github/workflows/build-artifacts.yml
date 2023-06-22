@@ -27,24 +27,22 @@ jobs:
       run: make build_snap
     - name: build_appimage
       run: make build_appimage
-    - name: build_7z
-      run: make build_7z
     - name: build_tar.xz
       run: make build_tar.xz
     
     - name: Get the version
       id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      run: echo "version=${GITHUB_REF/refs\/tags\//}" >> "$GITHUB_ENV"
       
     - name: Generate sha256
       id: gen_sha256
-      run: echo ::set-output name=SHA256::$(sha256sum artifacts/x64/*.tar.xz | awk '{ print $1 }')
+      run: echo "sha256=$(sha256sum artifacts/x64/*.{deb,rpm,snap,AppImage,tar.xz} | awk '{ print $1 }')" >> "$GITHUB_ENV"
 
     - name: create release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ steps.get_version.outputs.VERSION }}
-        body: 'Update to version ${{ steps.get_version.outputs.VERSION }}\ntar.xz sha256: ${{ steps.gen_sha256.outputs.SHA256 }}'
+        tag_name: ${{ env.version }}
+        body: 'Update to version ${{ env.version }}\nsha256:\n${{ env.sha256 }}'
         draft: false
         files: |
             deezer.flatpakref
@@ -52,5 +50,4 @@ jobs:
             artifacts/x64/*.rpm
             artifacts/x64/*.snap
             artifacts/x64/*.AppImage
-            artifacts/x64/*.7z
             artifacts/x64/*.tar.xz
