@@ -92,4 +92,3 @@ modules:
       - install -Dm644 dev.aunetx.deezer.appdata.xml /app/share/appdata/dev.aunetx.deezer.appdata.xml
       - install -Dm644 dev.aunetx.deezer.svg /app/share/icons/hicolor/scalable/apps/dev.aunetx.deezer.svg
       - install -Dm644 dev.aunetx.deezer.desktop /app/share/applications/dev.aunetx.deezer.desktop
-      - sleep 1000
