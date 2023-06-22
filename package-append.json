@@ -9,6 +9,7 @@
     "build-snap": "electron-builder --x64 --linux snap",
     "build-appimage": "electron-builder --x64 --linux AppImage",
     "build-7z": "electron-builder --x64 --linux 7z",
+    "build-tar.xz": "electron-builder --x64 --linux tar.xz",
 
     "build-arm": "electron-builder --arm64 --linux deb rpm snap AppImage 7z tar.gz zip",
     "build-deb-arm": "electron-builder --arm64 --linux deb",
@@ -16,10 +17,12 @@
     "build-snap-arm": "electron-builder --arm64 --linux snap",
     "build-appimage-arm": "electron-builder --arm64 --linux AppImage",
     "build-7z-arm": "electron-builder --arm64 --linux 7z",
+    "build-tar.xz-arm": "electron-builder --arm64 --linux tar.xz",
 
     "build-x86": "electron-builder --ia32 --linux deb",
     "build-deb-x86": "electron-builder --ia32 --linux deb",
-    "build-7z-x86": "electron-builder --ia32 --linux 7z"
+    "build-7z-x86": "electron-builder --ia32 --linux 7z",
+    "build-tar.xz-x86": "electron-builder --ia32 --linux tar.xz"
   },
   "devDependencies": {
     "electron": "^13.6.9",
