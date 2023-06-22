@@ -41,6 +41,11 @@
         "from": "../extra/",
         "to": ".",
         "filter": ["**"]
+      },
+      {
+        "from": "../",
+        "to": ".",
+        "filter": ["dev.aunetx.deezer.desktop", "dev.aunetx.deezer.svg"]
       }
     ],
     "linux": {
