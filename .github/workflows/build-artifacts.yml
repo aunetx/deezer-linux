@@ -31,18 +31,16 @@ jobs:
       run: make build_tar.xz
     
     - name: Get the version
-      id: get_version
       run: echo "version=${GITHUB_REF/refs\/tags\//}" >> "$GITHUB_ENV"
       
     - name: Generate sha256
-      id: gen_sha256
-      run: echo "sha256=$(sha256sum artifacts/x64/*.{deb,rpm,snap,AppImage,tar.xz} | awk '{ print $1 }')" >> "$GITHUB_ENV"
+      run: echo "$(sha256sum {deezer.flatpakref,artifacts/x64/*.{deb,rpm,snap,AppImage,tar.xz}})" > sha256
 
     - name: create release
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ env.version }}
-        body: 'Update to version ${{ env.version }}\nsha256:\n${{ env.sha256 }}'
+        body: 'Update to version ${{ env.version }}'
         draft: false
         files: |
             deezer.flatpakref
@@ -51,3 +49,4 @@ jobs:
             artifacts/x64/*.snap
             artifacts/x64/*.AppImage
             artifacts/x64/*.tar.xz
+            sha256
