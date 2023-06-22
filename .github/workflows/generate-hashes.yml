@@ -1,0 +1,17 @@
+name: Generate hashes
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: MCJack123/ghaction-Generate-Release-Hashes@v1
+      with:
+        file-name: hashes_sha256.txt
+    - uses: actions/upload-artifact@v2
+      with:
+        name: Hashes
+        path: hashes_sha256.txt

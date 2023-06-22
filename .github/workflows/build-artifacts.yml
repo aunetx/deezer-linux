@@ -16,11 +16,6 @@ jobs:
     - uses: actions/setup-node@v2
       with:
         node-version: 18
-    - uses: MCJack123/ghaction-generate-release-hashes@v3
-      with:
-        hash-type: sha256
-        file-name: hashes_sha256.txt
-            
   
     - name: install_deps
       run: make install_deps
@@ -55,4 +50,3 @@ jobs:
             artifacts/x64/*.AppImage
             artifacts/x64/*.7z
             artifacts/x64/*.tar.xz
-            hashes_sha256.txt
