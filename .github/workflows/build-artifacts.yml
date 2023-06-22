@@ -35,12 +35,16 @@ jobs:
     - name: Get the version
       id: get_version
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      
+    - name: Generate sha256
+      id: gen_sha256
+      run: echo ::set-output name=SHA256::$(sha256sum artifacts/x64/*.tar.xz | awk '{ print $1 }')
 
-    - name: create draft release
+    - name: create release
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ steps.get_version.outputs.VERSION }}
-        body: 'Update to version ${{ steps.get_version.outputs.VERSION }}'
+        body: 'Update to version ${{ steps.get_version.outputs.VERSION }}\ntar.xz sha256: ${{ steps.gen_sha256.outputs.SHA256 }}'
         draft: false
         files: |
             deezer.flatpakref
