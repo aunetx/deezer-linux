@@ -96,7 +96,11 @@ build_7z:
 	@echo "Build 7z archive"
 	@yarn --cwd=app run build-7z
 
-build_pkgs: install_deps build_deb build_rpm build_snap build_appimage build_7z
+build_tar.xz:
+	@echo "Build tar.xz archive"
+	@yarn --cwd=app run build-tar.xz
+
+build_pkgs: install_deps build_deb build_rpm build_snap build_appimage build_7z build_tar.xz
 
 
 #! UTILS
