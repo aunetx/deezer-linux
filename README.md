@@ -1,5 +1,15 @@
 # Deezer for linux
 
+**NOTICE:** existing flatpak users NEED to migrate the the flathub repository as soon as possible, as I will delete the flatpak repository from here (it is more than 2Gb in size). In order to do so, simply:
+
+```sh
+flatpak uninstall dev.aunetx.deezer
+flatpak remote-delete deezer-linux
+flatpak install flathub dev.aunetx.deezer
+```
+
+---
+
 [![Build](https://github.com/aunetx/deezer-linux/actions/workflows/build.yml/badge.svg)](https://github.com/aunetx/deezer-linux/actions/workflows/build.yml)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/aunetx/deezer-linux)](https://github.com/aunetx/deezer-linux/releases/latest)
 
