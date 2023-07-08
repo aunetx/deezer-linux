@@ -41,7 +41,7 @@ jobs:
       run: echo "version=${GITHUB_REF/refs\/tags\//}" >> "$GITHUB_ENV"
 
     - name: Generate sha256
-      run: echo "$(sha256sum {deezer.flatpakref,artifacts/{x64,amd64}/*.{deb,rpm,AppImage,tar.xz}})" > sha256
+      run: echo "$(sha256sum artifacts/{x64,arm64}/*.{deb,rpm,AppImage,tar.xz})" > sha256
 
     - name: create release
       uses: softprops/action-gh-release@v1
