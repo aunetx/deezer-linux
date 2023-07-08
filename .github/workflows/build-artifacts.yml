@@ -23,8 +23,6 @@ jobs:
       run: make build_deb_x64
     - name: build_rpm_x64
       run: make build_rpm_x64
-    - name: build_snap_x64
-      run: make build_snap_x64
     - name: build_appimage_x64
       run: make build_appimage_x64
     - name: build_tar.xz_x64
@@ -34,8 +32,6 @@ jobs:
       run: make build_deb_arm64
     - name: build_rpm_arm64
       run: make build_rpm_arm64
-    - name: build_snap_arm64
-      run: make build_snap_arm64
     - name: build_appimage_arm64
       run: make build_appimage_arm64
     - name: build_tar.xz_arm64
@@ -45,7 +41,7 @@ jobs:
       run: echo "version=${GITHUB_REF/refs\/tags\//}" >> "$GITHUB_ENV"
 
     - name: Generate sha256
-      run: echo "$(sha256sum {deezer.flatpakref,artifacts/{x64,amd64}/*.{deb,rpm,snap,AppImage,tar.xz}})" > sha256
+      run: echo "$(sha256sum {deezer.flatpakref,artifacts/{x64,amd64}/*.{deb,rpm,AppImage,tar.xz}})" > sha256
 
     - name: create release
       uses: softprops/action-gh-release@v1
@@ -56,12 +52,10 @@ jobs:
         files: |
             artifacts/x64/*.deb
             artifacts/x64/*.rpm
-            artifacts/x64/*.snap
             artifacts/x64/*.AppImage
             artifacts/x64/*.tar.xz
             artifacts/arm64/*.deb
             artifacts/arm64/*.rpm
-            artifacts/arm64/*.snap
             artifacts/arm64/*.AppImage
             artifacts/arm64/*.tar.xz
             sha256
