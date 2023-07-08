@@ -18,14 +18,13 @@ jobs:
       run: make install_deps
     - name: build_appimage_x64
       run: make build_appimage_x64
-    - name: build_appimage_amd64
-      run: make build_appimage_amd64
+    - name: build_appimage_arm64
+      run: make build_appimage_arm64
 
     - uses: actions/upload-artifact@v2
       with:
         name: deezer-desktop-nightly-build-x64.AppImage
         path: artifacts/x64/deezer-desktop-*.AppImage
-
     - uses: actions/upload-artifact@v2
       with:
         name: deezer-desktop-nightly-build-arm64.AppImage
