@@ -110,10 +110,6 @@ build_rpm_arm64:
 	@echo "Build rpm package"
 	@yarn --cwd=app run build-rpm-arm64
 
-build_snap_arm64:
-	@echo "Build snap package"
-	@yarn --cwd=app run build-snap-arm64
-
 build_appimage_arm64:
 	@echo "Build AppImage binary"
 	@yarn --cwd=app run build-appimage-arm64
