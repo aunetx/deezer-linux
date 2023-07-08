@@ -1,5 +1,15 @@
 # Deezer for linux
 
+**NOTICE:** existing flatpak users NEED to migrate the the flathub repository as soon as possible, as I will delete the flatpak repository from here (it is more than 2Gb in size). In order to do so, simply:
+
+```sh
+flatpak uninstall dev.aunetx.deezer
+flatpak remote-delete deezer-linux
+flatpak install flathub dev.aunetx.deezer
+```
+
+---
+
 [![Build](https://github.com/aunetx/deezer-linux/actions/workflows/build.yml/badge.svg)](https://github.com/aunetx/deezer-linux/actions/workflows/build.yml)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/aunetx/deezer-linux)](https://github.com/aunetx/deezer-linux/releases/latest)
 
@@ -7,7 +17,7 @@ This repo is an UNOFFICIAL linux port of the official windows-only Deezer app. B
 
 It packages the app in a number of formats:
 
-- Flatpak
+- Flatpak, [available on flathub](https://flathub.org/apps/dev.aunetx.deezer)
 - Snap (not tested yet)
 - AppImage (can't automatically login without desktop integration)
 - `rpm` (Fedora, Red Hat, CentOS, openSUSE, ...)
@@ -16,12 +26,11 @@ It packages the app in a number of formats:
 
 It was done thanks to the hard work of [SibrenVasse](https://github.com/SibrenVasse), who [packaged the app for the AUR](https://github.com/SibrenVasse/deezer).
 
-
 ## Installation
 
 You can find all of the packages on [the release page](https://github.com/aunetx/deezer-linux/releases/latest).
 
-[The flatpak file,`deezer.flatpakref`](https://github.com/aunetx/deezer-linux/releases/download/v5.30.100-1/deezer.flatpakref), can be installed directly by clicking on it; your package manager's GUI should prompt you to install it.
+To install the flatpak version, you can simply go to https://flathub.org/apps/dev.aunetx.deezer (or use your favorite flatpak package manager). For the moment, it is still possible to use this github repo as a flatpak repository BUT it will not be the case anymore very soon. **Existing users should migrate as soon as they can toward Flathub.**
 
 Other packages can be installed from you package manager, either by clicking on them or from the command-line.
 
@@ -37,37 +46,6 @@ You will probably need to install some things in order to generate the packages 
 - 7z by installing `p7zip` and `p7zip-full`
 - make
 - wget
-- `flatpak-builder` (only to build the flatpak version)
-
-### Flatpak
-
-To build it and install it:
-
-```sh
-make install_flatpak
-```
-
-And when it is installed, you can run it with `flatpak run dev.aunetx.deezer`, or from the desktop icon.
-
-To just build it, for testing purposes:
-
-```sh
-make build_flatpak
-```
-
-To build it and install it in the local repo (which you can import later):
-
-```sh
-make export_flatpak
-```
-
-To build it and create a bundle, which is then installable offline:
-
-```sh
-make bundle_flatpak
-```
-
-Please not that in order to export the built flatpak image to your local repo or create a bundle, you will need to change `$(GPG_KEY_ID)` in the `Makefile` to use your gpg key.
 
 ### AppImage
 
