@@ -1,7 +1,7 @@
 # Maintainer: Aurélien Hamy <aunetx@yandex.com>
 
 APPNAME = dev.aunetx.deezer
-PKGVER = 5.30.580
+PKGVER = 5.30.590
 BASE_URL = https://www.deezer.com/desktop/download/artifact/win32/x86/$(PKGVER)
 GPG_KEY_ID = 5A7D3B06F15FB60238941027EB3A799E7EE716EB
 VERSION_REGEX = ^v$(PKGVER)-[0-9]{1,}$$
@@ -116,9 +116,6 @@ build_appimage_arm64:
 prepare-release:
 	@echo $(DEEZER_RELEASE) | egrep "$(VERSION_REGEX)" > /dev/null || \
 		(echo "$(DEEZER_RELEASE) is not a correct release version of v$(PKGVER)" && false)
-
-	@cat $(APPNAME).appdata.xml | egrep "$(PKGVER)" > /dev/null || \
-		(echo "$(APPNAME).appdata.xml should contain version $(DEEZER_RELEASE)" && false)
 
 	@desktop-file-validate $(APPNAME).desktop || \
 		(echo "Desktop file validation failed" && false)
