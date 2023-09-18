@@ -1,7 +1,7 @@
 # Maintainer: Aurélien Hamy <aunetx@yandex.com>
 
 APPNAME = dev.aunetx.deezer
-PKGVER = 5.30.590
+PKGVER = 5.30.650
 BASE_URL = https://www.deezer.com/desktop/download/artifact/win32/x86/$(PKGVER)
 VERSION_REGEX = ^v$(PKGVER)-[0-9]{1,}$$
 
