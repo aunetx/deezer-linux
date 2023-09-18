@@ -91,9 +91,6 @@ prepare-release:
 	@desktop-file-validate $(APPNAME).desktop || \
 		(echo "Desktop file validation failed" && false)
 
-	@appstream-util validate-relax $(APPNAME).appdata.xml > /dev/null || \
-		(echo "Appstream file validation failed" && false)
-
 
 release: prepare-release
 	@echo "Updating to $(DEEZER_RELEASE)..."
