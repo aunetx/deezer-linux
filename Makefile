@@ -1,14 +1,14 @@
 # Maintainer: Aurélien Hamy <aunetx@yandex.com>
 
 APPNAME = dev.aunetx.deezer
-PKGVER = 5.30.570
+PKGVER = 5.30.590
 BASE_URL = https://www.deezer.com/desktop/download/artifact/win32/x86/$(PKGVER)
 VERSION_REGEX = ^v$(PKGVER)-[0-9]{1,}$$
 
 
 install_build_deps:
 	@npm install --engine-strict asar
-	@npm install prettier
+	@npm install prettier@2.8.8
 
 prepare: clean install_build_deps
 	@mkdir -p source
@@ -47,28 +47,39 @@ install_deps: prepare
 	@echo "Install yarn dependencies to pack them later"
 	@yarn --cwd=app install
 
-# the following should be run after `install_deps`
-# (it is not a dependency to allow to build multiple packages)
 
-build_deb:
-	@echo "Build deb package"
-	@yarn --cwd=app run build-deb
-
-build_rpm:
-	@echo "Build rpm package"
-	@yarn --cwd=app run build-rpm
-
-build_snap:
-	@echo "Build snap package"
-	@yarn --cwd=app run build-snap
-
-build_appimage:
-	@echo "Build AppImage binary"
-	@yarn --cwd=app run build-appimage
-
-build_tar.xz:
+build_tar.xz_x64:
 	@echo "Build tar.xz archive"
-	@yarn --cwd=app run build-tar.xz
+	@yarn --cwd=app run build-tar.xz-x64
+
+build_deb_x64:
+	@echo "Build deb package"
+	@yarn --cwd=app run build-deb-x64
+
+build_rpm_x64:
+	@echo "Build rpm package"
+	@yarn --cwd=app run build-rpm-x64
+
+build_appimage_x64:
+	@echo "Build AppImage binary"
+	@yarn --cwd=app run build-appimage-x64
+
+
+build_tar.xz_arm64:
+	@echo "Build tar.xz archive"
+	@yarn --cwd=app run build-tar.xz-arm64
+
+build_deb_arm64:
+	@echo "Build deb package"
+	@yarn --cwd=app run build-deb-arm64
+
+build_rpm_arm64:
+	@echo "Build rpm package"
+	@yarn --cwd=app run build-rpm-arm64
+
+build_appimage_arm64:
+	@echo "Build AppImage binary"
+	@yarn --cwd=app run build-appimage-arm64
 
 
 #! UTILS

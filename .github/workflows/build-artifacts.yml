@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - '*'
-  workflow_dispatch:
 
 jobs:
   packages:
@@ -19,22 +18,30 @@ jobs:
   
     - name: install_deps
       run: make install_deps
-    - name: build_deb
-      run: make build_deb
-    - name: build_rpm
-      run: make build_rpm
-    - name: build_snap
-      run: make build_snap
-    - name: build_appimage
-      run: make build_appimage
-    - name: build_tar.xz
-      run: make build_tar.xz
-    
+
+    - name: build_deb_x64
+      run: make build_deb_x64
+    - name: build_rpm_x64
+      run: make build_rpm_x64
+    - name: build_appimage_x64
+      run: make build_appimage_x64
+    - name: build_tar.xz_x64
+      run: make build_tar.xz_x64
+
+    - name: build_deb_arm64
+      run: make build_deb_arm64
+    - name: build_rpm_arm64
+      run: make build_rpm_arm64
+    - name: build_appimage_arm64
+      run: make build_appimage_arm64
+    - name: build_tar.xz_arm64
+      run: make build_tar.xz_arm64
+
     - name: Get the version
       run: echo "version=${GITHUB_REF/refs\/tags\//}" >> "$GITHUB_ENV"
-      
+
     - name: Generate sha256
-      run: echo "$(sha256sum {deezer.flatpakref,artifacts/x64/*.{deb,rpm,snap,AppImage,tar.xz}})" > sha256
+      run: echo "$(sha256sum artifacts/{x64,arm64}/*.{deb,rpm,AppImage,tar.xz})" > sha256
 
     - name: create release
       uses: softprops/action-gh-release@v1
@@ -43,10 +50,12 @@ jobs:
         body: 'Update to version ${{ env.version }}'
         draft: false
         files: |
-            deezer.flatpakref
             artifacts/x64/*.deb
             artifacts/x64/*.rpm
-            artifacts/x64/*.snap
             artifacts/x64/*.AppImage
             artifacts/x64/*.tar.xz
+            artifacts/arm64/*.deb
+            artifacts/arm64/*.rpm
+            artifacts/arm64/*.AppImage
+            artifacts/arm64/*.tar.xz
             sha256
