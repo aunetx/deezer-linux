@@ -13,13 +13,19 @@ jobs:
     - uses: actions/setup-node@v2
       with:
         node-version: 18
-  
+
     - name: install_deps
       run: make install_deps
-    - name: build_appimage
-      run: make build_appimage
+    - name: build_appimage_x64
+      run: make build_appimage_x64
+    - name: build_appimage_arm64
+      run: make build_appimage_arm64
 
     - uses: actions/upload-artifact@v2
       with:
-        name: deezer-desktop-nightly-build.AppImage
+        name: deezer-desktop-nightly-build-x64.AppImage
         path: artifacts/x64/deezer-desktop-*.AppImage
+    - uses: actions/upload-artifact@v2
+      with:
+        name: deezer-desktop-nightly-build-arm64.AppImage
+        path: artifacts/arm64/deezer-desktop-*.AppImage
