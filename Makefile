@@ -3,7 +3,6 @@
 APPNAME = dev.aunetx.deezer
 PKGVER = 5.30.590
 BASE_URL = https://www.deezer.com/desktop/download/artifact/win32/x86/$(PKGVER)
-GPG_KEY_ID = 5A7D3B06F15FB60238941027EB3A799E7EE716EB
 VERSION_REGEX = ^v$(PKGVER)-[0-9]{1,}$$
 
 
@@ -40,34 +39,6 @@ prepare: clean install_build_deps
 	@echo "Adds electron, elecron-builder dependencies, and build directives"
 	@head -n -1 app/package.json > tmp.txt && mv tmp.txt app/package.json
 	@cat package-append.json | tee -a app/package.json
-
-
-#! FLATPAK
-
-prepare_flatpak: prepare
-	@echo "Generate yarn sources (without installing them)"
-	@yarn --cwd=app install --mode update-lockfile
-
-	@echo "Package the sources to use them in flatpak-builder offline"
-	@mkdir -p flatpak
-	@./flatpak-node-generator.py yarn app/yarn.lock -o flatpak/generated-sources.json --electron-node-headers --xdg-layout
-
-build_flatpak: prepare_flatpak
-	@echo "Build the flatpak image"
-	@flatpak-builder --force-clean --state-dir=flatpak/flatpak-builder flatpak/build $(APPNAME).yml
-
-export_flatpak: prepare_flatpak
-	@echo "Build the flatpak package and export it to the repo"
-	@flatpak-builder --gpg-sign=$(GPG_KEY_ID) --repo=docs --state-dir=flatpak/flatpak-builder --force-clean flatpak/build $(APPNAME).yml
-	@flatpak build-update-repo --generate-static-deltas --gpg-sign=$(GPG_KEY_ID) docs
-
-bundle_flatpak: build_flatpak
-	@echo "Create a flatpak bundle"
-	@flatpak build-bundle --gpg-sign=$(GPG_KEY_ID) --state-dir=flatpak/flatpak-builder docs deezer.flatpak $(APPNAME)
-
-install_flatpak: prepare_flatpak
-	@echo "Build and install locally the flatpak image"
-	@flatpak-builder --force-clean --state-dir=flatpak/flatpak-builder --user --install flatpak/build $(APPNAME).yml
 
 
 #! PACKAGES
