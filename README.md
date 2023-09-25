@@ -1,6 +1,6 @@
 # Deezer for linux
 
-**NOTICE:** existing flatpak users NEED to migrate the the flathub repository as soon as possible, as I will delete the flatpak repository from here (it is more than 2Gb in size). In order to do so, simply:
+**NOTICE:** existing flatpak users NEED to migrate the the flathub repository as soon as possible, as I deleted the flatpak repository from here (it was more than 2Gb in size). In order to do so (normally without losing any data), simply:
 
 ```sh
 flatpak uninstall dev.aunetx.deezer
@@ -30,7 +30,7 @@ It was done thanks to the hard work of [SibrenVasse](https://github.com/SibrenVa
 
 You can find all of the packages on [the release page](https://github.com/aunetx/deezer-linux/releases/latest).
 
-To install the flatpak version, you can simply go to https://flathub.org/apps/dev.aunetx.deezer (or use your favorite flatpak package manager). For the moment, it is still possible to use this github repo as a flatpak repository BUT it will not be the case anymore very soon. **Existing users should migrate as soon as they can toward Flathub.**
+To install the flatpak version, you can simply go to https://flathub.org/apps/dev.aunetx.deezer (or use your favorite flatpak package manager). **Old users using this repo as a flatpak repository should migrate as soon as they can toward Flathub.**
 
 Other packages can be installed from you package manager, either by clicking on them or from the command-line.
 
@@ -82,13 +82,13 @@ make install_deps
 
 # and then
 
-make build_deb
+make build_deb_x64
 # or
-make build_rpm
+make build_rpm_x64
 # or
-make build_snap
+make build_snap_x64
 # or
-make build_7z
+make build_tar.xz_x64
 ```
 
 Note that you don't need to use `make install_deps` everytime you start a build, but you need to call it at least once. Everything should be generated in `artifacts/x64`.
@@ -99,6 +99,6 @@ If you generate the 7z package, you can run it directly by extracting to a direc
 
 This work is UNOFFICIAL, and Deezer does not officially support Linux yet.
 
-Installing/using this is consequently outside of the scope of the Deezer EULA, and I am not responsible for your usage of this.
+Installing/using this is consequently probably outside of the scope of the Deezer EULA, and I am not responsible for your usage of this.
 
-I will try to talk to Deezer to ask them if I can upload this on Flathub, but even if they say yes (which is nearly impossible), this work is still unofficial.
+I tried to talk to Deezer to ask them if I am authorized to upload this on Flathub, but when they answer, even if they say yes, this work is still unofficial.
