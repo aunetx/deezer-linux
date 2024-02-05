@@ -101,4 +101,4 @@ This work is UNOFFICIAL, and Deezer does not officially support Linux yet.
 
 Installing/using this is consequently probably outside of the scope of the Deezer EULA, and I am not responsible for your usage of this.
 
-I tried to talk to Deezer to ask them if I am authorized to upload this on Flathub, but when they answer, even if they say yes, this work is still unofficial.
+I ***tried*** to talk to Deezer to ask them if I am authorized to upload this on Flathub, but when they answer, even if they say yes, this work is still unofficial.
