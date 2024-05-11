@@ -33,6 +33,7 @@ prepare: clean install_build_deps
 	@echo "Start in tray cli option (https://github.com/SibrenVasse/deezer/pull/12)"
 	@echo "Remove kernel version from User-Agent (https://github.com/aunetx/deezer-linux/pull/9)"
 	@echo "Avoid to set the text/html mime type (https://github.com/aunetx/deezer-linux/issues/13)"
+	@echo "Add a better management of MPRIS (Media Player Controls)"
 	$(foreach p, $(wildcard ./patches/*), patch -p1 -dapp < $(p);)
 
 	@echo "Append `package-append.json` to the `package.json` of the app"
@@ -40,6 +41,8 @@ prepare: clean install_build_deps
 	@head -n -1 app/package.json > tmp.txt && mv tmp.txt app/package.json
 	@cat package-append.json | tee -a app/package.json
 
+	@echo "Download new packages"
+	@npm i
 
 #! PACKAGES
 
