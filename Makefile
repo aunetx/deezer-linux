@@ -1,8 +1,9 @@
 # Maintainer: Aurélien Hamy <aunetx@yandex.com>
 
 APPNAME = dev.aunetx.deezer
-PKGVER = 6.0.110
-BASE_URL = https://www.deezer.com/desktop/download/artifact/win32/x86/$(PKGVER)
+BASE_URL = $(shell jq ".modules[0].sources[0].url" dev.aunetx.deezer.json)
+SHA256 = $(shell jq ".modules[0].sources[0].sha256" dev.aunetx.deezer.json)
+PKGVER = $(shell echo $(BASE_URL) | grep -Eo "([0-9]+\.[0-9]+\.[0-9]+)" | head -1)
 VERSION_REGEX = ^v$(PKGVER)-[0-9]{1,}$$
 
 
