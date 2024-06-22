@@ -15,7 +15,7 @@ prepare: clean install_build_deps
 	@mkdir -p source
 
 	@echo "Download installer"
-	@wget -nv -c $(BASE_URL) -O source/deezer-setup-$(PKGVER).exe
+	@wget -nv $(BASE_URL) -O source/deezer-setup-$(PKGVER).exe
 	@echo "$(SHA256) source/deezer-setup-$(PKGVER).exe" | sha256sum -c --status || echo "SHA256 not matching!" && exit 1
 
 	@echo "Extract app archive from installer"
