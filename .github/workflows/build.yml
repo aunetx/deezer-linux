@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: checkout repo
-      uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
+      uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
       with:
-        node-version: 18
+        node-version: 20
 
     - name: install_deps
       run: make install_deps
@@ -21,11 +21,11 @@ jobs:
     - name: build_appimage_arm64
       run: make build_appimage_arm64
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: deezer-desktop-nightly-build-x64.AppImage
         path: artifacts/x64/deezer-desktop-*.AppImage
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: deezer-desktop-nightly-build-arm64.AppImage
         path: artifacts/arm64/deezer-desktop-*.AppImage

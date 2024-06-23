@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: checkout repo
-      uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
+      uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
       with:
-        node-version: 18
+        node-version: 20
   
     - name: install_deps
       run: make install_deps
@@ -44,7 +44,7 @@ jobs:
       run: echo "$(sha256sum artifacts/{x64,arm64}/*.{deb,rpm,AppImage,tar.xz})" > sha256
 
     - name: create release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ env.version }}
         body: 'Update to version ${{ env.version }}'
