@@ -1,0 +1,138 @@
+--- a/build/main.js	2024-05-10 19:00:37.087094880 +0200
++++ b/build/main.js	2024-05-11 17:21:00.996945543 +0200
+@@ -72,6 +72,10 @@
+     var external_url_default = __webpack_require__.n(
+       external_url_namespaceObject
+     );
++    const external_electron_mpris_namespaceObject = require("mpris-service");
++    var external_electron_mpris_default = __webpack_require__.n(
++      external_electron_mpris_namespaceObject
++    );
+     const external_inversify_namespaceObject = require("inversify"),
+       external_events_namespaceObject = require("events"),
+       external_semver_namespaceObject =
+@@ -1221,8 +1225,9 @@
+         };
+       };
+     let MediaService = class extends external_events_namespaceObject.EventEmitter {
+-      constructor(ipc, user) {
++      constructor(ipc, user, app) {
+         super(),
++          (this.app = app),
+           (this.smtc = null),
+           (this.track = {}),
+           (this.player = {}),
+@@ -1230,6 +1235,11 @@
+           (this.debounceOptions = { leading: !0, maxWait: 500 }),
+           (this.ipc = ipc),
+           (this.user = user),
++          (this.mprisPlayer = new external_electron_mpris_namespaceObject({
++            name: 'deezer',
++            identity: 'Deezer',
++            supportedInterfaces: ['player']
++          })),
+           isPlatform(PLATFORM.LINUX) &&
+             (this.user.addListener(UserEvents.LoggedIn, () => {
+               this.start();
+@@ -1237,6 +1247,19 @@
+             this.user.addListener(UserEvents.LoggedOut, () => {
+               this.stop();
+             }));
++          this.initMprisPlayerControls();
++      }
++      initMprisPlayerControls() {
++        // Events => ['raise', 'quit', 'next', 'previous', 'pause', 'playpause', 'stop', 'play', 'seek', 'position', 'open', 'volume', 'loopStatus', 'shuffle'];
++        this.mprisPlayer.on('play', this.play.bind(this));
++        this.mprisPlayer.on('pause', this.pause.bind(this));
++        this.mprisPlayer.on('playpause', () => this.player.state === 'playing' ? this.pause() : this.play());
++        this.mprisPlayer.on('stop', this.stop.bind(this));
++        this.mprisPlayer.on('next', this.next.bind(this));
++        this.mprisPlayer.on('previous', this.prev.bind(this));
++        this.mprisPlayer.on('shuffle', this.setSuffle.bind(this));
++        this.mprisPlayer.on('loopStatus', this.setRepeatMode.bind(this));
++        this.mprisPlayer.on('raise', () => this.app.getWindow().show());
+       }
+       play() {
+         this.ipc.send("channel-player-media-control", MediaPlayerControl.Play);
+@@ -1264,11 +1287,22 @@
+       }
+       setTrackInfo(track) {
+         (this.track = Object.assign(this.track, track)),
+-          this.emit(MediaEvents.TrackUpdated, this.track);
++          this.emit(MediaEvents.TrackUpdated, this.track),
++          (this.mprisPlayer.metadata = {
++            'mpris:trackid': this.mprisPlayer.objectPath('track/0'),
++            'mpris:artUrl': track.coverUrl,
++            'xesam:title': track.title,
++            'xesam:album': track.album,
++            'xesam:artist': [track.artist]
++            });
+       }
+       setPlayerInfo(player) {
+         (this.player = Object.assign(this.player, player)),
+           this.emit(MediaEvents.PlayerUpdated, this.player);
++        (this.mprisPlayer.playbackStatus = 
++          this.player.state === 'playing'
++          ? external_electron_mpris_namespaceObject.PLAYBACK_STATUS_PLAYING
++          : external_electron_mpris_namespaceObject.PLAYBACK_STATUS_PAUSED);
+       }
+       getTrackInfo() {
+         return this.track;
+@@ -1328,7 +1362,11 @@
+           1,
+           (0, external_inversify_namespaceObject.inject)(SERVICE_USER)
+         ),
+-        MediaService_metadata("design:paramtypes", [Object, Object]),
++        MediaService_param(
++          2,
++          (0, external_inversify_namespaceObject.inject)(SERVICE_APPLICATION)
++        ),
++        MediaService_metadata("design:paramtypes", [Object, Object, Object]),
+       ],
+       MediaService
+     );
+@@ -2766,14 +2804,18 @@
+     const PlayerIpc_ipc = main_di.get(SERVICE_IPC),
+       media = main_di.get(SERVICE_MEDIA),
+       powerSave = main_di.get(SERVICE_POWER_SAVE);
++    let powerSaveTimoutId;
+     PlayerIpc_ipc.on(
+       "channel-player-state-update",
+-      external_lodash_debounce_default()((event, state) => {
+-        media.setPlayerInfo({ state }),
++      (event, state) => {
++        media.setPlayerInfo({ state });
++        clearTimeout(powerSaveTimoutId);
++        powerSaveTimoutId = setTimeout(()=> {
+           state === MediaPlayerState.Playing
+-            ? powerSave.start()
+-            : powerSave.stop();
+-      }, 3e3)
++          ? powerSave.start()
++          : powerSave.stop();
++        }, 3e3);
++      }
+     ),
+       PlayerIpc_ipc.on(
+         "channel-player-track-update",
+@@ -2865,6 +2907,9 @@
+             "autoplay-policy",
+             "no-user-gesture-required"
+           ),
++          external_electron_namespaceObject.app.commandLine.appendSwitch(
++            "disable-features", "HardwareMediaKeyHandling"
++          ),
+           external_electron_namespaceObject.app.on(
+             "second-instance",
+             (event, argv) => {
+
+--- a/package.json	2024-05-10 19:00:37.091094948 +0200
++++ b/package.json	2024-05-10 21:54:32.411123286 +0200
+@@ -25,6 +25,7 @@
+     "lodash.debounce": "^4.0.8",
+     "lodash.get": "^4.4.2",
+     "macos-version": "^5.2.1",
++    "mpris-service": "^2.1.2",
+     "object.assign": "^4.1.2",
+     "raven": "^2.6.4",
+     "reflect-metadata": "^0.1.13",
