@@ -1,8 +1,9 @@
 # Maintainer: Aurélien Hamy <aunetx@yandex.com>
 
 APPNAME = dev.aunetx.deezer
-PKGVER = 6.0.110
-BASE_URL = https://www.deezer.com/desktop/download/artifact/win32/x86/$(PKGVER)
+BASE_URL = $(shell jq ".modules[0].sources[0].url" dev.aunetx.deezer.json)
+SHA256 = $(shell jq ".modules[0].sources[0].sha256" dev.aunetx.deezer.json)
+PKGVER = $(shell echo $(BASE_URL) | grep -Eo "([0-9]+\.[0-9]+\.[0-9]+)" | head -1)
 VERSION_REGEX = ^v$(PKGVER)-[0-9]{1,}$$
 
 
@@ -14,7 +15,10 @@ prepare: clean install_build_deps
 	@mkdir -p source
 
 	@echo "Download installer"
-	@wget -nv -c $(BASE_URL) -O source/deezer-setup-$(PKGVER).exe
+	@wget -nv $(BASE_URL) -O source/deezer-setup-$(PKGVER).exe
+
+	@echo "Verify installer"
+	@echo "$(SHA256) source/deezer-setup-$(PKGVER).exe" | sha256sum -c --status || exit 1
 
 	@echo "Extract app archive from installer"
 	@cd source && 7z x -so deezer-setup-$(PKGVER).exe '$$PLUGINSDIR/app-32.7z' > app-32.7z
