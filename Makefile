@@ -38,6 +38,7 @@ prepare: clean install_build_deps
 	@echo "Remove kernel version from User-Agent (https://github.com/aunetx/deezer-linux/pull/9)"
 	@echo "Avoid to set the text/html mime type (https://github.com/aunetx/deezer-linux/issues/13)"
 	@echo "Add a better management of MPRIS (https://github.com/aunetx/deezer-linux/pull/61)"
+	@echo "Disable AppImage update check of Official Deezer channel (https://github.com/aunetx/deezer-linux/pull/65)"
 	$(foreach p, $(wildcard ./patches/*), patch -p1 -dapp < $(p);)
 
 	@echo "Append `package-append.json` to the `package.json` of the app"
