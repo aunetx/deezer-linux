@@ -1,0 +1,13 @@
+diff --git a/build/main.js b/build/main.js
+index 764aa06..8a8a370 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -2362,7 +2362,7 @@
+       }
+       init() {
+         this.arch &&
+-          ((isPlatform(PLATFORM.LINUX) && !process.env.APPIMAGE) ||
++          (isPlatform(PLATFORM.LINUX) ||
+             isWindowsStore() ||
+             "yes" === process.env.DZ_DISABLE_UPDATE ||
+             ((external_electron_updater_namespaceObject.autoUpdater.autoDownload =
