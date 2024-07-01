@@ -1,22 +1,24 @@
 {
-  "app-id": "dev.aunetx.deezer",
-  "modules": [
-    {
-      "name": "deezer",
-      "sources": [
+    "app-id": "dev.aunetx.deezer",
+    "modules": [
         {
-          "type": "archive",
-          "url": "https://e-cdn-content.dzcdn.net/builds/deezer-desktop/8cF2rAuKxLcU1oMDmCYm8Uiqe19Ql0HTySLssdzLkQ9ZWHuDTp2JBtQOvdrFzWPA/win32/x86/6.0.150/DeezerDesktopSetup_6.0.150.exe",
-          "sha256": "0ecf85dc7988bc1c26bf12f22b800eeb813b943b7453b8ac5fa9a103ccc075f5",
-          "only-arches": ["x86_64"],
-          "dest": "archive",
-          "x-checker-data": {
-            "type": "rotating-url",
-            "url": "https://www.deezer.com/desktop/download?platform=win32&architecture=x86",
-            "pattern": "([\\d]+\\.[\\d]+\\.[\\d]+)"
-          }
+            "name": "deezer",
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://e-cdn-content.dzcdn.net/builds/deezer-desktop/8cF2rAuKxLcU1oMDmCYm8Uiqe19Ql0HTySLssdzLkQ9ZWHuDTp2JBtQOvdrFzWPA/win32/x86/6.0.160/DeezerDesktopSetup_6.0.160.exe",
+                    "sha256": "dd7e4090a9d8f0a53f336f2cc8f043d2c9f8ce795ae0772d6502c961136a32b5",
+                    "only-arches": [
+                        "x86_64"
+                    ],
+                    "dest": "archive",
+                    "x-checker-data": {
+                        "type": "rotating-url",
+                        "url": "https://www.deezer.com/desktop/download?platform=win32&architecture=x86",
+                        "pattern": "([\\d]+\\.[\\d]+\\.[\\d]+)"
+                    }
+                }
+            ]
         }
-      ]
-    }
-  ]
+    ]
 }
