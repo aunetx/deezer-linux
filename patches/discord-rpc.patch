@@ -1,0 +1,38 @@
+diff --git a/app/build/main.js b/app/build/main.js
+index a02de6e..04ca93a 100644
+--- a/app/build/main.js
++++ b/app/build/main.js
+@@ -88,6 +88,15 @@
+       external_electron_devtools_installer_default = __webpack_require__.n(
+         external_electron_devtools_installer_namespaceObject
+       );
++    const external_rich_presence_builder_namespaceObject = require("rich-presence-builder");
++    var external_rich_presence_builder_default = __webpack_require__.n(
++      external_rich_presence_builder_namespaceObject
++    );
++
++    const rpc = new external_rich_presence_builder_namespaceObject({
++      clientID: "1244016234203185183"
++    });
++
+     function isPlatform(platform) {
+       switch (platform) {
+         case PLATFORM.WINDOWS:
+@@ -2225,10 +2234,16 @@
+           (this.media = media),
+           (this.menu = menu),
+           (this.user = user),
+-          this.media.addListener(MediaEvents.PlayerUpdated, () => {
++          this.media.addListener(MediaEvents.PlayerUpdated, (player) => {
++            rpc.setSmallImage(player.state === "playing" ? "play" : "pause", player.state === "playing" ? "Playing" : "Paused"),
++            rpc.go().catch();
+             this.setContextMenu();
+           }),
+           this.media.addListener(MediaEvents.TrackUpdated, (track) => {
++            rpc.setLargeImage(track.coverUrl);
++            rpc.setState(`${track.artist} - ${track.album}`);
++            rpc.setDescription(track.title);
++            rpc.go().catch();
+             this.setToolTip(`${track.title} - ${track.artist}`),
+               this.setContextMenu();
+           }),

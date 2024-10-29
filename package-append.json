@@ -16,7 +16,7 @@
     "build-appimage-arm64": "electron-builder --arm64 --linux AppImage"
   },
   "dependencies": {
-    "discord-rpc": "^4.0.0"
+    "rich-presence-builder": "^0.1.1"
   },
   "devDependencies": {
     "electron": "^13.6.9",
