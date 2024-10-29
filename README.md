@@ -21,7 +21,7 @@ It packages the app in a number of formats:
 - Snap (not tested yet)
 - AppImage (can't automatically login without desktop integration)
 - `rpm` (Fedora, Red Hat, CentOS, openSUSE, ...)
-- `deb` (Debian, Ubuntu, Pop!_OS, elementary OS, ...)
+- `deb` (Debian, Ubuntu, Pop!\_OS, elementary OS, ...)
 - `7z` to install anywhere else
 
 It was done thanks to the hard work of [SibrenVasse](https://github.com/SibrenVasse), who [packaged the app for the AUR](https://github.com/SibrenVasse/deezer).
@@ -53,7 +53,7 @@ To build the AppImage image from source, use:
 
 ```sh
 make install_deps
-make build_appimage
+make build_appimage_x64
 ```
 
 And the image should be in the `artifacts/x64` folder.
@@ -101,4 +101,4 @@ This work is UNOFFICIAL, and Deezer does not officially support Linux yet.
 
 Installing/using this is consequently probably outside of the scope of the Deezer EULA, and I am not responsible for your usage of this.
 
-I ***tried*** to talk to Deezer to ask them if I am authorized to upload this on Flathub, but when they answer, even if they say yes, this work is still unofficial.
+I **_tried_** to talk to Deezer to ask them if I am authorized to upload this on Flathub, but when they answer, even if they say yes, this work is still unofficial.
