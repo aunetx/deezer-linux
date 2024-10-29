@@ -1,7 +1,9 @@
-diff --git a/app/build/main.js b/app/build/main.js
+Author: Josselin Dulongcourty "josselinonduty"
+---
+diff --git a/build/main.js b/build/main.js
 index a02de6e..04ca93a 100644
---- a/app/build/main.js
-+++ b/app/build/main.js
+--- a/build/main.js
++++ b/build/main.js
 @@ -88,6 +88,15 @@
        external_electron_devtools_installer_default = __webpack_require__.n(
          external_electron_devtools_installer_namespaceObject
