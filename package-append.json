@@ -1,4 +1,5 @@
- ,"scripts": {
+{
+  "scripts": {
     "copy-resources": "mkdir -p resources/linux && cp ../extra/linux/* ./resources/linux",
     "start": "yarn run copy-resources && electron .",
     "prepare-flatpak": "electron-builder --linux --dir",
@@ -13,6 +14,9 @@
     "build-deb-arm64": "electron-builder --arm64 --linux deb",
     "build-rpm-arm64": "electron-builder --arm64 --linux rpm",
     "build-appimage-arm64": "electron-builder --arm64 --linux AppImage"
+  },
+  "dependencies": {
+    "discord-rpc": "^4.0.0"
   },
   "devDependencies": {
     "electron": "^13.6.9",
