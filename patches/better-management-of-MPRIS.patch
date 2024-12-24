@@ -133,6 +133,5 @@
      "lodash.get": "^4.4.2",
      "macos-version": "^5.2.1",
 +    "mpris-service": "^2.1.2",
-     "object.assign": "^4.1.2",
      "raven": "^2.6.4",
      "reflect-metadata": "^0.1.13",
