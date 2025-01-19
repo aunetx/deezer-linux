@@ -41,9 +41,8 @@ prepare: clean install_build_deps
 	# $(foreach p, $(wildcard ./patches/*), patch -p1 -dapp < $(p);)
 
 	@echo "Append `package-append.json` to the `package.json` of the app"
-	@echo "Adds electron, elecron-builder dependencies, and build directives"
-	@head -n -1 app/package.json > tmp.txt && mv tmp.txt app/package.json
-	@cat package-append.json | tee -a app/package.json
+	@echo "Adds electron, elecron-builder dependencies, prod and build directives"
+	@jq -s '.[0] * .[1]' app/package.json package-append.json > app/tmp.json && mv app/tmp.json app/package.json
 
 	@echo "Download new packages"
 	@npm i
