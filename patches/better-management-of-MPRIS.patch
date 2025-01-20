@@ -1,0 +1,161 @@
+From bbb6b3ccd7f2a0391a4596fbf43d5c81ffec8bc9 Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Mon, 20 Jan 2025 16:53:02 +0100
+Subject: [PATCH] fix: add better management of MPRIS metadata
+
+---
+ build/main.js | 72 ++++++++++++++++++++++++++++++++++++++++++---------
+ package.json  |  1 +
+ 2 files changed, 61 insertions(+), 12 deletions(-)
+
+diff --git a/build/main.js b/build/main.js
+index 10a80fa..f50c03d 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -79,6 +79,10 @@
+       external_semver_default = __webpack_require__.n(
+         external_semver_namespaceObject
+       );
++    const external_electron_mpris_namespaceObject = require("mpris-service");
++    var external_electron_mpris_default = __webpack_require__.n(
++      external_electron_mpris_namespaceObject
++    );
+     function isPlatform(platform) {
+       switch (platform) {
+         case PLATFORM.WINDOWS:
+@@ -1179,8 +1183,9 @@
+         };
+       };
+     let MediaService = class extends external_events_namespaceObject.EventEmitter {
+-      constructor(ipc, user) {
++      constructor(ipc, user, app) {
+         super(),
++          (this.app = app),
+           (this.smtc = null),
+           (this.track = {}),
+           (this.player = {}),
+@@ -1188,6 +1193,11 @@
+           (this.debounceOptions = { leading: !0, maxWait: 500 }),
+           (this.ipc = ipc),
+           (this.user = user),
++          (this.mprisPlayer = new external_electron_mpris_namespaceObject({
++            name: 'deezer',
++            identity: 'Deezer',
++            supportedInterfaces: ['player']
++          })),
+           isPlatform(PLATFORM.LINUX) &&
+             (this.user.addListener(UserEvents.LoggedIn, () => {
+               this.start();
+@@ -1195,6 +1205,19 @@
+             this.user.addListener(UserEvents.LoggedOut, () => {
+               this.stop();
+             }));
++            this.initMprisPlayerControls();
++          }
++      initMprisPlayerControls() {
++        // Events => ['raise', 'quit', 'next', 'previous', 'pause', 'playpause', 'stop', 'play', 'seek', 'position', 'open', 'volume', 'loopStatus', 'shuffle'];
++        this.mprisPlayer.on('play', this.play.bind(this));
++        this.mprisPlayer.on('pause', this.pause.bind(this));
++        this.mprisPlayer.on('playpause', () => this.player.state === 'playing' ? this.pause() : this.play());
++        this.mprisPlayer.on('stop', this.stop.bind(this));
++        this.mprisPlayer.on('next', this.next.bind(this));
++        this.mprisPlayer.on('previous', this.prev.bind(this));
++        this.mprisPlayer.on('shuffle', this.setSuffle.bind(this));
++        this.mprisPlayer.on('loopStatus', this.setRepeatMode.bind(this));
++        this.mprisPlayer.on('raise', () => this.app.getWindow().show())
+       }
+       play() {
+         this.ipc.send("channel-player-media-control", MediaPlayerControl.Play);
+@@ -1222,11 +1245,23 @@
+       }
+       setTrackInfo(track) {
+         (this.track = Object.assign(this.track, track)),
+-          this.emit(MediaEvents.TrackUpdated, this.track);
++          this.emit(MediaEvents.TrackUpdated, this.track),
++          (this.mprisPlayer.metadata = {
++              'mpris:trackid': this.mprisPlayer.objectPath('track/0'),
++              'mpris:artUrl': track.coverUrl,
++              'xesam:title': track.title,
++              'xesam:album': track.album,
++              'xesam:artist': [track.artist]
++          });
+       }
+       setPlayerInfo(player) {
+         (this.player = Object.assign(this.player, player)),
+-          this.emit(MediaEvents.PlayerUpdated, this.player);
++          this.emit(MediaEvents.PlayerUpdated, this.player),
++          (this.mprisPlayer.playbackStatus = 
++            this.player.state === 'playing'
++            ? external_electron_mpris_namespaceObject.PLAYBACK_STATUS_PLAYING
++            : external_electron_mpris_namespaceObject.PLAYBACK_STATUS_PAUSED
++          );
+       }
+       getTrackInfo() {
+         return this.track;
+@@ -1286,7 +1321,11 @@
+           1,
+           (0, external_inversify_namespaceObject.inject)(SERVICE_USER)
+         ),
+-        MediaService_metadata("design:paramtypes", [Object, Object]),
++        MediaService_param(
++          2,
++          (0, external_inversify_namespaceObject.inject)(SERVICE_APPLICATION)
++        ),
++        MediaService_metadata("design:paramtypes", [Object, Object, Object]),
+       ],
+       MediaService
+     );
+@@ -2724,14 +2763,20 @@
+     const PlayerIpc_ipc = main_di.get(SERVICE_IPC),
+       media = main_di.get(SERVICE_MEDIA),
+       powerSave = main_di.get(SERVICE_POWER_SAVE);
+-    PlayerIpc_ipc.on(
+-      "channel-player-state-update",
+-      external_lodash_debounce_default()((event, state) => {
+-        media.setPlayerInfo({ state }),
+-          state === MediaPlayerState.Playing
+-            ? powerSave.start()
+-            : powerSave.stop();
+-      }, 3e3)
++      var powerSaveTimeoutId;
++      PlayerIpc_ipc.on(
++        "channel-player-state-update",
++        (event, state) => {
++          media.setPlayerInfo({ state }),
++          clearTimeout(powerSaveTimeoutId),
++          powerSaveTimeoutId = setTimeout(
++            () => {
++            state === MediaPlayerState.Playing
++              ? powerSave.start()
++              : powerSave.stop();
++            }, 3e3
++          );
++        }
+     ),
+       PlayerIpc_ipc.on(
+         "channel-player-track-update",
+@@ -2819,6 +2864,9 @@
+             "autoplay-policy",
+             "no-user-gesture-required"
+           ),
++          external_electron_namespaceObject.app.commandLine.appendSwitch(
++            "disable-features", "HardwareMediaKeyHandling"
++          ),
+           external_electron_namespaceObject.app.on(
+             "second-instance",
+             (event, argv) => {
+diff --git a/package.json b/package.json
+index 290f49a..3560ca9 100644
+--- a/package.json
++++ b/package.json
+@@ -26,6 +26,7 @@
+     "lodash.debounce": "^4.0.8",
+     "lodash.get": "^4.4.2",
+     "macos-version": "^5.2.1",
++    "mpris-service": "^2.1.2",
+     "raven": "^2.6.4",
+     "reflect-metadata": "^0.2.2",
+     "semver": "^7.6.0",
+-- 
+2.43.0
+

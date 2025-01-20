@@ -36,6 +36,7 @@ prepare: clean install_build_deps
 	@echo "- Hide to tray when closing (https://github.com/SibrenVasse/deezer/issues/4)"
 	@echo "- Start in tray cli option (https://github.com/SibrenVasse/deezer/pull/12)"
 	@echo "- Avoid to set the text/html mime type (https://github.com/aunetx/deezer-linux/issues/13)"
+	@echo "- Add a better management of MPRIS (https://github.com/aunetx/deezer-linux/pull/61)"
 	@echo "- Disable auto updater (https://github.com/aunetx/deezer-linux/pull/95)"
 	$(foreach p, $(wildcard ./patches/*), patch -p1 -dapp < $(p);)
 
