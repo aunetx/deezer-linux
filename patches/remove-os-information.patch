@@ -1,0 +1,87 @@
+From 83374279bba745cf9b4b4ab958b35738f97d12c7 Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Mon, 20 Jan 2025 19:19:51 +0100
+Subject: [PATCH] fix: hide os information
+
+---
+ build/main.js     | 7 ++++++-
+ build/preload.js  | 7 ++++++-
+ build/renderer.js | 7 ++++++-
+ build/titlebar.js | 7 ++++++-
+ 4 files changed, 24 insertions(+), 4 deletions(-)
+
+diff --git a/build/main.js b/build/main.js
+index 10a80fa..e371d01 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -5,7 +5,12 @@
+         module.exports = require("macos-version");
+       },
+       857: (module) => {
+-        module.exports = require("os");
++        var __module_os = require("os");
++        __module_os.release = () => "10.0.26100.2894";
++        __module_os.version = () => ""
++        __module_os.platform = () => "win32";
++        __module_os.type = () => "Windows_NT";
++        module.exports = __module_os;
+       },
+     },
+     __webpack_module_cache__ = {};
+diff --git a/build/preload.js b/build/preload.js
+index 9716411..f0fa2ab 100644
+--- a/build/preload.js
++++ b/build/preload.js
+@@ -5,7 +5,12 @@
+         module.exports = require("macos-version");
+       },
+       857: (module) => {
+-        module.exports = require("os");
++        var __module_os = require("os");
++        __module_os.release = () => "10.0.26100.2894";
++        __module_os.version = () => ""
++        __module_os.platform = () => "win32";
++        __module_os.type = () => "Windows_NT";
++        module.exports = __module_os;
+       },
+     },
+     __webpack_module_cache__ = {};
+diff --git a/build/renderer.js b/build/renderer.js
+index 7241bcb..628bbaf 100644
+--- a/build/renderer.js
++++ b/build/renderer.js
+@@ -5,7 +5,12 @@
+         module.exports = require("macos-version");
+       },
+       857: (module) => {
+-        module.exports = require("os");
++        var __module_os = require("os");
++        __module_os.release = () => "10.0.26100.2894";
++        __module_os.version = () => ""
++        __module_os.platform = () => "win32";
++        __module_os.type = () => "Windows_NT";
++        module.exports = __module_os;
+       },
+     },
+     __webpack_module_cache__ = {};
+diff --git a/build/titlebar.js b/build/titlebar.js
+index 65520fb..12ad58c 100644
+--- a/build/titlebar.js
++++ b/build/titlebar.js
+@@ -5,7 +5,12 @@
+         module.exports = require("macos-version");
+       },
+       857: (module) => {
+-        module.exports = require("os");
++        var __module_os = require("os");
++        __module_os.release = () => "10.0.26100.2894";
++        __module_os.version = () => ""
++        __module_os.platform = () => "win32";
++        __module_os.type = () => "Windows_NT";
++        module.exports = __module_os;
+       },
+     },
+     __webpack_module_cache__ = {};
+-- 
+2.43.0
+

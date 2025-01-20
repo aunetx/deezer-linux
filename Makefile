@@ -38,6 +38,7 @@ prepare: clean install_build_deps
 	@echo "- Avoid to set the text/html mime type (https://github.com/aunetx/deezer-linux/issues/13)"
 	@echo "- Add a better management of MPRIS (https://github.com/aunetx/deezer-linux/pull/61)"
 	@echo "- Disable auto updater (https://github.com/aunetx/deezer-linux/pull/95)"
+	@echo "- Remove OS information (https://github.com/aunetx/deezer-linux/pull/95)"
 	$(foreach p, $(wildcard ./patches/*), patch -p1 -dapp < $(p);)
 
 	@echo "Append `package-append.json` to the `package.json` of the app"
