@@ -8,7 +8,7 @@ VERSION_REGEX = ^v$(PKGVER)-[0-9]{1,}$$
 
 
 install_build_deps:
-	@npm install --engine-strict asar
+	@npm install --engine-strict @electron/asar@3.2.18
 	@npm install prettier@2.8.8
 
 prepare: clean install_build_deps
@@ -27,7 +27,7 @@ prepare: clean install_build_deps
 	@cd source && 7z x -y -bsp0 -bso0 app-32.7z
 
 	@echo "Extract app sources from the app"
-	@node_modules/asar/bin/asar.js extract source/resources/app.asar app
+	@node_modules/@electron/asar/bin/asar.js extract source/resources/app.asar app
 
 	@echo "Prettier the sources to patch successfully"
 	@node_modules/prettier/bin-prettier.js --write "app/build/*.js"
