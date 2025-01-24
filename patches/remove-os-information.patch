@@ -1,83 +1,97 @@
-From 83374279bba745cf9b4b4ab958b35738f97d12c7 Mon Sep 17 00:00:00 2001
+From 08ea86075592efe9c02c4beb7cbdfc6935ca0b1c Mon Sep 17 00:00:00 2001
 From: josselinonduty <contact@josselinonduty.fr>
-Date: Mon, 20 Jan 2025 19:19:51 +0100
-Subject: [PATCH] fix: hide os information
+Date: Fri, 24 Jan 2025 16:03:43 +0100
+Subject: [PATCH] fix: ensure os release is valid
 
 ---
- build/main.js     | 7 ++++++-
- build/preload.js  | 7 ++++++-
- build/renderer.js | 7 ++++++-
- build/titlebar.js | 7 ++++++-
- 4 files changed, 24 insertions(+), 4 deletions(-)
+ build/main.js     | 11 ++++++++++-
+ build/preload.js  | 10 +++++++++-
+ build/renderer.js | 10 +++++++++-
+ build/titlebar.js | 11 ++++++++++-
+ 4 files changed, 38 insertions(+), 4 deletions(-)
 
 diff --git a/build/main.js b/build/main.js
-index 10a80fa..e371d01 100644
+index 10a80fa..9219f4f 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -5,7 +5,12 @@
+@@ -5,7 +5,16 @@
          module.exports = require("macos-version");
        },
        857: (module) => {
 -        module.exports = require("os");
 +        var __module_os = require("os");
-+        __module_os.release = () => "10.0.26100.2894";
-+        __module_os.version = () => ""
-+        __module_os.platform = () => "win32";
-+        __module_os.type = () => "Windows_NT";
++        const release = __module_os.release();
++        __module_os.release = () => {
++          const matcher = /(\d+\.\d+\.\d+)\.*/
++          var result = release.match(matcher);
++          if (result[1])
++            return result[1];
++          return "0.0.0";
++        }
 +        module.exports = __module_os;
        },
      },
      __webpack_module_cache__ = {};
 diff --git a/build/preload.js b/build/preload.js
-index 9716411..f0fa2ab 100644
+index 9716411..ec603d0 100644
 --- a/build/preload.js
 +++ b/build/preload.js
-@@ -5,7 +5,12 @@
+@@ -5,7 +5,15 @@
          module.exports = require("macos-version");
        },
        857: (module) => {
 -        module.exports = require("os");
 +        var __module_os = require("os");
-+        __module_os.release = () => "10.0.26100.2894";
-+        __module_os.version = () => ""
-+        __module_os.platform = () => "win32";
-+        __module_os.type = () => "Windows_NT";
++        const release = __module_os.release();
++        __module_os.release = () => {
++          const matcher = /(\d+\.\d+\.\d+)\.*/;
++          var result = release.match(matcher);
++          if (result[1]) return result[1];
++          return "0.0.0";
++        };
 +        module.exports = __module_os;
        },
      },
      __webpack_module_cache__ = {};
 diff --git a/build/renderer.js b/build/renderer.js
-index 7241bcb..628bbaf 100644
+index 7241bcb..fb02453 100644
 --- a/build/renderer.js
 +++ b/build/renderer.js
-@@ -5,7 +5,12 @@
+@@ -5,7 +5,15 @@
          module.exports = require("macos-version");
        },
        857: (module) => {
 -        module.exports = require("os");
 +        var __module_os = require("os");
-+        __module_os.release = () => "10.0.26100.2894";
-+        __module_os.version = () => ""
-+        __module_os.platform = () => "win32";
-+        __module_os.type = () => "Windows_NT";
++        const release = __module_os.release();
++        __module_os.release = () => {
++          const matcher = /(\d+\.\d+\.\d+)\.*/;
++          var result = release.match(matcher);
++          if (result[1]) return result[1];
++          return "0.0.0";
++        };
 +        module.exports = __module_os;
        },
      },
      __webpack_module_cache__ = {};
 diff --git a/build/titlebar.js b/build/titlebar.js
-index 65520fb..12ad58c 100644
+index 65520fb..7919288 100644
 --- a/build/titlebar.js
 +++ b/build/titlebar.js
-@@ -5,7 +5,12 @@
+@@ -5,7 +5,16 @@
          module.exports = require("macos-version");
        },
        857: (module) => {
 -        module.exports = require("os");
 +        var __module_os = require("os");
-+        __module_os.release = () => "10.0.26100.2894";
-+        __module_os.version = () => ""
-+        __module_os.platform = () => "win32";
-+        __module_os.type = () => "Windows_NT";
++        const release = __module_os.release();
++        __module_os.release = () => {
++          const matcher = /(\d+\.\d+\.\d+)\.*/
++          var result = release.match(matcher);
++          if (result[1])
++            return result[1];
++          return "0.0.0";
++        }
 +        module.exports = __module_os;
        },
      },
