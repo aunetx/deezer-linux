@@ -90,6 +90,18 @@ build_appimage_arm64:
 	@echo "Build AppImage binary"
 	@yarn --cwd=app run build-appimage-arm64
 
+#! DEV
+
+patch-new: install_deps
+	@echo "Setting up the development environment..."
+	@cd app && echo "node_modules\n.vscode\n*.diff\n*.orig" > .gitignore && git init && git add .
+	@cd app && git commit -m "initial commit"
+	@echo "You can now edit the sources in the app directory"
+	@echo "When you are done, commit your changes, run 'make patch-gen'."
+	@echo "Don't forget to rename your patch."
+
+patch-gen:
+	@cd app && git format-patch -1 HEAD --stdout > ../patches/$(shell date +%y%m%d-%s).patch
 
 #! UTILS
 
