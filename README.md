@@ -1,6 +1,7 @@
 # Deezer for linux
 
-**NOTICE:** existing flatpak users NEED to migrate the the flathub repository as soon as possible, as I deleted the flatpak repository from here (it was more than 2Gb in size). In order to do so (normally without losing any data), simply:
+> [!Important]
+> Existing flatpak users NEED to migrate the the flathub repository as soon as possible, as the flatpak repository was deleted from here (it was more than 2Gb in size). In order to do so (normally without losing any data), simply:
 
 ```sh
 flatpak uninstall dev.aunetx.deezer
@@ -21,10 +22,10 @@ It packages the app in a number of formats:
 - Snap (not tested yet)
 - AppImage (can't automatically login without desktop integration)
 - `rpm` (Fedora, Red Hat, CentOS, openSUSE, ...)
-- `deb` (Debian, Ubuntu, Pop!_OS, elementary OS, ...)
+- `deb` (Debian, Ubuntu, Pop!\_OS, elementary OS, ...)
 - `7z` to install anywhere else
 
-It was done thanks to the hard work of [SibrenVasse](https://github.com/SibrenVasse), who [packaged the app for the AUR](https://github.com/SibrenVasse/deezer).
+Special thanks to [SibrenVasse](https://github.com/SibrenVasse) who made the [original AUR package](https://github.com/SibrenVasse/deezer) for this app!
 
 ## Installation
 
@@ -34,11 +35,11 @@ To install the flatpak version, you can simply go to https://flathub.org/apps/de
 
 Other packages can be installed from you package manager, either by clicking on them or from the command-line.
 
-Please note that even though it is automatically generated, the snapcraft package has never been tested; Please tell me if there is any issue with it!
+Please note that even though it is automatically generated, the snapcraft package has never been tested; Please open an issue if you encounter any problem.
 
 ## From source
 
-You will probably need to install some things in order to generate the packages from source:
+You will need to install some things in order to generate the packages from source:
 
 - nodejs
 - npm
@@ -68,7 +69,8 @@ deezer-desktop-*.AppImage deezer://autolog/...
 
 And you should be automatically logged in.
 
-**IMPORTANT:** If you want to open an issue about this, please do NOT share your own `deezer://autolog/...` link, as it would permit anybody to log into your account without the need for a password!
+> [!Caution]
+> If you want to open an issue about this, please do NOT share your own `deezer://autolog/...` link, as it would permit anybody to log into your account without the need for a password!
 
 See [this issue](https://github.com/aunetx/deezer-linux/issues/29) for more informations about login in AppImage.
 
@@ -91,14 +93,16 @@ make build_snap_x64
 make build_tar.xz_x64
 ```
 
-Note that you don't need to use `make install_deps` everytime you start a build, but you need to call it at least once. Everything should be generated in `artifacts/x64`.
+> [!NOTE]
+> You don't need to use `make install_deps` everytime you start a build, but you need to call it at least once. Everything should be generated in `artifacts/x64`.
 
 If you generate the 7z package, you can run it directly by extracting to a directory, and calling `./deezer-desktop` from there.
 
-## **IMPORTANT NOTICE**
+## **LEGAL DISCLAIMER**
 
-This work is UNOFFICIAL, and Deezer does not officially support Linux yet.
+This work is UNOFFICIAL. Deezer does not officially support Linux and cannot be held responsible for any misuse of this port.
 
-Installing/using this is consequently probably outside of the scope of the Deezer EULA, and I am not responsible for your usage of this.
+The installation and use of this software is outside the scope of the Deezer EULA. No author or contributor to this project can be held responsible for the use you make of it.
 
-I ***tried*** to talk to Deezer to ask them if I am authorized to upload this on Flathub, but when they answer, even if they say yes, this work is still unofficial.
+> [!NOTE]
+> Deezer was contacted to ask for permission to upload this on Flathub, but no answer was given. This work remains unofficial and is not supported by Deezer. See [this thread (FR)](https://fr.deezercommunity.com/application-ordinateur-et-site-web-58/mettre-en-ligne-l-application-deezer-sur-flathub-pour-linux-40620)
