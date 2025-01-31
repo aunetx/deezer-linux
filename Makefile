@@ -33,12 +33,12 @@ prepare: clean install_build_deps
 	@node_modules/prettier/bin-prettier.js --write "app/build/*.js"
 
 	@echo "Apply patches from ./patches:"
-	@echo "- Hide to tray when closing (https://github.com/SibrenVasse/deezer/issues/4)"
-	@echo "- Start in tray cli option (https://github.com/SibrenVasse/deezer/pull/12)"
-	@echo "- Avoid to set the text/html mime type (https://github.com/aunetx/deezer-linux/issues/13)"
-	@echo "- Add a better management of MPRIS (https://github.com/aunetx/deezer-linux/pull/61)"
-	@echo "- Disable auto updater (https://github.com/aunetx/deezer-linux/pull/95)"
-	@echo "- Remove OS information (https://github.com/aunetx/deezer-linux/pull/95)"
+	@echo "01 - Hide to tray when closing (https://github.com/SibrenVasse/deezer/issues/4)"
+	@echo "02 - Start in tray cli option (https://github.com/SibrenVasse/deezer/pull/12)"
+	@echo "03 - Avoid to set the text/html mime type (https://github.com/aunetx/deezer-linux/issues/13)"
+	@echo "04 - Disable auto updater (https://github.com/aunetx/deezer-linux/pull/95)"
+	@echo "05 - Remove OS information (https://github.com/aunetx/deezer-linux/pull/95)"
+	@echo "06 - Add a better management of MPRIS (https://github.com/aunetx/deezer-linux/pull/61)"
 	$(foreach p, $(wildcard ./patches/*), patch -p1 -dapp < $(p);)
 
 	@echo "Append `package-append.json` to the `package.json` of the app"
