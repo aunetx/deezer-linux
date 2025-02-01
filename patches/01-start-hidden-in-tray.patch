@@ -3,6 +3,10 @@ From: josselinonduty <contact@josselinonduty.fr>
 Date: Sun, 19 Jan 2025 22:59:38 +0100
 Subject: [PATCH] fix: reduce to systray on close
 
+Original patch: Dorian Stoll <dorian.stoll@tmsp.io>
+This stops the excessive logging, since parts of the app will not run in development
+mode anymore. It also stops the app from logging the urls for the mp3 files, which is
+against the Deezer TOS.
 ---
  build/main.js | 11 +++++++----
  1 file changed, 7 insertions(+), 4 deletions(-)

@@ -3,6 +3,16 @@ From: josselinonduty <contact@josselinonduty.fr>
 Date: Fri, 24 Jan 2025 16:03:43 +0100
 Subject: [PATCH] fix: ensure os release is valid
 
+Original patch: Dorian Stoll <dorian.stoll@tmsp.io>
+The application sends the kernel version as part of the User-Agent.
+However, the Deezer API seems to assume the number to follow semver,
+and can get confused when it doesn't. This then leads to some features
+like dark mode being reported as unavailable.
+
+e.g: 5.11.0-16-generic works, while 5.15.14-200.fc35.x86_64 doesn't.
+
+The solution is to ignore the actual version and send bogus data that
+is known to work.
 ---
  build/main.js     | 11 ++++++++++-
  build/preload.js  | 10 +++++++++-
