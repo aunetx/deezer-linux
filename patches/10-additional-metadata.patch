@@ -1,0 +1,288 @@
+From 493f6f6a6433882cc2d50b4ae352cd808bf0c23e Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Sat, 1 Feb 2025 17:34:11 +0100
+Subject: [PATCH] feat: provide duration and url information to mpris and
+ discord rpc; update rich-presence-builder; make discord rpc opt-in
+
+---
+ build/main.js     | 144 ++++++++++++++++++++++++++++++++++------------
+ build/renderer.js |  10 ++--
+ package.json      |   2 +-
+ 3 files changed, 113 insertions(+), 43 deletions(-)
+
+diff --git a/build/main.js b/build/main.js
+index c62943b..66c1a45 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -120,11 +120,11 @@
+     var external_electron_mpris_default = __webpack_require__.n(
+       external_electron_mpris_namespaceObject
+     );
+-    const external_rich_presence_builder_namespaceObject = require("rich-presence-builder");
++    const external_rich_presence_builder_namespaceObject = require("@josselinonduty/rich-presence-builder");
+     var external_rich_presence_builder_default = __webpack_require__.n(
+       external_rich_presence_builder_namespaceObject
+     );
+-    var rpcConnection;
++    var rpcConnection, rpcData, rpcStartedAt, rpcPausedAt;
+     function isPlatform(platform) {
+       switch (platform) {
+         case PLATFORM.WINDOWS:
+@@ -1248,7 +1248,6 @@
+               this.stop();
+             }));
+             this.initMprisPlayerControls();
+-            this.initDiscordRichPresence();
+           }
+       initMprisPlayerControls() {
+         // Events => ['raise', 'quit', 'next', 'previous', 'pause', 'playpause', 'stop', 'play', 'seek', 'position', 'open', 'volume', 'loopStatus', 'shuffle'];
+@@ -1262,27 +1261,92 @@
+         this.mprisPlayer.on('loopStatus', this.setRepeatMode.bind(this));
+         this.mprisPlayer.on('raise', () => this.app.getWindow().show())
+       }
+-      initDiscordRichPresence() {
+-        if (process.argv.some(arg => arg === '--disable-discord-rpc')) return;
+-        rpcConnection = new external_rich_presence_builder_namespaceObject({
+-          clientID: "1244016234203185183",
+-        });
+-      };
+-      updateDiscordRichPresence(track) {
+-        if (!rpcConnection) return;
+-        rpcConnection.setSmallImage(
+-          this.player.state === "playing" ? "play" : "pause",
+-          this.player.state === "playing" ? "Playing" : "Paused"
+-        );
+-        if (track) {
+-          rpcConnection.setLargeImage(track.coverUrl);
+-          rpcConnection.setDescription(track.title);
+-          if (track.title === track.album)
+-            rpcConnection.setState(`${track.artist}`);
+-          else
+-            rpcConnection.setState(`${track.artist} - ${track.album}`);
++      updateDiscordRichPresence(track, data) {
++        if (!process.argv.some(arg => arg === '--enable-discord-rpc')) return;
++
++        if (track && data) {
++          // Update track information
++          const duration = data?.trackInfo?.song?.DURATION;
++          if (!duration) return;
++
++          rpcStartedAt = Date.now();
++          rpcPausedAt = undefined;
++          rpcData = {
++            type: 2,
++            smallImage: {
++              image: "play",
++              text: "Playing"
++            },
++            largeImage: track.coverUrl,
++            description: track.title,
++            state: track.title === track.album ?
++              `${track.artist}`
++              : `${track.artist} - ${track.album}`,
++            startTimestamp: rpcStartedAt,
++            button: {
++              label: "Listen on Deezer",
++              url: `https://deezer.com/track/${data.trackInfo.song.SNG_ID}`
++            }
++          }
++
++          rpcConnection = new external_rich_presence_builder_namespaceObject({
++            clientID: "1244016234203185183",
++          })
++            .setType(rpcData.type)
++            .setSmallImage(
++              rpcData.smallImage.image,
++              rpcData.smallImage.text
++            )
++            .setLargeImage(rpcData.largeImage)
++            .setDescription(rpcData.description)
++            .setState(rpcData.state)
++            .setStartTimestamp(rpcData.startTimestamp)
++            .addButton(rpcData.button.label, rpcData.button.url);
++          rpcConnection
++            .go().catch()
++        } else {
++          // Update playing state only
++          if (!rpcConnection) return;
++
++          if (this.player.state === "playing") {
++            if (rpcPausedAt) {
++              const elapsed = rpcPausedAt - rpcStartedAt;
++              rpcStartedAt = Date.now() - elapsed;
++              rpcData.startTimestamp = rpcStartedAt;
++            }
++            rpcPausedAt = undefined;
++            rpcData.smallImage = {
++              image: "play",
++              text: "Playing"
++            }
++          } else {
++            rpcData.startTimestamp = undefined;
++            rpcPausedAt = Date.now();
++            rpcData.smallImage = {
++              image: "pause",
++              text: "Paused"
++            }
++          }
++
++          rpcConnection = new external_rich_presence_builder_namespaceObject({
++            clientID: "1244016234203185183",
++          })
++            .setType(rpcData.type)
++            .setSmallImage(
++              rpcData.smallImage.image,
++              rpcData.smallImage.text
++            )
++            .setLargeImage(rpcData.largeImage)
++            .setDescription(rpcData.description)
++            .setState(rpcData.state)
++            .addButton(rpcData.button.label, rpcData.button.url);
++
++          if (rpcData.startTimestamp)
++            rpcConnection.setStartTimestamp(rpcData.startTimestamp);
++
++          rpcConnection
++            .go().catch()
+         }
+-        rpcConnection.go().catch();
+       }
+       play() {
+         this.ipc.send("channel-player-media-control", MediaPlayerControl.Play);
+@@ -1308,19 +1372,25 @@
+       setRepeatMode(repeatMode) {
+         this.ipc.send("channel-player-repeat-mode-update", repeatMode);
+       }
+-      setTrackInfo(track) {
++      setTrackInfo(track, data) {
+         (this.track = Object.assign(this.track, track)),
+           this.emit(MediaEvents.TrackUpdated, this.track),
+           (this.mprisPlayer.metadata = {
++              'mpris:length': data?.trackInfo?.song?.DURATION
++                ? data.trackInfo.song.DURATION * 1000
++                : undefined,
+               'mpris:trackid': this.mprisPlayer.objectPath('track/0'),
+               'mpris:artUrl': track.coverUrl,
+               'xesam:title': track.title,
+               'xesam:album': track.album,
+-              'xesam:artist': [track.artist]
+-          }),
+-          this.updateDiscordRichPresence(track);
++              'xesam:artist': [track.artist],
++              'xesam:url': data?.trackInfo?.song
++                ? `https://deezer.com/track/${data.trackInfo.song.SNG_ID}`
++                : undefined
++            });
++          this.updateDiscordRichPresence(track, data);
+       }
+-      setPlayerInfo(player) {
++      setPlayerInfo(player, data) {
+         (this.player = Object.assign(this.player, player)),
+           this.emit(MediaEvents.PlayerUpdated, this.player),
+           (this.mprisPlayer.playbackStatus = 
+@@ -2833,8 +2903,8 @@
+       var powerSaveTimeoutId;
+       PlayerIpc_ipc.on(
+         "channel-player-state-update",
+-        (event, state) => {
+-          media.setPlayerInfo({ state }),
++        (event, state, data) => {
++          media.setPlayerInfo({ state }, data),
+           clearTimeout(powerSaveTimeoutId),
+           powerSaveTimeoutId = setTimeout(
+             () => {
+@@ -2847,15 +2917,15 @@
+     ),
+       PlayerIpc_ipc.on(
+         "channel-player-track-update",
+-        (event, track, player) => {
+-          media.setPlayerInfo(player), media.setTrackInfo(track);
++        (event, track, player, data) => {
++          media.setPlayerInfo(player, data), media.setTrackInfo(track, data);
+         }
+       ),
+-      PlayerIpc_ipc.on("channel-player-shuffle-update", (event, player) => {
+-        media.setPlayerInfo(player);
++      PlayerIpc_ipc.on("channel-player-shuffle-update", (event, player, data) => {
++        media.setPlayerInfo(player, data);
+       }),
+-      PlayerIpc_ipc.on("channel-player-repeat-mode-update", (event, player) => {
+-        media.setPlayerInfo(player);
++      PlayerIpc_ipc.on("channel-player-repeat-mode-update", (event, player, data) => {
++        media.setPlayerInfo(player, data);
+       });
+     const UpdaterIpc_ipc = main_di.get(SERVICE_IPC),
+       autoUpdater = main_di.get(SERVICE_UPDATER);
+@@ -2864,7 +2934,7 @@
+     });
+     const UserIpc_ipc = main_di.get(SERVICE_IPC),
+       user = main_di.get(SERVICE_USER);
+-    UserIpc_ipc.on("channel-user-store-updated", (event, userData) => {
++    UserIpc_ipc.on("channel-user-store-updated", (event, userData, data) => {
+       user.setUserInfo(userData);
+     });
+     var application_awaiter = function (thisArg, _arguments, P, generator) {
+diff --git a/build/renderer.js b/build/renderer.js
+index fb02453..4328ccd 100644
+--- a/build/renderer.js
++++ b/build/renderer.js
+@@ -354,7 +354,7 @@
+                   offerId: user.OFFER_ID,
+                   country: user.COUNTRY,
+                   gatekeeps: user.__DZR_GATEKEEPS__,
+-                });
++                }, event.data);
+                 break;
+               }
+               case "player-repeat-changed":
+@@ -363,7 +363,7 @@
+                   canPrev: event.data.player.hasPrev,
+                   canNext: event.data.player.hasNext,
+                   canRepeat: event.data.player.hasRepeat,
+-                });
++                }, event.data);
+                 break;
+               case "player-shuffle-changed":
+                 renderer_ipc.send("channel-player-shuffle-update", {
+@@ -371,14 +371,14 @@
+                   canPrev: event.data.player.hasPrev,
+                   canNext: event.data.player.hasNext,
+                   canShuffle: event.data.player.hasShuffle,
+-                });
++                }, event.data);
+                 break;
+               case "player-playing-changed": {
+                 const state =
+                   !0 === event.data.isPlaying
+                     ? MediaPlayerState.Playing
+                     : MediaPlayerState.Paused;
+-                renderer_ipc.send("channel-player-state-update", state);
++                renderer_ipc.send("channel-player-state-update", state, event.data);
+                 break;
+               }
+               case "player-track-updated": {
+@@ -414,7 +414,7 @@
+                     canRepeat: event.data.player.hasRepeat,
+                     canShuffle: event.data.player.hasShuffle,
+                   };
+-                renderer_ipc.send("channel-player-track-update", track, player);
++                renderer_ipc.send("channel-player-track-update", track, player, event.data);
+                 break;
+               }
+             }
+diff --git a/package.json b/package.json
+index 6c78c7d..cee7ce4 100644
+--- a/package.json
++++ b/package.json
+@@ -14,7 +14,7 @@
+   "dependencies": {
+     "@electron/remote": "2.1.2",
+     "@jellybrick/mpris-service": "2.1.5",
+-    "rich-presence-builder": "0.1.1",
++    "@josselinonduty/rich-presence-builder": "0.1.2",
+     "electron-log": "^5.1.2",
+     "electron-settings": "4.0.4",
+     "electron-updater": "^6.1.8",
+-- 
+2.43.0
+
