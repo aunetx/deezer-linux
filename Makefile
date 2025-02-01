@@ -73,6 +73,10 @@ build_appimage_x64:
 	@echo "Build AppImage binary"
 	@yarn --cwd=app run build-appimage-x64
 
+build_snap_x64:
+	@echo "Build Snap package"
+	@yarn --cwd=app run build-snap-x64
+
 
 build_tar.xz_arm64:
 	@echo "Build tar.xz archive"
@@ -89,6 +93,10 @@ build_rpm_arm64:
 build_appimage_arm64:
 	@echo "Build AppImage binary"
 	@yarn --cwd=app run build-appimage-arm64
+
+build_snap_arm64:
+	@echo "Build Snap package"
+	@yarn --cwd=app run build-snap-arm64
 
 #! DEV
 
