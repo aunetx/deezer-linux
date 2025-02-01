@@ -68,7 +68,7 @@ Other packages can be installed from you package manager, either by clicking on 
 ### Requirements
 
 - Node.js (20 recommended)
-- npm
+- npm (or yarn, see [FAQ](#i-want-to-use-yarn-instead-of-npm-is-it-possible))
 - 7z (try installing `p7zip` and `p7zip-full`)
 - make
 - wget
