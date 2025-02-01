@@ -1,29 +1,17 @@
 # Deezer for linux
 
-> [!Important]
-> Existing flatpak users NEED to migrate the the flathub repository as soon as possible, as the flatpak repository was deleted from here (it was more than 2Gb in size). In order to do so (normally without losing any data), simply:
-
-```sh
-flatpak uninstall dev.aunetx.deezer
-flatpak remote-delete deezer-linux
-flatpak install flathub dev.aunetx.deezer
-```
-
----
-
 [![Build](https://github.com/aunetx/deezer-linux/actions/workflows/build.yml/badge.svg)](https://github.com/aunetx/deezer-linux/actions/workflows/build.yml)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/aunetx/deezer-linux)](https://github.com/aunetx/deezer-linux/releases/latest)
 
-This repo is an UNOFFICIAL linux port of the official windows-only Deezer app. Being based on the native Windows app, it allows downloading your songs to listen to them offline!
+This repo is an UNOFFICIAL linux port ([legal notice](#legal-disclaimer)) of the official windows-only Deezer app. Being based on the native Windows app, it allows downloading your songs to listen to them offline!
 
 It packages the app in a number of formats:
 
 - Flatpak, [available on flathub](https://flathub.org/apps/dev.aunetx.deezer)
-- Snap (not tested yet)
-- AppImage (can't automatically login without desktop integration)
+- AppImage
 - `rpm` (Fedora, Red Hat, CentOS, openSUSE, ...)
 - `deb` (Debian, Ubuntu, Pop!\_OS, elementary OS, ...)
-- `7z` to install anywhere else
+- `tar.xz` to install anywhere else
 
 Special thanks to [SibrenVasse](https://github.com/SibrenVasse) who made the [original AUR package](https://github.com/SibrenVasse/deezer) for this app!
 
@@ -31,72 +19,135 @@ Special thanks to [SibrenVasse](https://github.com/SibrenVasse) who made the [or
 
 You can find all of the packages on [the release page](https://github.com/aunetx/deezer-linux/releases/latest).
 
-To install the flatpak version, you can simply go to https://flathub.org/apps/dev.aunetx.deezer (or use your favorite flatpak package manager). **Old users using this repo as a flatpak repository should migrate as soon as they can toward Flathub.**
+To install the flatpak version, you can simply go to https://flathub.org/apps/dev.aunetx.deezer (or use your favorite flatpak package manager).
+
+> [!Important]
+> Old flatpak users must migrate to the flathub repository as soon as possible, as the flatpak repository was deleted from this repo (it weighed more that 2GB). In order to do so, you can use the following commands:
+>
+> ```sh
+> flatpak uninstall dev.aunetx.deezer
+> flatpak remote-delete deezer-linux
+> flatpak install flathub dev.aunetx.deezer
+> ```
+>
+> You _should_ not lose any data by doing this.
 
 Other packages can be installed from you package manager, either by clicking on them or from the command-line.
 
-Please note that even though it is automatically generated, the snapcraft package has never been tested; Please open an issue if you encounter any problem.
+## Usage
 
-## From source
+| Option                  | Description                                                                                     |
+| ----------------------- | ----------------------------------------------------------------------------------------------- |
+| `--start-in-tray`       | Start the app in the tray (see [patch](./patches/01-start-hidden-in-tray.patch))                |
+| `--disable-systray`     | Quit the app when the window is closed (see [patch](./patches/03-quit.patch))                   |
+| `--disable-features`    | Disable some features (see [patch](./patches/06-better-management-of-MPRIS.patch))              |
+| `--disable-discord-rpc` | Disable Discord RPC integration (see [patch](./patches/08-discord-rich-presence-disable.patch)) |
 
-You will need to install some things in order to generate the packages from source:
+## Building from source
 
-- nodejs
+### Available targets
+
+| Target   | arm64 | x64 |
+| -------- | ----- | --- |
+| appimage | ⚠️    | ✅  |
+| deb      | ⚠️    | ✅  |
+| rpm      | ⚠️    | ✅  |
+| tar.xz   | ⚠️    | ✅  |
+| snap     | ⛔    | ⛔  |
+
+✅ Available ; ⚠️ Not tested ; ❌ Not available ; ⛔ Not planned (see [FAQ](#faq))
+
+> [!NOTE]
+> Please open an issue if you want a specific target to be added.
+
+### Requirements
+
+- Node.js (20 recommended)
 - npm
 - yarn
-- 7z by installing `p7zip` and `p7zip-full`
+- 7z (try installing `p7zip` and `p7zip-full`)
 - make
 - wget
 
-### AppImage
+### Setup
 
-To build the AppImage image from source, use:
+To build the project, you need to install the dependencies first:
 
 ```sh
 make install_deps
-make build_appimage
-```
-
-And the image should be in the `artifacts/x64` folder.
-
-Because of the way AppImage works, except if you use `appimaged`, you will not be able to login from the browser; then you are not redirected to the application.
-To make it work, you must first open a instance of the app, and copy the link shown in `https://www.deezer.com/desktop/login/electron/callback`. In a terminal
-(where the .AppImage file is), use:
-
-```sh
-deezer-desktop-*.AppImage deezer://autolog/...
-```
-
-And you should be automatically logged in.
-
-> [!Caution]
-> If you want to open an issue about this, please do NOT share your own `deezer://autolog/...` link, as it would permit anybody to log into your account without the need for a password!
-
-See [this issue](https://github.com/aunetx/deezer-linux/issues/29) for more informations about login in AppImage.
-
-## rpm / deb / snap / 7z
-
-To generate the `rpm`/`deb`/`snap`/`7z` packages, you can use:
-
-```sh
-# prepare the build
-make install_deps
-
-# and then
-
-make build_deb_x64
-# or
-make build_rpm_x64
-# or
-make build_snap_x64
-# or
-make build_tar.xz_x64
 ```
 
 > [!NOTE]
-> You don't need to use `make install_deps` everytime you start a build, but you need to call it at least once. Everything should be generated in `artifacts/x64`.
+> You don't need to use `make install_deps` everytime you start a build, however you need to call it at least once. Everything should be generated in `artifacts/{arch}`.
 
-If you generate the 7z package, you can run it directly by extracting to a directory, and calling `./deezer-desktop` from there.
+### AppImage
+
+To build the AppImage x64 image, you can use:
+
+```sh
+make build_appimage_x64
+```
+
+Artifacts will be generated in `artifacts/x64`.
+
+> [!WARNING]
+> You _may_ encounter a problem with the AppImage, where you are not able to login. This is a known issue, and is due to the way AppImage works. In this case, you can copy the link shown in `https://www.deezer.com/desktop/login/electron/callback`.
+>
+> In the same directory as the AppImage file, use:
+>
+> ```sh
+> deezer-desktop-*.AppImage deezer://autolog/...
+> ```
+>
+> You should now be logged in.
+>
+> For more information, see [issue #29](https://github.com/aunetx/deezer-linux/issues/29)
+
+> [!Caution]
+> If you want to open an issue about this, please do not share your own `deezer://autolog/...` link, as it would allow anyone to log into your account without your consent.
+
+### rpm / deb / tar.xz
+
+To generate the `rpm`/`deb`/`tar.xz` packages, you can use:
+
+```sh
+make build_{target}_{arch}
+```
+
+Example:
+
+```sh
+make build_rpm_arm64
+```
+
+Artifacts will be generated in `artifacts/{arch}`.
+
+> [!WARNING]
+> Building can take a long time. Be patient.
+
+If you generate the `tar.xz` package, you can run it directly by extracting to a directory, and calling `./deezer-desktop` from there.
+
+## Development
+
+If you want to contribute to this project, please read the [contribution guidelines](CONTRIBUTING.md) file.
+
+## FAQ
+
+### Why does this project exist?
+
+Deezer can be used on Linux through the web interface, but it does not allow downloading songs for offline listening. This project allows you to use the official Deezer app on Linux, with the same features as on Windows (plus some Linux-specific features).
+
+### Why can't I get the snap package?
+
+Please see [this issue](https://github.com/babluboy/bookworm/issues/178) or [this issue](https://github.com/babluboy/nutty/issues/68). Prefer using Flatpak or AppImage.
+
+### Why not publishing the source code and not patches?
+
+The source code of the Deezer app is not open-source. Reverse-engineering the app would be illegal and would violate the Deezer EULA. This project is a port of the official Windows app, and does not contain any reverse-engineered code, rather it bundles the official Windows app with a compatibility layer.
+
+## Why do I need npm _and_ yarn?
+
+That is a good question. Some kind of legacy choice, I guess.
 
 ## **LEGAL DISCLAIMER**
 
