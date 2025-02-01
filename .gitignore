@@ -3,6 +3,7 @@ flatpak
 source
 app
 package-lock.json
+yarn.lock
 artifacts
 package.json
 .vscode/launch.json

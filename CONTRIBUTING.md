@@ -38,7 +38,6 @@ Ensure you have all required dependencies:
 
 - Node.js (20 recommended)
 - npm
-- yarn
 - 7z
 - make
 - wget

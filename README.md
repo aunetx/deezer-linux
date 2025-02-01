@@ -69,7 +69,6 @@ Other packages can be installed from you package manager, either by clicking on 
 
 - Node.js (20 recommended)
 - npm
-- yarn
 - 7z (try installing `p7zip` and `p7zip-full`)
 - make
 - wget
@@ -150,9 +149,16 @@ Please see [this issue](https://github.com/babluboy/bookworm/issues/178) or [thi
 
 The source code of the Deezer app is not open-source. Reverse-engineering the app would be illegal and would violate the Deezer EULA. This project is a port of the official Windows app, and does not contain any reverse-engineered code, rather it bundles the official Windows app with a compatibility layer.
 
-## Why do I need npm _and_ yarn?
+### I want to use yarn instead of npm, is it possible?
 
-That is a good question. Some kind of legacy choice, I guess.
+Yes, you can use yarn instead of npm. Execute the following command before building the project:
+
+```sh
+export PACKAGE_MANAGER=yarn
+export PACKAGE_MANAGER_SUBDIR_ARG=--cwd
+export PACKAGE_MANAGER_ADD_CMD=add
+export PACKAGE_MANAGER_INSTALL_CMD=install
+```
 
 ## **LEGAL DISCLAIMER**
 
