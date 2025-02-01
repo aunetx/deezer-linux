@@ -1,0 +1,60 @@
+From 93a932ba99e8125169eeb512fa6f9a89a70eeb1e Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Sat, 1 Feb 2025 12:42:07 +0100
+Subject: [PATCH] feat: add log level env variable
+
+---
+ build/main.js | 30 +++++++++++++++++++++++++++++-
+ 1 file changed, 29 insertions(+), 1 deletion(-)
+
+diff --git a/build/main.js b/build/main.js
+index 8b645c6..c62943b 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -12,7 +12,7 @@
+           var result = release.match(matcher);
+           if (result[1])
+             return result[1];
+-          return "0.0.0";
++          return "1.0.0";
+         }
+         module.exports = __module_os;
+       },
+@@ -67,6 +67,34 @@
+     var external_electron_log_default = __webpack_require__.n(
+       external_electron_log_namespaceObject
+     );
++    function updateLogLevel() {
++      if (process.env.LOG_LEVEL) {
++        if (process.env.LOG_LEVEL !== "silly") 
++          external_electron_log_default().silly = () => {};
++        else return;
++
++        if (process.env.LOG_LEVEL !== "debug")
++          external_electron_log_default().debug = () => {};
++        else return;
++
++        if (process.env.LOG_LEVEL !== "verbose")
++          external_electron_log_default().verbose = () => {};
++        else return;
++
++        if (process.env.LOG_LEVEL !== "info")
++          external_electron_log_default().info = () => {};
++        else return;
++
++        if (process.env.LOG_LEVEL !== "warn")
++          external_electron_log_default().warn = () => {};
++        else return;
++
++        if (process.env.LOG_LEVEL !== "error")
++          external_electron_log_default().error = () => {};
++        else return;
++      }
++    }
++    updateLogLevel();
+     const external_electron_settings_namespaceObject = require("electron-settings");
+     var external_electron_settings_default = __webpack_require__.n(
+       external_electron_settings_namespaceObject
+-- 
+2.43.0
+

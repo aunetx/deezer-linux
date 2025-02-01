@@ -41,6 +41,7 @@ prepare: clean install_build_deps
 	@echo "06 - Add a better management of MPRIS (https://github.com/aunetx/deezer-linux/pull/61)"
 	@echo "07 - Add Discord Rich Presence (https://github.com/aunetx/deezer-linux/pull/82)"
 	@echo "08 - Add option to disable Discord Rich Presence (https://github.com/aunetx/deezer-linux/pull/95)"
+	@echo "09 - Add environment variable to change log level (https://github.com/aunetx/deezer-linux/pull/95)"
 	$(foreach p, $(wildcard ./patches/*), patch -p1 -dapp < $(p);)
 
 	@echo "Append `package-append.json` to the `package.json` of the app"

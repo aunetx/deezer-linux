@@ -43,6 +43,11 @@ Other packages can be installed from you package manager, either by clicking on 
 | `--disable-features`    | Disable some features (see [patch](./patches/06-better-management-of-MPRIS.patch))              |
 | `--disable-discord-rpc` | Disable Discord RPC integration (see [patch](./patches/08-discord-rich-presence-disable.patch)) |
 
+| Environment variable | Options                                            | Description                                                                        |
+| -------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `LOG_LEVEL`          | `silly`,`debug`,`verbose`,`info`,`warning`,`error` | Set the log level (see [patch](./patches/09-log-level-environment-variable.patch)) |
+| `DZ_DEVTOOLS`        | `yes`,`no`                                         | Enable the developer console (ctrl+shift+i)                                        |
+
 ## Building from source
 
 ### Available targets
