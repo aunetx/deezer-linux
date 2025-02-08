@@ -94,12 +94,11 @@ apply -p1 -dapp < patches/{name}.patch
 > Deezer provides:
 >
 > - Player state (playing, paused)
-> - Track info (title, artist, album, cover URL)
+> - Track metadata (title, artist, album, cover URL, duration, and more)
 > - Shuffle and repeat state
 >
 > Deezer does not provide:
 >
-> - Track duration
 > - Track position
 
 ## Updating
