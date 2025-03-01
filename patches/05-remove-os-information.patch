@@ -34,9 +34,9 @@ index 10a80fa..9219f4f 100644
 +        __module_os.release = () => {
 +          const matcher = /(\d+\.\d+\.\d+)\.*/
 +          var result = release.match(matcher);
-+          if (result[1])
-+            return result[1];
-+          return "0.0.0";
++          //if (result[1])
++          //  return result[1];
++          return "6.1.0";
 +        }
 +        module.exports = __module_os;
        },
@@ -56,8 +56,8 @@ index 9716411..ec603d0 100644
 +        __module_os.release = () => {
 +          const matcher = /(\d+\.\d+\.\d+)\.*/;
 +          var result = release.match(matcher);
-+          if (result[1]) return result[1];
-+          return "0.0.0";
++          //if (result[1]) return result[1];
++          return "6.1.0";
 +        };
 +        module.exports = __module_os;
        },
@@ -77,8 +77,8 @@ index 7241bcb..fb02453 100644
 +        __module_os.release = () => {
 +          const matcher = /(\d+\.\d+\.\d+)\.*/;
 +          var result = release.match(matcher);
-+          if (result[1]) return result[1];
-+          return "0.0.0";
++          //if (result[1]) return result[1];
++          return "6.1.0";
 +        };
 +        module.exports = __module_os;
        },
@@ -98,9 +98,9 @@ index 65520fb..7919288 100644
 +        __module_os.release = () => {
 +          const matcher = /(\d+\.\d+\.\d+)\.*/
 +          var result = release.match(matcher);
-+          if (result[1])
-+            return result[1];
-+          return "0.0.0";
++          //if (result[1])
++          //  return result[1];
++          return "6.1.0";
 +        }
 +        module.exports = __module_os;
        },
