@@ -109,7 +109,7 @@ build_snap_arm64:
 
 patch-new: install_deps
 	@echo "Setting up the development environment..."
-	@cd $(APP_DIR) && echo "node_modules\n.vscode\n*.diff\n*.orig" > .gitignore && git init && git add .
+	@cd $(APP_DIR) && echo "node_modules\n*.diff\n*.orig" > .gitignore && git init && git add .
 	@cd $(APP_DIR) && git commit -m "initial commit"
 	@echo "You can now edit the sources in the $(APP_DIR) directory"
 	@echo "When you are done, commit your changes, run 'make patch-gen'."
