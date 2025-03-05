@@ -1,0 +1,38 @@
+From 9c19490f706350a2ca8cceae7a998916d21de89b Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Sun, 19 Jan 2025 22:59:38 +0100
+Subject: [PATCH] fix: reduce to systray on close
+
+Original patch: Dorian Stoll <dorian.stoll@tmsp.io>
+This stops the excessive logging, since parts of the app will not run in development
+mode anymore. It also stops the app from logging the urls for the mp3 files, which is
+against the Deezer TOS.
+---
+ build/main.js | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/build/main.js b/build/main.js
+index c15e2c3..b883a28 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -3085,10 +3085,13 @@
+                   finalMinSize[1]
+                 );
+             }
+-            isDev(external_electron_namespaceObject.app)
+-              ? this.window.showInactive()
+-              : this.window.show(),
+-              this.thumbar.init();
++            if (!process.argv.some(arg => arg === '--start-in-tray'))
++              isDev(external_electron_namespaceObject.app)
++                ? this.window.showInactive()
++                : this.window.show(),
++                this.thumbar.init();
++            else
++              this.window.hide();
+           }),
+           this.appService.enableDevMode();
+       }
+-- 
+2.43.0
+

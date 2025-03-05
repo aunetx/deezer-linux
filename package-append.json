@@ -1,4 +1,5 @@
- ,"scripts": {
+{
+  "scripts": {
     "copy-resources": "mkdir -p resources/linux && cp ../extra/linux/* ./resources/linux",
     "start": "yarn run copy-resources && electron .",
     "prepare-flatpak": "electron-builder --linux --dir",
@@ -12,16 +13,15 @@
     "build-tar.xz-arm64": "electron-builder --arm64 --linux tar.xz",
     "build-deb-arm64": "electron-builder --arm64 --linux deb",
     "build-rpm-arm64": "electron-builder --arm64 --linux rpm",
+    "build-snap-arm64": "electron-builder --arm64 --linux snap",
     "build-appimage-arm64": "electron-builder --arm64 --linux AppImage"
   },
   "devDependencies": {
-    "electron": "^13.6.9",
+    "electron": "^33.2.0",
     "electron-builder": "^23.0.3"
   },
   "build": {
-    "files": [
-      "**"
-    ],
+    "files": ["**"],
     "directories": {
       "buildResources": "build",
       "output": "../artifacts/${arch}"

@@ -1,8 +1,17 @@
+From e45c184e8c23aa72f77767c09e6051363806b5f5 Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Sun, 19 Jan 2025 23:18:25 +0100
+Subject: [PATCH] fix: unset text/html as default mimetype
+
+---
+ build/main.js | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
 diff --git a/build/main.js b/build/main.js
-index de51acb..e2c0b9e 100644
+index b883a28..60117e3 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -2897,12 +2897,7 @@
+@@ -2854,12 +2854,7 @@
                  this.tray.init(),
                  this.updater.init(),
                  this.network.watch(),
@@ -16,3 +25,6 @@ index de51acb..e2c0b9e 100644
                const dzrFilter = { urls: ["*://*/*"] },
                  DOMAINS_WHITELIST = [
                    "deezer.com",
+-- 
+2.43.0
+

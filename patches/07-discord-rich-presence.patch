@@ -1,0 +1,97 @@
+From dac6e3d0e3ca49ef6f123a6f6595cd37578913be Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Fri, 31 Jan 2025 16:43:09 +0100
+Subject: [PATCH] feat(patch): add discord rich presence support
+
+---
+ build/main.js | 33 +++++++++++++++++++++++++++++++--
+ package.json  |  1 +
+ 2 files changed, 32 insertions(+), 2 deletions(-)
+
+diff --git a/build/main.js b/build/main.js
+index 34be768..69ce1f1 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -92,6 +92,11 @@
+     var external_electron_mpris_default = __webpack_require__.n(
+       external_electron_mpris_namespaceObject
+     );
++    const external_rich_presence_builder_namespaceObject = require("rich-presence-builder");
++    var external_rich_presence_builder_default = __webpack_require__.n(
++      external_rich_presence_builder_namespaceObject
++    );
++    var rpcConnection;
+     function isPlatform(platform) {
+       switch (platform) {
+         case PLATFORM.WINDOWS:
+@@ -1215,6 +1220,7 @@
+               this.stop();
+             }));
+             this.initMprisPlayerControls();
++            this.initDiscordRichPresence();
+           }
+       initMprisPlayerControls() {
+         // Events => ['raise', 'quit', 'next', 'previous', 'pause', 'playpause', 'stop', 'play', 'seek', 'position', 'open', 'volume', 'loopStatus', 'shuffle'];
+@@ -1228,6 +1234,27 @@
+         this.mprisPlayer.on('loopStatus', this.setRepeatMode.bind(this));
+         this.mprisPlayer.on('raise', () => this.app.getWindow().show())
+       }
++      initDiscordRichPresence() {
++        rpcConnection = new external_rich_presence_builder_namespaceObject({
++          clientID: "1244016234203185183",
++        });
++      };
++      updateDiscordRichPresence(track) {
++        if (!rpcConnection) return;
++        rpcConnection.setSmallImage(
++          this.player.state === "playing" ? "play" : "pause",
++          this.player.state === "playing" ? "Playing" : "Paused"
++        );
++        if (track) {
++          rpcConnection.setLargeImage(track.coverUrl);
++          rpcConnection.setDescription(track.title);
++          if (track.title === track.album)
++            rpcConnection.setState(`${track.artist}`);
++          else
++            rpcConnection.setState(`${track.artist} - ${track.album}`);
++        }
++        rpcConnection.go().catch();
++      }
+       play() {
+         this.ipc.send("channel-player-media-control", MediaPlayerControl.Play);
+       }
+@@ -1261,7 +1288,8 @@
+               'xesam:title': track.title,
+               'xesam:album': track.album,
+               'xesam:artist': [track.artist]
+-          });
++          }),
++          this.updateDiscordRichPresence(track);
+       }
+       setPlayerInfo(player) {
+         (this.player = Object.assign(this.player, player)),
+@@ -1270,7 +1298,8 @@
+             this.player.state === 'playing'
+             ? external_electron_mpris_namespaceObject.PLAYBACK_STATUS_PLAYING
+             : external_electron_mpris_namespaceObject.PLAYBACK_STATUS_PAUSED
+-          );
++          ),
++          this.updateDiscordRichPresence();
+       }
+       getTrackInfo() {
+         return this.track;
+diff --git a/package.json b/package.json
+index 394b4f4..1d48b24 100644
+--- a/package.json
++++ b/package.json
+@@ -14,6 +14,7 @@
+   "dependencies": {
+     "@electron/remote": "2.1.2",
+     "@jellybrick/mpris-service": "2.1.5",
++    "rich-presence-builder": "0.1.1",
+     "electron-log": "^5.1.2",
+     "electron-settings": "4.0.4",
+     "electron-updater": "^6.1.8",
+-- 
+2.43.0
+
