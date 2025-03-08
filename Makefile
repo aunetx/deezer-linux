@@ -84,6 +84,11 @@ build_snap_x64:
 	@echo "Build Snap package"
 	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_SUBDIR_ARG) $(APP_DIR) run build-snap-x64
 
+build_macos_x64:
+	@echo "Build MacOS package"
+	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_SUBDIR_ARG) $(APP_DIR) $(PACKAGE_MANAGER_ADD_CMD) dmg-license@^1.0.11
+	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_SUBDIR_ARG) $(APP_DIR) run build-macos-x64
+
 
 build_tar.xz_arm64:
 	@echo "Build tar.xz archive"

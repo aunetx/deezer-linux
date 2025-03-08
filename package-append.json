@@ -9,6 +9,7 @@
     "build-rpm-x64": "electron-builder --x64 --linux rpm",
     "build-snap-x64": "electron-builder --x64 --linux snap",
     "build-appimage-x64": "electron-builder --x64 --linux AppImage",
+    "build-macos-x64": "electron-builder --x64 --mac",
 
     "build-tar.xz-arm64": "electron-builder --arm64 --linux tar.xz",
     "build-deb-arm64": "electron-builder --arm64 --linux deb",
