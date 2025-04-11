@@ -36,6 +36,7 @@ prepare: clean install_build_deps
 
 	@echo "Prettier the sources to patch successfully"
 	@node_modules/prettier/bin-prettier.js --write "$(APP_DIR)/build/*.js"
+	@node_modules/prettier/bin-prettier.js --write "$(APP_DIR)/build/*.html"
 
 	@echo "Apply patches from ./patches:"
 	@echo "01 - Hide to tray when closing (https://github.com/SibrenVasse/deezer/issues/4)"
@@ -48,6 +49,7 @@ prepare: clean install_build_deps
 	@echo "08 - Add option to disable Discord Rich Presence (https://github.com/aunetx/deezer-linux/pull/95)"
 	@echo "09 - Add environment variable to change log level (https://github.com/aunetx/deezer-linux/pull/95)"
 	@echo "10 - Add track duration and url, various fixes (https://github.com/aunetx/deezer-linux/pull/95)"
+	@echo "11 - Improve responsiveness on small devices (https://github.com/aunetx/deezer-linux/pull/107)"
 	$(foreach p, $(wildcard ./patches/*), patch -p 1 -d $(APP_DIR) < $(p);)
 
 	@echo "Append `package-append.json` to the `package.json` of the app"
