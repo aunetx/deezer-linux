@@ -36,6 +36,7 @@ prepare: clean install_build_deps
 
 	@echo "Prettier the sources to patch successfully"
 	@node_modules/prettier/bin-prettier.js --write "$(APP_DIR)/build/*.js"
+	@node_modules/prettier/bin-prettier.js --write "$(APP_DIR)/build/*.html"
 
 	@echo "Apply patches from ./patches:"
 	@echo "01 - Hide to tray when closing (https://github.com/SibrenVasse/deezer/issues/4)"
