@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@electron/asar": "3.2.18",
+    "prettier": "2.8.8"
+  }
+}

@@ -13,8 +13,7 @@ PACKAGE_MANAGER_INSTALL_CMD ?= install
 PACKAGE_MANAGER_ADD_CMD ?= install
 
 install_build_deps:
-	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_ADD_CMD) @electron/asar@3.2.18 --engine-strict
-	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_ADD_CMD) prettier@2.8.8
+	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_INSTALL_CMD)
 
 prepare: clean install_build_deps
 	@mkdir -p $(SOURCE_DIR)
@@ -138,4 +137,4 @@ release: prepare-release
 
 
 clean:
-	@rm -rf ./$(APP_DIR) flatpak node_modules ./$(SOURCE_DIR) artifacts package.json
+	@rm -rf ./$(APP_DIR) flatpak node_modules ./$(SOURCE_DIR) artifacts package-lock.json yarn.lock
