@@ -41,16 +41,21 @@
     "linux": {
       "maintainer": "aunetx <me@aunetx.dev>",
       "icon": "../icons",
-      "category": "Utility;AudioVideo;Audio;Player;Music;",
+      "category": "AudioVideo;Audio;Player;Music;",
       "desktop": {
         "entry": {
-          "Name": "Deezer",
           "Type": "Application",
+          "Name": "Deezer",
           "GenericName": "Online music streaming service",
           "Comment": "Listen and download all your favorite music",
+          "StartupNotify": "true",
+          "Terminal": "false",
           "MimeType": "x-scheme-handler/deezer;",
+          "Categories": "Audio;Music;Player;AudioVideo;",
           "Keywords": "Music;Player;Streaming;Online;",
-          "StartupWMClass": "Deezer"
+          "StartupWMClass": "Deezer",
+          "SingleMainWindow": "true",
+          "X-GNOME-UsesNotifications": "true"
         }
       },
       "artifactName": "${productName}-${version}-${arch}.${ext}"
