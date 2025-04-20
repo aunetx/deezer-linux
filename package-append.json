@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "electron": "^35.0.0",
-    "electron-builder": "^24.0.0"
+    "electron-builder": "^26.0.0"
   },
   "build": {
     "files": ["**"],
@@ -43,13 +43,15 @@
       "icon": "../icons",
       "category": "Utility;AudioVideo;Audio;Player;Music;",
       "desktop": {
-        "Name": "Deezer",
-        "Type": "Application",
-        "GenericName": "Online music streaming service",
-        "Comment": "Listen and download all your favorite music",
-        "MimeType": "x-scheme-handler/deezer;",
-        "Keywords": "Music;Player;Streaming;Online;",
-        "StartupWMClass": "Deezer"
+        "entry": {
+          "Name": "Deezer",
+          "Type": "Application",
+          "GenericName": "Online music streaming service",
+          "Comment": "Listen and download all your favorite music",
+          "MimeType": "x-scheme-handler/deezer;",
+          "Keywords": "Music;Player;Streaming;Online;",
+          "StartupWMClass": "Deezer"
+        }
       },
       "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
