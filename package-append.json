@@ -17,8 +17,8 @@
     "build-appimage-arm64": "electron-builder --arm64 --linux AppImage"
   },
   "devDependencies": {
-    "electron": "^33.2.0",
-    "electron-builder": "^23.0.3"
+    "electron": "^35.0.0",
+    "electron-builder": "^24.0.0"
   },
   "build": {
     "files": ["**"],
