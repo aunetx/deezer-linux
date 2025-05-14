@@ -44,11 +44,10 @@ prepare: clean install_build_deps
 	@echo "04 - Disable auto updater (https://github.com/aunetx/deezer-linux/pull/95)"
 	@echo "05 - Remove OS information (https://github.com/aunetx/deezer-linux/pull/95)"
 	@echo "06 - Add a better management of MPRIS (https://github.com/aunetx/deezer-linux/pull/61)"
-	@echo "07 - Add Discord Rich Presence (https://github.com/aunetx/deezer-linux/pull/82)"
-	@echo "08 - Add option to disable Discord Rich Presence (https://github.com/aunetx/deezer-linux/pull/95)"
-	@echo "09 - Add environment variable to change log level (https://github.com/aunetx/deezer-linux/pull/95)"
-	@echo "10 - Add track duration and url, various fixes (https://github.com/aunetx/deezer-linux/pull/95)"
-	@echo "11 - Improve responsiveness on small devices (https://github.com/aunetx/deezer-linux/pull/107)"
+	@echo "07 - Add environment variable to change log level (https://github.com/aunetx/deezer-linux/pull/95)"
+	@echo "08 - Provide additional metadata (https://github.com/aunetx/deezer-linux/pull/95)"
+	@echo "09 - Add Discord Rich Presence (https://github.com/aunetx/deezer-linux/pull/82)"
+	@echo "10 - Improve responsiveness on small devices (https://github.com/aunetx/deezer-linux/pull/107)"
 	@$(foreach p, $(wildcard ./patches/*), patch -p 1 -d $(APP_DIR) < $(p);)
 
 	@echo "Append `package-append.json` to the `package.json` of the app"
@@ -118,6 +117,8 @@ patch-new: install_deps
 
 patch-gen:
 	@npm run prettier -- --write "$(APP_DIR)/build/*.{js,html}" --config .prettierrc.json --ignore-path /dev/null
+	@cd $(APP_DIR) && git add .
+	@cd $(APP_DIR) && git commit
 	@cd $(APP_DIR) && git format-patch -1 HEAD --stdout > ../patches/$(shell date +%y%m%d-%s).patch
 
 #! UTILS
