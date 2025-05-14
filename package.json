@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@electron/asar": "3.4.1",
+    "prettier": "3.5.3"
+  },
+  "scripts": {
+    "asar": "asar",
+    "prettier": "prettier"
+  }
+}
