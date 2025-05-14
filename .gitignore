@@ -1,9 +1,8 @@
-node_modules
-flatpak
-source
-app
+source/
+node_modules/
+flatpak/
+app/
+artifacts/
+.vscode/
 package-lock.json
 yarn.lock
-artifacts
-package.json
-.vscode/launch.json
