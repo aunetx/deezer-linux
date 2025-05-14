@@ -36,11 +36,12 @@ Other packages can be installed from you package manager, either by clicking on 
 
 ## Usage
 
-| Option                  | Description                                                                                     |
-| ----------------------- | ----------------------------------------------------------------------------------------------- |
-| `--start-in-tray`       | Start the app in the tray (see [patch](./patches/01-start-hidden-in-tray.patch))                |
-| `--disable-systray`     | Quit the app when the window is closed (see [patch](./patches/03-quit.patch))                   |
-| `--disable-features`    | Disable some features (see [patch](./patches/06-better-management-of-MPRIS.patch))              |
+| Option                 | Description                                                                                    |
+| ---------------------- | ---------------------------------------------------------------------------------------------- |
+| `--start-in-tray`      | Start the app in the tray (see [patch](./patches/01-start-hidden-in-tray.patch))               |
+| `--disable-systray`    | Quit the app when the window is closed (see [patch](./patches/03-quit.patch))                  |
+| `--hide-kernel`        | Hide the exact kernel version (see [patch](./patches/05-remove-os-information.patch))          |
+| `--disable-features`   | Disable some features (see [patch](./patches/06-better-management-of-MPRIS.patch))             |
 | `--enable-discord-rpc` | Enable Discord RPC integration (see [patch](./patches/08-discord-rich-presence-disable.patch)) |
 
 | Environment variable | Options                                            | Description                                                                        |
@@ -145,7 +146,7 @@ Deezer can be used on Linux through the web interface, but it does not allow dow
 
 Please see [this issue](https://github.com/babluboy/bookworm/issues/178) or [this issue](https://github.com/babluboy/nutty/issues/68). Prefer using Flatpak or AppImage.
 
-###  Why are the patches published but not the app's source code? patches?
+### Why are the patches published but not the app's source code? patches?
 
 The source code of the Deezer app is not open-source. Reverse-engineering the app would be illegal and would violate the Deezer EULA. This project is a port of the official Windows app, and does not contain any reverse-engineered code, rather it bundles the official Windows app with a compatibility layer.
 
