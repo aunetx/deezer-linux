@@ -36,17 +36,17 @@ Other packages can be installed from you package manager, either by clicking on 
 
 ## Usage
 
-| Option                 | Description                                                                                    |
-| ---------------------- | ---------------------------------------------------------------------------------------------- |
-| `--start-in-tray`      | Start the app in the tray (see [patch](./patches/01-start-hidden-in-tray.patch))               |
-| `--disable-systray`    | Quit the app when the window is closed (see [patch](./patches/03-quit.patch))                  |
-| `--hide-kernel`        | Hide the exact kernel version (see [patch](./patches/05-remove-os-information.patch))          |
-| `--disable-features`   | Disable some features (see [patch](./patches/06-better-management-of-MPRIS.patch))             |
-| `--enable-discord-rpc` | Enable Discord RPC integration (see [patch](./patches/08-discord-rich-presence-disable.patch)) |
+| Option                 | Description                                                                            |
+| ---------------------- | -------------------------------------------------------------------------------------- |
+| `--start-in-tray`      | Start the app in the tray (see [patch](./patches/01-start-hidden-in-tray.patch))       |
+| `--disable-systray`    | Quit the app when the window is closed (see [patch](./patches/03-quit.patch))          |
+| `--hide-kernel`        | Hide the exact kernel version (see [patch](./patches/05-remove-os-information.patch))  |
+| `--disable-features`   | Disable some features (see [patch](./patches/06-better-management-of-MPRIS.patch))     |
+| `--enable-discord-rpc` | Enable Discord RPC integration (see [patch](./patches/09-discord-rich-presence.patch)) |
 
 | Environment variable | Options                                            | Description                                                                        |
 | -------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `LOG_LEVEL`          | `silly`,`debug`,`verbose`,`info`,`warning`,`error` | Set the log level (see [patch](./patches/09-log-level-environment-variable.patch)) |
+| `LOG_LEVEL`          | `silly`,`debug`,`verbose`,`info`,`warning`,`error` | Set the log level (see [patch](./patches/07-log-level-environment-variable.patch)) |
 | `DZ_DEVTOOLS`        | `yes`,`no`                                         | Enable the developer console (ctrl+shift+i)                                        |
 
 ## Building from source
