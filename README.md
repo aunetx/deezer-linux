@@ -36,13 +36,13 @@ Other packages can be installed from you package manager, either by clicking on 
 
 ## Usage
 
-| Option                 | Description                                                                            |
-| ---------------------- | -------------------------------------------------------------------------------------- |
-| `--start-in-tray`      | Start the app in the tray (see [patch](./patches/01-start-hidden-in-tray.patch))       |
-| `--disable-systray`    | Quit the app when the window is closed (see [patch](./patches/03-quit.patch))          |
-| `--hide-kernel`        | Hide the exact kernel version (see [patch](./patches/05-remove-os-information.patch))  |
-| `--disable-features`   | Disable some features (see [patch](./patches/06-better-management-of-MPRIS.patch))     |
-| `--enable-discord-rpc` | Enable Discord RPC integration (see [patch](./patches/09-discord-rich-presence.patch)) |
+| Option                 | Description                                                                                                                |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `--start-in-tray`      | Start the app in the tray (see [patch](./patches/01-start-hidden-in-tray.patch))                                           |
+| `--disable-systray`    | Quit the app when the window is closed (see [patch](./patches/03-quit.patch))                                              |
+| `--keep-kernel`        | Use the exact kernel version (see [patch](./patches/05-remove-os-information.patch)) <br/> _This feature impacts privacy._ |
+| `--disable-features`   | Disable some features (see [patch](./patches/06-better-management-of-MPRIS.patch))                                         |
+| `--enable-discord-rpc` | Enable Discord RPC integration (see [patch](./patches/09-discord-rich-presence.patch))                                     |
 
 | Environment variable | Options                                            | Description                                                                        |
 | -------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------- |
