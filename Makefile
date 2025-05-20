@@ -13,8 +13,7 @@ PACKAGE_MANAGER_INSTALL_CMD ?= install
 PACKAGE_MANAGER_ADD_CMD ?= install
 
 install_build_deps:
-	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_ADD_CMD) @electron/asar@3.2.18 --engine-strict
-	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_ADD_CMD) prettier@2.8.8
+	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_INSTALL_CMD)
 
 prepare: clean install_build_deps
 	@mkdir -p $(SOURCE_DIR)
@@ -32,11 +31,11 @@ prepare: clean install_build_deps
 	@cd $(SOURCE_DIR) && 7z x -y -bsp0 -bso0 app-32.7z
 
 	@echo "Extract app sources from the app"
-	@node_modules/@electron/asar/bin/asar.js extract $(SOURCE_DIR)/resources/app.asar $(APP_DIR)
+	@npm run asar extract "$(SOURCE_DIR)/resources/app.asar" "$(APP_DIR)"
 
 	@echo "Prettier the sources to patch successfully"
-	@node_modules/prettier/bin-prettier.js --write "$(APP_DIR)/build/*.js"
-	@node_modules/prettier/bin-prettier.js --write "$(APP_DIR)/build/*.html"
+	@cp .prettierrc.json $(APP_DIR)/
+	@npm run prettier -- --write "$(APP_DIR)/build/*.{js,html}" --config .prettierrc.json --ignore-path /dev/null
 
 	@echo "Apply patches from ./patches:"
 	@echo "01 - Hide to tray when closing (https://github.com/SibrenVasse/deezer/issues/4)"
@@ -45,12 +44,11 @@ prepare: clean install_build_deps
 	@echo "04 - Disable auto updater (https://github.com/aunetx/deezer-linux/pull/95)"
 	@echo "05 - Remove OS information (https://github.com/aunetx/deezer-linux/pull/95)"
 	@echo "06 - Add a better management of MPRIS (https://github.com/aunetx/deezer-linux/pull/61)"
-	@echo "07 - Add Discord Rich Presence (https://github.com/aunetx/deezer-linux/pull/82)"
-	@echo "08 - Add option to disable Discord Rich Presence (https://github.com/aunetx/deezer-linux/pull/95)"
-	@echo "09 - Add environment variable to change log level (https://github.com/aunetx/deezer-linux/pull/95)"
-	@echo "10 - Add track duration and url, various fixes (https://github.com/aunetx/deezer-linux/pull/95)"
-	@echo "11 - Improve responsiveness on small devices (https://github.com/aunetx/deezer-linux/pull/107)"
-	$(foreach p, $(wildcard ./patches/*), patch -p 1 -d $(APP_DIR) < $(p);)
+	@echo "07 - Add environment variable to change log level (https://github.com/aunetx/deezer-linux/pull/95)"
+	@echo "08 - Provide additional metadata (https://github.com/aunetx/deezer-linux/pull/95)"
+	@echo "09 - Add Discord Rich Presence (https://github.com/aunetx/deezer-linux/pull/82)"
+	@echo "10 - Improve responsiveness on small devices (https://github.com/aunetx/deezer-linux/pull/107)"
+	@$(foreach p, $(wildcard ./patches/*), patch -p 1 -d $(APP_DIR) < $(p);)
 
 	@echo "Append `package-append.json` to the `package.json` of the app"
 	@echo "Adds electron, elecron-builder dependencies, prod and build directives"
@@ -118,6 +116,9 @@ patch-new: install_deps
 	@echo "Don't forget to rename your patch."
 
 patch-gen:
+	@npm run prettier -- --write "$(APP_DIR)/build/*.{js,html}" --config .prettierrc.json --ignore-path /dev/null
+	@cd $(APP_DIR) && git add .
+	@cd $(APP_DIR) && git commit
 	@cd $(APP_DIR) && git format-patch -1 HEAD --stdout > ../patches/$(shell date +%y%m%d-%s).patch
 
 #! UTILS
@@ -138,4 +139,4 @@ release: prepare-release
 
 
 clean:
-	@rm -rf ./$(APP_DIR) flatpak node_modules ./$(SOURCE_DIR) artifacts package.json
+	@rm -rf ./$(APP_DIR) flatpak node_modules ./$(SOURCE_DIR) artifacts package-lock.json yarn.lock

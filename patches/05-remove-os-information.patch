@@ -1,7 +1,8 @@
-From 08ea86075592efe9c02c4beb7cbdfc6935ca0b1c Mon Sep 17 00:00:00 2001
+From 9250fb3bf514256f68ad844b53e7345b2efc4b37 Mon Sep 17 00:00:00 2001
 From: josselinonduty <contact@josselinonduty.fr>
-Date: Fri, 24 Jan 2025 16:03:43 +0100
-Subject: [PATCH] fix: ensure os release is valid
+Date: Mon, 21 Apr 2025 01:08:23 +0900
+Subject: [PATCH] fix: ensure os release is valid; add cli argument to use
+ exact kernel version
 
 Original patch: Dorian Stoll <dorian.stoll@tmsp.io>
 The application sends the kernel version as part of the User-Agent.
@@ -14,17 +15,17 @@ e.g: 5.11.0-16-generic works, while 5.15.14-200.fc35.x86_64 doesn't.
 The solution is to ignore the actual version and send bogus data that
 is known to work.
 ---
- build/main.js     | 11 ++++++++++-
- build/preload.js  | 10 +++++++++-
- build/renderer.js | 10 +++++++++-
- build/titlebar.js | 11 ++++++++++-
- 4 files changed, 38 insertions(+), 4 deletions(-)
+ build/main.js     | 12 +++++++++++-
+ build/preload.js  | 12 +++++++++++-
+ build/renderer.js | 12 +++++++++++-
+ build/titlebar.js | 12 +++++++++++-
+ 4 files changed, 44 insertions(+), 4 deletions(-)
 
 diff --git a/build/main.js b/build/main.js
-index 10a80fa..9219f4f 100644
+index a667632..e03556c 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -5,7 +5,16 @@
+@@ -5,7 +5,17 @@
          module.exports = require("macos-version");
        },
        857: (module) => {
@@ -32,21 +33,22 @@ index 10a80fa..9219f4f 100644
 +        var __module_os = require("os");
 +        const release = __module_os.release();
 +        __module_os.release = () => {
-+          const matcher = /(\d+\.\d+\.\d+)\.*/
++          if (!process.argv.some((arg) => arg === "--keep-kernel"))
++            return "6.1.0";
++
++          const matcher = /(\d+\.\d+\.\d+)\.*/;
 +          var result = release.match(matcher);
-+          //if (result[1])
-+          //  return result[1];
-+          return "6.1.0";
-+        }
++          return result ? result[1] : "6.1.0";
++        };
 +        module.exports = __module_os;
        },
      },
      __webpack_module_cache__ = {};
 diff --git a/build/preload.js b/build/preload.js
-index 9716411..ec603d0 100644
+index 4029c6d..f625122 100644
 --- a/build/preload.js
 +++ b/build/preload.js
-@@ -5,7 +5,15 @@
+@@ -5,7 +5,17 @@
          module.exports = require("macos-version");
        },
        857: (module) => {
@@ -54,20 +56,22 @@ index 9716411..ec603d0 100644
 +        var __module_os = require("os");
 +        const release = __module_os.release();
 +        __module_os.release = () => {
++          if (!process.argv.some((arg) => arg === "--keep-kernel"))
++            return "6.1.0";
++
 +          const matcher = /(\d+\.\d+\.\d+)\.*/;
 +          var result = release.match(matcher);
-+          //if (result[1]) return result[1];
-+          return "6.1.0";
++          return result ? result[1] : "6.1.0";
 +        };
 +        module.exports = __module_os;
        },
      },
      __webpack_module_cache__ = {};
 diff --git a/build/renderer.js b/build/renderer.js
-index 7241bcb..fb02453 100644
+index ca6c307..24b119f 100644
 --- a/build/renderer.js
 +++ b/build/renderer.js
-@@ -5,7 +5,15 @@
+@@ -5,7 +5,17 @@
          module.exports = require("macos-version");
        },
        857: (module) => {
@@ -75,20 +79,22 @@ index 7241bcb..fb02453 100644
 +        var __module_os = require("os");
 +        const release = __module_os.release();
 +        __module_os.release = () => {
++          if (!process.argv.some((arg) => arg === "--keep-kernel"))
++            return "6.1.0";
++
 +          const matcher = /(\d+\.\d+\.\d+)\.*/;
 +          var result = release.match(matcher);
-+          //if (result[1]) return result[1];
-+          return "6.1.0";
++          return result ? result[1] : "6.1.0";
 +        };
 +        module.exports = __module_os;
        },
      },
      __webpack_module_cache__ = {};
 diff --git a/build/titlebar.js b/build/titlebar.js
-index 65520fb..7919288 100644
+index 5414c90..4f3c6a3 100644
 --- a/build/titlebar.js
 +++ b/build/titlebar.js
-@@ -5,7 +5,16 @@
+@@ -5,7 +5,17 @@
          module.exports = require("macos-version");
        },
        857: (module) => {
@@ -96,12 +102,13 @@ index 65520fb..7919288 100644
 +        var __module_os = require("os");
 +        const release = __module_os.release();
 +        __module_os.release = () => {
-+          const matcher = /(\d+\.\d+\.\d+)\.*/
++          if (!process.argv.some((arg) => arg === "--keep-kernel"))
++            return "6.1.0";
++
++          const matcher = /(\d+\.\d+\.\d+)\.*/;
 +          var result = release.match(matcher);
-+          //if (result[1])
-+          //  return result[1];
-+          return "6.1.0";
-+        }
++          return result ? result[1] : "6.1.0";
++        };
 +        module.exports = __module_os;
        },
      },
