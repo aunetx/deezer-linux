@@ -144,7 +144,7 @@ make build_snap_{arch}
 Then, you can install the package using:
 
 ```sh
-sudo snap install ./artifacts/{arch}/deezer-desktop-{version}-{arch}.snap --dangerous --classic
+sudo snap install ./artifacts/{arch}/deezer_desktop_{version}_{arch}.snap --dangerous --classic
 ```
 
 > [!NOTE]
