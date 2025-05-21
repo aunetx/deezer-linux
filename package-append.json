@@ -61,7 +61,40 @@
       "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
     "snap": {
-      "artifactName": "${productName}_${version}_${arch}.${ext}"
+      "artifactName": "${productName}_${version}_${arch}.${ext}",
+      "base": "core22",
+      "grade": "stable",
+      "confinement": "classic",
+      "after": ["desktop-gtk4", "libnotify-bin"],
+      "slots": [
+        {
+          "mpris": {
+            "name": "deezer"
+          },
+          "desktop": {
+            "name": "deezer"
+          }
+        }
+      ],
+      "plugs": [
+        "desktop",
+        "desktop-legacy",
+        "wayland",
+        "x11",
+        "unity7",
+        "alsa",
+        "avahi-observe",
+        "browser-support",
+        "camera",
+        "cups-control",
+        "gsettings",
+        "home",
+        "network",
+        "opengl",
+        "audio-playback",
+        "screen-inhibit-control",
+        "upower-observe"
+      ]
     },
     "deb": {
       "artifactName": "${productName}_${version}_${arch}.${ext}"
