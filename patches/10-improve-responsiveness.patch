@@ -1,6 +1,6 @@
-From cd751a34fc5116acd6fbcd83246212d002241bf3 Mon Sep 17 00:00:00 2001
+From 33ed1cce4b8831fc6412ca482d9867a9dff9ffec Mon Sep 17 00:00:00 2001
 From: Aurélien Hamy <me@aunetx.dev>
-Date: Wed, 21 May 2025 22:06:05 +0200
+Date: Thu, 22 May 2025 15:50:44 +0200
 Subject: [PATCH] feat: improve responsiveness on small devices
 
 Based on patch by josselinonduty <contact@josselinonduty.fr>
@@ -8,15 +8,15 @@ Makes it possible to use the application for with a width as low as 550 pixels
 without problems, and is usable even below. Should not change anything for
 devices larger than 950 pixels, and nearly nothing above 800 pixels wide.
 ---
- build/index.html | 74 ++++++++++++++++++++++++++++++++++++++++++++++++
+ build/index.html | 83 ++++++++++++++++++++++++++++++++++++++++++++++++
  build/main.js    |  4 +--
- 2 files changed, 76 insertions(+), 2 deletions(-)
+ 2 files changed, 85 insertions(+), 2 deletions(-)
 
 diff --git a/build/index.html b/build/index.html
-index 8016bc8..9db7678 100644
+index 8016bc8..4efcd23 100644
 --- a/build/index.html
 +++ b/build/index.html
-@@ -4,6 +4,80 @@
+@@ -4,6 +4,89 @@
      <meta charset="utf-8" />
      <title>Deezer</title>
      <script defer="defer" src="./renderer.js"></script>
@@ -42,7 +42,16 @@ index 8016bc8..9db7678 100644
 +
 +      /* this prevents the content from overflowing */
 +      @media screen and (max-width: 808px) {
-+        .container > div:first-child {
++        .container > .carousel-wrapper {
++          width: 100% !important;
++          margin: 0px;
++          padding: 0px;
++        }
++      }
++
++      /* this makes the width transition seamless for carousels */
++      @media only screen and (max-width: 784px) {
++        .container {
 +          width: 100% !important;
 +        }
 +      }
