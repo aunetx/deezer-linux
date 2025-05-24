@@ -47,7 +47,7 @@ prepare: clean install_build_deps
 	@echo "07 - Add environment variable to change log level (https://github.com/aunetx/deezer-linux/pull/95)"
 	@echo "08 - Provide additional metadata (https://github.com/aunetx/deezer-linux/pull/95)"
 	@echo "09 - Add Discord Rich Presence (https://github.com/aunetx/deezer-linux/pull/82)"
-	@echo "10 - Improve responsiveness on small devices (https://github.com/aunetx/deezer-linux/pull/107)"
+	@echo "10 - Improve responsiveness on small devices (https://github.com/aunetx/deezer-linux/pull/122)"
 	@$(foreach p, $(wildcard ./patches/*), patch -p 1 -d $(APP_DIR) < $(p);)
 
 	@echo "Append `package-append.json` to the `package.json` of the app"
