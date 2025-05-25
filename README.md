@@ -37,13 +37,14 @@ Other packages can be installed from you package manager, either by clicking on 
 
 ## Usage
 
-| Option                 | Description                                                                                                                |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `--start-in-tray`      | Start the app in the tray (see [patch](./patches/01-start-hidden-in-tray.patch))                                           |
-| `--disable-systray`    | Quit the app when the window is closed (see [patch](./patches/03-quit.patch))                                              |
-| `--keep-kernel`        | Use the exact kernel version (see [patch](./patches/05-remove-os-information.patch)) <br/> _This feature impacts privacy._ |
-| `--disable-features`   | Disable some features (see [patch](./patches/06-better-management-of-MPRIS.patch))                                         |
-| `--enable-discord-rpc` | Enable Discord RPC integration (see [patch](./patches/09-discord-rich-presence.patch))                                     |
+| Option                                                                               | Description                                                                                                                |
+| ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `--start-in-tray`                                                                    | Start the app in the tray (see [patch](./patches/01-start-hidden-in-tray.patch))                                           |
+| `--disable-systray`                                                                  | Quit the app when the window is closed (see [patch](./patches/03-quit.patch))                                              |
+| `--keep-kernel`                                                                      | Use the exact kernel version (see [patch](./patches/05-remove-os-information.patch)) <br/> _This feature impacts privacy._ |
+| `--disable-features`                                                                 | Disable some features (see [patch](./patches/06-better-management-of-MPRIS.patch))                                         |
+| `--enable-discord-rpc`                                                               | Enable Discord RPC integration (see [patch](./patches/09-discord-rich-presence.patch))                                     |
+| `--enable-wayland-ime` `--ozone-platform-hint=auto` `--wayland-text-input-version=3` | Enable IME keyboard support on Wayland                                                                                     |
 
 | Environment variable | Options                                            | Description                                                                        |
 | -------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------- |
@@ -175,6 +176,16 @@ export PACKAGE_MANAGER=yarn
 export PACKAGE_MANAGER_SUBDIR_ARG=--cwd
 export PACKAGE_MANAGER_ADD_CMD=add
 export PACKAGE_MANAGER_INSTALL_CMD=install
+```
+
+### How can I use my IME/virtual keyboard on Deezer under Wayland?
+
+_IME: Input Method Editor. Usually used for languages like Chinese, Japanese, Korean, etc._
+
+You should launch the app with the following arguments:
+
+```sh
+--enable-wayland-ime --ozone-platform-hint=auto --wayland-text-input-version=3
 ```
 
 ## **LEGAL DISCLAIMER**
