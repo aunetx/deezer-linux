@@ -44,6 +44,7 @@ Other packages can be installed from you package manager, either by clicking on 
 | `--keep-kernel`                                                                      | Use the exact kernel version (see [patch](./patches/05-remove-os-information.patch)) <br/> _This feature impacts privacy._ |
 | `--disable-features`                                                                 | Disable some features (see [patch](./patches/06-better-management-of-MPRIS.patch))                                         |
 | `--enable-discord-rpc`                                                               | Enable Discord RPC integration (see [patch](./patches/09-discord-rich-presence.patch))                                     |
+| `--hide-appoffline-banner`                                                           | Hide the "Application is offline" banner that appears when using a VPN or DNS blocker (see [patch](./patches/11-hide-appoffline-banner.patch))
 | `--enable-wayland-ime` `--ozone-platform-hint=auto` `--wayland-text-input-version=3` | Enable IME keyboard support on Wayland                                                                                     |
 
 | Environment variable | Options                                            | Description                                                                        |
