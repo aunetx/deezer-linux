@@ -15,6 +15,10 @@ jobs:
     - uses: actions/setup-node@v4
       with:
         node-version: 22
+    - name: prepare runner
+      run: |
+        sudo apt-get update
+        sudo snap install snapcraft --classic
   
     - name: install_deps
       run: make install_deps
