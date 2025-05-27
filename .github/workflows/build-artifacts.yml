@@ -18,7 +18,7 @@ jobs:
     - name: prepare runner
       run: |
         sudo apt-get update
-        sudo snap install snapcraft --classic
+        sudo apt-get install -y p7zip p7zip-full make wget snap rpm
   
     - name: install_deps
       run: make install_deps
