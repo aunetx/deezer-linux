@@ -20,6 +20,9 @@
     "electron": "^35.0.0",
     "electron-builder": "^26.0.0"
   },
+  "dependencies": {
+    "webidl-conversions": "^7.0.0"
+  },
   "build": {
     "files": ["**"],
     "directories": {
