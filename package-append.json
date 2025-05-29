@@ -62,6 +62,12 @@
     },
     "snap": {
       "artifactName": "${productName}_${version}_${arch}.${ext}",
+      "publish": [
+        {
+          "provider": "generic",
+          "url": "https://null.dev/"
+        }
+      ],
       "base": "core22",
       "grade": "stable",
       "confinement": "classic",
