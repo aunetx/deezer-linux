@@ -20,7 +20,7 @@ index 0155907..9ce2145 100644
 +    var external_discord_rpc_default = __webpack_require__.n(
 +      external_discord_rpc_namespaceObject
 +    );
-+    /** @type {import("@xhayper/discord-rpc").Client} */
++    /** @type {import("@deezer-community/discord-rpc").Client} */
 +    var rpcClient;
 +    var rpcData, rpcStartedAt, rpcPausedAt;
      function isPlatform(platform) {
