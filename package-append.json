@@ -65,7 +65,7 @@
       "publish": [
         {
           "provider": "generic",
-          "url": "https://null.dev/"
+          "url": "https://null/"
         }
       ],
       "base": "core22",
