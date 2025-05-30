@@ -17,8 +17,7 @@ jobs:
         node-version: 22
     - name: prepare runner
       run: |
-        sudo apt-get update
-        sudo apt-get install -y p7zip p7zip-full make wget snap rpm
+        sudo snap install snapcraft --classic
   
     - name: install_deps
       run: make install_deps
