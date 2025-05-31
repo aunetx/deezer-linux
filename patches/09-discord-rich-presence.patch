@@ -213,7 +213,7 @@ index 0e91412..50c4a41 100644
    "author": "Deezer <support@deezer.com>",
    "main": "build/main.js",
    "dependencies": {
-+    "@deezer-community/discord-rpc": "^1.0.3",
++    "@deezer-community/discord-rpc": "1.0.4",
      "@electron/remote": "2.1.2",
      "@jellybrick/mpris-service": "2.1.5",
      "electron-log": "^5.1.2",
