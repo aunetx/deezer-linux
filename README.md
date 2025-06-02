@@ -44,12 +44,14 @@ Other packages can be installed from you package manager, either by clicking on 
 | `--keep-kernel`                                                                      | Use the exact kernel version (see [patch](./patches/05-remove-os-information.patch)) <br/> _This feature impacts privacy._ |
 | `--disable-features`                                                                 | Disable some features (see [patch](./patches/06-better-management-of-MPRIS.patch))                                         |
 | `--enable-discord-rpc`                                                               | Enable Discord RPC integration (see [patch](./patches/09-discord-rich-presence.patch))                                     |
+| `--disable-animations`                                                               | Disable animations (see [patch](./patches/12-disable-animations.patch))                                                    |
 | `--enable-wayland-ime` `--ozone-platform-hint=auto` `--wayland-text-input-version=3` | Enable IME keyboard support on Wayland                                                                                     |
 
-| Environment variable | Options                                            | Description                                                                        |
-| -------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `LOG_LEVEL`          | `silly`,`debug`,`verbose`,`info`,`warning`,`error` | Set the log level (see [patch](./patches/07-log-level-environment-variable.patch)) |
-| `DZ_DEVTOOLS`        | `yes`,`no`                                         | Enable the developer console (ctrl+shift+i)                                        |
+| Environment variable    | Options                                            | Description                                                                        |
+| ----------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `LOG_LEVEL`             | `silly`,`debug`,`verbose`,`info`,`warning`,`error` | Set the log level (see [patch](./patches/07-log-level-environment-variable.patch)) |
+| `DZ_DISABLE_ANIMATIONS` | `yes`,`no`                                         | Disable animations (see [patch](./patches/12-disable-animations.patch))            |
+| `DZ_DEVTOOLS`           | `yes`,`no`                                         | Enable the developer console (ctrl+shift+i)                                        |
 
 ## Building from source
 
