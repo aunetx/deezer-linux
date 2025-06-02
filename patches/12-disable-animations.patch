@@ -1,0 +1,62 @@
+From eec85a8e6a6fe5895c88959e18df37b4d72217a2 Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Mon, 2 Jun 2025 13:08:48 +0900
+Subject: [PATCH] feat(patch): disable animations (cli/env)
+
+---
+ build/index.html | 5 +++++
+ build/main.js    | 5 +++++
+ build/preload.js | 5 +++++
+ 3 files changed, 15 insertions(+)
+
+diff --git a/build/index.html b/build/index.html
+index 4efcd23..b587868 100644
+--- a/build/index.html
++++ b/build/index.html
+@@ -5,6 +5,11 @@
+     <title>Deezer</title>
+     <script defer="defer" src="./renderer.js"></script>
+     <style>
++      .disable-animations * {
++        animation: none !important;
++        transition: none !important;
++      }
++
+       #page_topbar {
+         min-width: 0px !important;
+       }
+diff --git a/build/main.js b/build/main.js
+index 99935cb..13d87db 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -3166,6 +3166,11 @@
+               getRealPath(external_electron_namespaceObject.app, __dirname),
+               "preload.js"
+             ),
++            additionalArguments: [
++              (process.argv.some((arg) => arg === "--disable-animations") ||
++                process.env.DZ_DISABLE_ANIMATIONS) &&
++                "--disable-animations",
++            ].filter(Boolean),
+           },
+           windowOptions = {
+             title: "Deezer Desktop",
+diff --git a/build/preload.js b/build/preload.js
+index 1301e93..b9c9e75 100644
+--- a/build/preload.js
++++ b/build/preload.js
+@@ -538,6 +538,11 @@
+             external_i18next_default().dir(external_i18next_default().language)
+               ? "rtl"
+               : "ltr");
++
++        if (process.argv.some((arg) => arg === "--disable-animations"))
++          document
++            .getElementsByTagName("body")[0]
++            .classList.add("disable-animations");
+       });
+   })(),
+     (module.exports = __webpack_exports__);
+-- 
+2.43.0
+
