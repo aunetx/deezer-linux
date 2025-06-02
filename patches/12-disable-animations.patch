@@ -35,7 +35,7 @@ index 99935cb..13d87db 100644
              ),
 +            additionalArguments: [
 +              (process.argv.some((arg) => arg === "--disable-animations") ||
-+                process.env.DZ_DISABLE_ANIMATIONS) &&
++                "yes" === process.env.DZ_DISABLE_ANIMATIONS) &&
 +                "--disable-animations",
 +            ].filter(Boolean),
            },
