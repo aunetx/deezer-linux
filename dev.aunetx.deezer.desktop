@@ -9,6 +9,10 @@ Terminal=false
 MimeType=x-scheme-handler/deezer;
 Categories=Audio;Music;Player;AudioVideo;
 Keywords=Music;Player;Streaming;Online;
-StartupWMClass=deezer-desktop
+StartupWMClass=Deezer
 SingleMainWindow=true
 X-GNOME-UsesNotifications=true
+
+# Used by flatpak/flathub
+Exec=run.sh %U
+TryExec=run.sh
