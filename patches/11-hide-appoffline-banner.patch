@@ -1,62 +1,65 @@
-From eada05985500a3fb4c8dc0a9fa12a2300f785206 Mon Sep 17 00:00:00 2001
-From: Aurélien Hamy <me@aunetx.dev>
-Date: Mon, 26 May 2025 15:50:35 +0200
+From bbb88f846c94978959f4816069332b4d9f9f4dab Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Tue, 8 Jul 2025 12:54:19 +0200
 Subject: [PATCH] feat: add toggle to hide application offline banner
 
 This solves #123 by adding the `--hide-appoffline-banner` command-line argument
 to hide the annoying "Application is offline" banner, that sometimes appears when
 using a VPN or DNS level blocker.
 ---
- build/index.html | 5 +++++
- build/main.js    | 1 +
- build/preload.js | 6 ++++++
- 3 files changed, 12 insertions(+)
+ build/index.html | 6 ++++++
+ build/main.js    | 5 +++++
+ build/preload.js | 4 ++++
+ 3 files changed, 15 insertions(+)
 
 diff --git a/build/index.html b/build/index.html
-index 4efcd23..019e786 100644
+index 4efcd23..4be829c 100644
 --- a/build/index.html
 +++ b/build/index.html
-@@ -86,6 +86,11 @@
+@@ -86,6 +86,12 @@
            width: auto !important;
          }
        }
 +
 +      /* hide the offline alert when needed */
-+      .hide-AppOffline-banner .alert-wrapper:has(> div[data-testid="alert-AppOffline"]) {
++      .hide-AppOffline-banner
++        .alert-wrapper:has(> div[data-testid="alert-AppOffline"]) {
 +        display: none !important;
 +      }
      </style>
    </head>
    <body class="electron">
 diff --git a/build/main.js b/build/main.js
-index 99935cb..91c99fb 100644
+index 99935cb..1c16dbe 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3166,6 +3166,7 @@
+@@ -3166,6 +3166,11 @@
                getRealPath(external_electron_namespaceObject.app, __dirname),
                "preload.js"
              ),
-+            additionalArguments: [`--hide-appoffline-banner=${process.argv.some((arg) => arg === "--hide-appoffline-banner")}`],
++            additionalArguments: [
++              (process.argv.some((arg) => arg === "--hide-appoffline-banner") ||
++                "yes" === process.env.DZ_HIDE_APPOFFLINE_BANNER) &&
++                "--hide-appoffline-banner",
++            ].filter(Boolean),
            },
            windowOptions = {
              title: "Deezer Desktop",
 diff --git a/build/preload.js b/build/preload.js
-index 1301e93..6814466 100644
+index 1301e93..05939c4 100644
 --- a/build/preload.js
 +++ b/build/preload.js
-@@ -538,6 +538,12 @@
+@@ -538,6 +538,10 @@
              external_i18next_default().dir(external_i18next_default().language)
                ? "rtl"
                : "ltr");
-+        if (process.argv.some((arg) => arg === "--hide-appoffline-banner=true"))
++        if (process.argv.some((arg) => arg === "--hide-appoffline-banner"))
 +          document
 +            .getElementsByTagName("body")[0]
-+            .classList.add(
-+              "hide-AppOffline-banner"
-+            );
++            .classList.add("hide-AppOffline-banner");
        });
    })(),
      (module.exports = __webpack_exports__);
 -- 
-2.49.0
+2.48.1
 
