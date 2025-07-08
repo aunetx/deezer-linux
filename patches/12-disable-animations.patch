@@ -1,0 +1,60 @@
+From a220daa47a06d19ff6a995d567c0f46e42d14f6b Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Tue, 8 Jul 2025 14:37:23 +0200
+Subject: [PATCH] feat(patch): disable animations (cli/env)
+
+---
+ build/index.html | 6 ++++++
+ build/main.js    | 3 +++
+ build/preload.js | 4 ++++
+ 3 files changed, 13 insertions(+)
+
+diff --git a/build/index.html b/build/index.html
+index 4be829c..2ef7709 100644
+--- a/build/index.html
++++ b/build/index.html
+@@ -92,6 +92,12 @@
+         .alert-wrapper:has(> div[data-testid="alert-AppOffline"]) {
+         display: none !important;
+       }
++
++      /* Disable animations */
++      .disable-animations * {
++        animation: none !important;
++        transition: none !important;
++      }
+     </style>
+   </head>
+   <body class="electron">
+diff --git a/build/main.js b/build/main.js
+index 8fa4b6f..61028cd 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -3246,6 +3246,9 @@
+               (process.argv.some((arg) => arg === "--hide-appoffline-banner") ||
+                 "yes" === process.env.DZ_HIDE_APPOFFLINE_BANNER) &&
+                 "--hide-appoffline-banner",
++              (process.argv.some((arg) => arg === "--disable-animations") ||
++                "yes" === process.env.DZ_DISABLE_ANIMATIONS) &&
++                "--disable-animations",
+             ].filter(Boolean),
+           },
+           windowOptions = {
+diff --git a/build/preload.js b/build/preload.js
+index 05939c4..0df9150 100644
+--- a/build/preload.js
++++ b/build/preload.js
+@@ -542,6 +542,10 @@
+           document
+             .getElementsByTagName("body")[0]
+             .classList.add("hide-AppOffline-banner");
++        if (process.argv.some((arg) => arg === "--disable-animations"))
++          document
++            .getElementsByTagName("body")[0]
++            .classList.add("disable-animations");
+       });
+   })(),
+     (module.exports = __webpack_exports__);
+-- 
+2.48.1
+

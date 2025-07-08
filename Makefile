@@ -48,6 +48,9 @@ prepare: clean install_build_deps
 	@echo "08 - Provide additional metadata (https://github.com/aunetx/deezer-linux/pull/95)"
 	@echo "09 - Add Discord Rich Presence (https://github.com/aunetx/deezer-linux/pull/82)"
 	@echo "10 - Improve responsiveness on small devices (https://github.com/aunetx/deezer-linux/pull/122)"
+	@echo "11 - Hide Application is offline banner (https://github.com/aunetx/deezer-linux/pull/124)"
+	@echo "12 - Disable animations (https://github.com/aunetx/deezer-linux/pull/133)"
+
 	@$(foreach p, $(wildcard ./patches/*), patch -p 1 -d $(APP_DIR) < $(p);)
 
 	@echo "Append `package-append.json` to the `package.json` of the app"

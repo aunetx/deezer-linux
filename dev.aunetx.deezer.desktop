@@ -12,3 +12,7 @@ Keywords=Music;Player;Streaming;Online;
 StartupWMClass=Deezer
 SingleMainWindow=true
 X-GNOME-UsesNotifications=true
+
+# Used by flatpak/flathub
+Exec=run.sh %U
+TryExec=run.sh
