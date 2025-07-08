@@ -3,6 +3,7 @@ From: josselinonduty <contact@josselinonduty.fr>
 Date: Tue, 8 Jul 2025 12:54:19 +0200
 Subject: [PATCH] feat: add toggle to hide application offline banner
 
+Original patch: Aurélien Hamy <aunetx@yandex.com>
 This solves #123 by adding the `--hide-appoffline-banner` command-line argument
 to hide the annoying "Application is offline" banner, that sometimes appears when
 using a VPN or DNS level blocker.
