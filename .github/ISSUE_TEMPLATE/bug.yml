@@ -12,7 +12,7 @@ body:
       options:
         - label: I am using a **recent version** of the project.
           required: true
-        - label: I have **read the [FAQ section](https://github.com/josselinonduty/upgraded-octo-barnacle?tab=readme-ov-file#faq)** of the documentation.
+        - label: I have **read the [FAQ section](https://github.com/aunetx/deezer-linux?tab=readme-ov-file#faq)** of the documentation.
           required: true
 
   - type: input
