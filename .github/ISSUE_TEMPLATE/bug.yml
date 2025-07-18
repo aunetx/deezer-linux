@@ -77,7 +77,7 @@ body:
       label: Project Version and Package
       description: |
         Please provide information about the package version and architecture.
-
+        
         For flatpak users, you can find this information with:
         ```bash
         flatpak info dev.aunetx.deezer
@@ -95,7 +95,9 @@ body:
     attributes:
       label: Environment Variables
       description: |
-        Please provide a **redacted** version of the following command:
+        It is highly recommended to fill this section if your issue is related to running or logging into the app.
+      
+        You may provide a **redacted** version of the following command:
         ```bash
         env
         ```
@@ -105,7 +107,7 @@ body:
         PATH=/usr/bin:...
         HOME=/home/<redacted>
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: extra
