@@ -1,6 +1,6 @@
-From ff697a112f235e1b973bcadb304ba21aed8dcb71 Mon Sep 17 00:00:00 2001
+From 89a8e44da29ae59e04adf7122374be4f621ec2ee Mon Sep 17 00:00:00 2001
 From: josselinonduty <contact@josselinonduty.fr>
-Date: Wed, 14 May 2025 15:12:49 +0900
+Date: Wed, 23 Jul 2025 20:36:49 +0200
 Subject: [PATCH] feat: provide additional information to mpris (and future
  patches)
 
@@ -10,7 +10,7 @@ Subject: [PATCH] feat: provide additional information to mpris (and future
  2 files changed, 60 insertions(+), 31 deletions(-)
 
 diff --git a/build/main.js b/build/main.js
-index 485b953..2f616b1 100644
+index 82f5c11..8332c3a 100644
 --- a/build/main.js
 +++ b/build/main.js
 @@ -1253,18 +1253,24 @@
@@ -22,17 +22,17 @@ index 485b953..2f616b1 100644
          (this.track = Object.assign(this.track, track)),
            this.emit(MediaEvents.TrackUpdated, this.track),
            (this.mprisPlayer.metadata = {
-+            "mpris:length": data?.trackInfo?.song?.DURATION
-+              ? data.trackInfo.song.DURATION * 1000
-+              : undefined,
++            ...(data?.trackInfo?.song?.DURATION && {
++              "mpris:length": data.trackInfo.song.DURATION * 1000,
++            }),
              "mpris:trackid": this.mprisPlayer.objectPath("track/0"),
              "mpris:artUrl": track.coverUrl,
              "xesam:title": track.title,
              "xesam:album": track.album,
              "xesam:artist": [track.artist],
-+            "xesam:url": data?.trackInfo?.song
-+              ? `https://deezer.com/track/${data.trackInfo.song.SNG_ID}`
-+              : undefined,
++            ...(data?.trackInfo?.song?.SNG_ID && {
++              "xesam:url": `https://deezer.com/track/${data.trackInfo.song.SNG_ID}`,
++            }),
            });
        }
 -      setPlayerInfo(player) {
@@ -103,7 +103,7 @@ index 485b953..2f616b1 100644
      var application_awaiter = function (thisArg, _arguments, P, generator) {
        return new (P || (P = Promise))(function (resolve, reject) {
 diff --git a/build/renderer.js b/build/renderer.js
-index 212c12d..1f7b1b7 100644
+index 9761e62..4992d17 100644
 --- a/build/renderer.js
 +++ b/build/renderer.js
 @@ -349,23 +349,31 @@
@@ -180,5 +180,5 @@ index 212c12d..1f7b1b7 100644
                }
              }
 -- 
-2.43.0
+2.48.1
 

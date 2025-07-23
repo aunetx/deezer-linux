@@ -1,15 +1,15 @@
-From 4108067eb498fd58f913b2830c44ea2b3e23247b Mon Sep 17 00:00:00 2001
+From c53a3132b676ecaa30f8dcb30ecbaaabbbd63f76 Mon Sep 17 00:00:00 2001
 From: josselinonduty <contact@josselinonduty.fr>
-Date: Thu, 29 May 2025 00:32:47 +0900
-Subject: [PATCH] add discord rich presence support (w/ opt-in arg.)
+Date: Wed, 23 Jul 2025 21:36:05 +0200
+Subject: [PATCH] feat: add discord rich presence support (w/ opt-in arg.)
 
 ---
- build/main.js | 165 +++++++++++++++++++++++++++++++++++++++++++++++++-
- package.json  |   2 +
- 2 files changed, 166 insertions(+), 1 deletion(-)
+ build/main.js | 175 +++++++++++++++++++++++++++++++++++++++++++++++++-
+ package.json  |   1 +
+ 2 files changed, 175 insertions(+), 1 deletion(-)
 
 diff --git a/build/main.js b/build/main.js
-index 0155907..9ce2145 100644
+index 8332c3a..aba4098 100644
 --- a/build/main.js
 +++ b/build/main.js
 @@ -93,6 +93,13 @@
@@ -26,7 +26,7 @@ index 0155907..9ce2145 100644
      function isPlatform(platform) {
        switch (platform) {
          case PLATFORM.WINDOWS:
-@@ -1229,6 +1236,160 @@
+@@ -1229,6 +1236,170 @@
          this.mprisPlayer.on("loopStatus", this.setRepeatMode.bind(this));
          this.mprisPlayer.on("raise", () => this.app.getWindow().show());
        }
@@ -66,12 +66,14 @@ index 0155907..9ce2145 100644
 +
 +        if (track && data) {
 +          const duration = data?.trackInfo?.song?.DURATION;
-+          if (!duration) return;
++          const livestream = data?.trackInfo?.song?.LIVE_STREAM || false;
 +
 +          external_electron_log_default().debug(
 +            "[Discord] Updating rich presence with track information."
 +          );
-+          rpcStartedAt = Date.now();
++          rpcStartedAt = livestream
++            ? rpcData.startTimestamp || Date.now()
++            : Date.now();
 +          rpcPausedAt = null;
 +          rpcData = {
 +            type: external_discord_rpc_namespaceObject.ActivityType.Listening,
@@ -82,16 +84,20 @@ index 0155907..9ce2145 100644
 +            largeImage: track.coverUrl,
 +            description: track.title,
 +            state:
-+              track.title === track.album
++              !track.album || track.title === track.album
 +                ? `${track.artist}`
 +                : `${track.artist} - ${track.album}`,
 +            startTimestamp: rpcStartedAt,
-+            endTimestamp: rpcStartedAt + duration * 1e3,
-+            duration: duration * 1e3,
-+            button: {
-+              label: "Listen on Deezer",
-+              url: `https://deezer.com/track/${data.trackInfo.song.SNG_ID}`,
-+            },
++            ...(duration && {
++              endTimestamp: rpcStartedAt + duration * 1e3,
++              duration: duration * 1e3,
++            }),
++            ...(data?.trackInfo?.song?.SNG_ID && {
++              button: {
++                label: "Listen on Deezer",
++                url: `https://deezer.com/track/${data.trackInfo.song.SNG_ID}`,
++              },
++            }),
 +          };
 +
 +          rpcClient
@@ -108,12 +114,14 @@ index 0155907..9ce2145 100644
 +                start: rpcData.startTimestamp,
 +                end: rpcData.endTimestamp,
 +              },
-+              buttons: [
-+                {
-+                  label: rpcData.button.label,
-+                  url: rpcData.button.url,
-+                },
-+              ],
++              ...(rpcData.button && {
++                buttons: [
++                  {
++                    label: rpcData.button.label,
++                    url: rpcData.button.url,
++                  },
++                ],
++              }),
 +            })
 +            .then(() => {
 +              external_electron_log_default().debug(
@@ -170,12 +178,14 @@ index 0155907..9ce2145 100644
 +                start: rpcData.startTimestamp,
 +                end: rpcData.endTimestamp,
 +              },
-+              buttons: [
-+                {
-+                  label: rpcData.button.label,
-+                  url: rpcData.button.url,
-+                },
-+              ],
++              ...(rpcData.button && {
++                buttons: [
++                  {
++                    label: rpcData.button.label,
++                    url: rpcData.button.url,
++                  },
++                ],
++              }),
 +            })
 +            .catch((err) => {
 +              external_electron_log_default().error(
@@ -187,15 +197,15 @@ index 0155907..9ce2145 100644
        play() {
          this.ipc.send("channel-player-media-control", MediaPlayerControl.Play);
        }
-@@ -1269,6 +1430,7 @@
-               ? `https://deezer.com/track/${data.trackInfo.song.SNG_ID}`
-               : undefined,
+@@ -1269,6 +1440,7 @@
+               "xesam:url": `https://deezer.com/track/${data.trackInfo.song.SNG_ID}`,
+             }),
            });
 +        this.updateDiscordRichPresence(track, data);
        }
        setPlayerInfo(player, data) {
          (this.player = Object.assign(this.player, player)),
-@@ -1276,7 +1438,8 @@
+@@ -1276,7 +1448,8 @@
            (this.mprisPlayer.playbackStatus =
              this.player.state === "playing"
                ? external_electron_mpris_namespaceObject.PLAYBACK_STATUS_PLAYING
@@ -206,7 +216,7 @@ index 0155907..9ce2145 100644
        getTrackInfo() {
          return this.track;
 diff --git a/package.json b/package.json
-index 0e91412..50c4a41 100644
+index 0dd2a5c..8aedf53 100644
 --- a/package.json
 +++ b/package.json
 @@ -12,6 +12,7 @@
@@ -218,5 +228,5 @@ index 0e91412..50c4a41 100644
      "@jellybrick/mpris-service": "2.1.5",
      "electron-log": "^5.1.2",
 -- 
-2.43.0
+2.48.1
 
