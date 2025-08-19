@@ -51,6 +51,7 @@ prepare: clean install_build_deps
 	@echo "11 - Hide Application is offline banner (https://github.com/aunetx/deezer-linux/pull/124)"
 	@echo "12 - Disable animations (https://github.com/aunetx/deezer-linux/pull/133)"
 	@echo "13 - Disable notifications (https://github.com/aunetx/deezer-linux/pull/151)"
+	@echo "14 - Make thumbar actions work (https://github.com/aunetx/deezer-linux/pull/153)"
 
 	@$(foreach p, $(wildcard ./patches/*), patch -p 1 -d $(APP_DIR) < $(p);)
 
