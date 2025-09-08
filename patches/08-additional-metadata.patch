@@ -23,7 +23,7 @@ index 82f5c11..8332c3a 100644
            this.emit(MediaEvents.TrackUpdated, this.track),
            (this.mprisPlayer.metadata = {
 +            ...(data?.trackInfo?.song?.DURATION && {
-+              "mpris:length": data.trackInfo.song.DURATION * 1000,
++              "mpris:length": data.trackInfo.song.DURATION * 1000 * 1000,
 +            }),
              "mpris:trackid": this.mprisPlayer.objectPath("track/0"),
              "mpris:artUrl": track.coverUrl,
