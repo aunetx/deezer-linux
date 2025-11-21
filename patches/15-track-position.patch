@@ -1,0 +1,106 @@
+From 5492ddf5dfc01a5917cfd741b4dde045b4719ecc Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Fri, 12 Sep 2025 20:35:06 +0200
+Subject: [PATCH] feat: provide realtime position
+
+---
+ build/main.js     | 41 +++++++++++++++++++++++++----------------
+ build/renderer.js | 23 +++++++++++++++++++++++
+ 2 files changed, 48 insertions(+), 16 deletions(-)
+
+diff --git a/build/main.js b/build/main.js
+index cac0406..da96512 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -1425,21 +1425,29 @@
+         this.ipc.send("channel-player-repeat-mode-update", repeatMode);
+       }
+       setTrackInfo(track, data) {
+-        (this.track = Object.assign(this.track, track)),
+-          this.emit(MediaEvents.TrackUpdated, this.track),
+-          (this.mprisPlayer.metadata = {
+-            ...(data?.trackInfo?.song?.DURATION && {
+-              "mpris:length": data.trackInfo.song.DURATION * 1000 * 1000,
+-            }),
+-            "mpris:trackid": this.mprisPlayer.objectPath("track/0"),
+-            "mpris:artUrl": track.coverUrl,
+-            "xesam:title": track.title,
+-            "xesam:album": track.album,
+-            "xesam:artist": [track.artist],
+-            ...(data?.trackInfo?.song?.SNG_ID && {
+-              "xesam:url": `https://deezer.com/track/${data.trackInfo.song.SNG_ID}`,
+-            }),
+-          });
++        const duration = data.trackInfo.song.DURATION * 1000 * 1000;
++
++        if (data.position) {
++          this.mprisPlayer.getPosition = () =>
++            Math.round(data?.position * 1000 * 1000 || 0);
++          return;
++        }
++
++        this.track = Object.assign(this.track, track);
++        this.emit(MediaEvents.TrackUpdated, this.track);
++        this.mprisPlayer.metadata = {
++          ...(data?.trackInfo?.song?.DURATION && {
++            "mpris:length": duration,
++          }),
++          "mpris:trackid": this.mprisPlayer.objectPath("track/0"),
++          "mpris:artUrl": track.coverUrl,
++          "xesam:title": track.title,
++          "xesam:album": track.album,
++          "xesam:artist": [track.artist],
++          ...(data?.trackInfo?.song?.SNG_ID && {
++            "xesam:url": `https://deezer.com/track/${data.trackInfo.song.SNG_ID}`,
++          }),
++        };
+         this.updateDiscordRichPresence(track, data);
+       }
+       setPlayerInfo(player, data) {
+@@ -2977,7 +2985,8 @@
+       PlayerIpc_ipc.on(
+         "channel-player-track-update",
+         (event, track, player, data) => {
+-          media.setPlayerInfo(player, data), media.setTrackInfo(track, data);
++          if (event && player && data) media.setPlayerInfo(player, data);
++          if (event && track && data) media.setTrackInfo(track, data);
+         }
+       ),
+       PlayerIpc_ipc.on(
+diff --git a/build/renderer.js b/build/renderer.js
+index 4992d17..f48a209 100644
+--- a/build/renderer.js
++++ b/build/renderer.js
+@@ -433,6 +433,29 @@
+         },
+         !1
+       ),
++      setInterval(() => {
++        if (document.readyState === "complete") {
++          renderer_ipc.send(
++            "channel-player-track-update",
++            {},
++            {},
++            {
++              position:
++                document
++                  .querySelector(".slider-track .slider-track-input")
++                  ?.getAttribute("value") || 0,
++              trackInfo: {
++                song: {
++                  DURATION:
++                    document
++                      .querySelector(".slider-track .slider-track-input")
++                      ?.getAttribute("max") || 0,
++                },
++              },
++            }
++          );
++        }
++      }, 50),
+       (function (layoutName, callback) {
+         const layouts = nodeRequire("./assets/layout.json"),
+           manifest = nodeRequire("./assets/manifest.json");
+-- 
+2.48.1
+
