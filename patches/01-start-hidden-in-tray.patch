@@ -1,6 +1,6 @@
-From 7e317aa696aa2c1a69f2df0e4d7bb3b3df41d4df Mon Sep 17 00:00:00 2001
+From 51d8e05b43f000663380a321ae56f454b0e5f56f Mon Sep 17 00:00:00 2001
 From: josselinonduty <contact@josselinonduty.fr>
-Date: Mon, 21 Apr 2025 00:37:21 +0900
+Date: Fri, 28 Nov 2025 15:51:11 +0100
 Subject: [PATCH] fix: reduce to systray on close
 
 Original patch: Dorian Stoll <dorian.stoll@tmsp.io>
@@ -8,50 +8,55 @@ This stops the excessive logging, since parts of the app will not run in develop
 mode anymore. It also stops the app from logging the urls for the mp3 files, which is
 against the Deezer TOS.
 ---
- build/main.js | 24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+ build/main.js | 29 +++++++++++++++++------------
+ 1 file changed, 17 insertions(+), 12 deletions(-)
 
 diff --git a/build/main.js b/build/main.js
-index 7349ee9..9284b6b 100644
+index 8a1eb92..2915d07 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3097,24 +3097,24 @@
-                   finalMinSize[1]
-                 );
-             }
--            isDev(external_electron_namespaceObject.app)
--              ? this.window.showInactive()
--              : this.window.show(),
--              this.thumbar.init();
-+            if (!process.argv.some((arg) => arg === "--start-in-tray"))
-+              isDev(external_electron_namespaceObject.app)
-+                ? this.window.showInactive()
-+                : this.window.show(),
-+                this.thumbar.init();
-+            else this.window.hide();
-           }),
-           this.appService.enableDevMode();
-       }
-       _adjustViewToContentSize() {
-         if (!this.isFrameless) return;
-         const currentSize = this.window.getContentSize();
--        this.appService
--          .getViewContainer()
--          .setBounds({
--            x: 0,
--            y: 32,
--            width: currentSize[0],
--            height: currentSize[1] - 32,
--          });
-+        this.appService.getViewContainer().setBounds({
-+          x: 0,
-+          y: 32,
-+          width: currentSize[0],
-+          height: currentSize[1] - 32,
-+        });
-       }
-       loadWindow() {
-         const report = () => {
+@@ -3043,24 +3043,29 @@
+                 finalMinSize[1]
+               );
+           }
+-          isDev(external_electron_namespaceObject.app)
+-            ? this.window.showInactive()
+-            : this.window.show(),
+-            this.thumbar.init();
++          if (
++            !(
++              process.argv.some((arg) => arg === "--start-in-tray") ||
++              process.env.DZ_START_IN_TRAY === "yes"
++            )
++          )
++            isDev(external_electron_namespaceObject.app)
++              ? this.window.showInactive()
++              : this.window.show(),
++              this.thumbar.init();
++          else this.window.hide();
+         }),
+         this.appService.enableDevMode();
+     }
+     _adjustViewToContentSize() {
+       if (!this.isFrameless) return;
+       const currentSize = this.window.getContentSize();
+-      this.appService
+-        .getViewContainer()
+-        .setBounds({
+-          x: 0,
+-          y: 32,
+-          width: currentSize[0],
+-          height: currentSize[1] - 32,
+-        });
++      this.appService.getViewContainer().setBounds({
++        x: 0,
++        y: 32,
++        width: currentSize[0],
++        height: currentSize[1] - 32,
++      });
+     }
+     loadWindow() {
+       const report = () => {
 -- 
-2.43.0
+2.48.1
 
