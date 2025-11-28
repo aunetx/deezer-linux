@@ -1,29 +1,32 @@
-From 4dbe17674fef2f48b638cd4dc164b66042d03213 Mon Sep 17 00:00:00 2001
+From bc6db1fb9506d8dfa441cb9ee558701b3d30ed2e Mon Sep 17 00:00:00 2001
 From: josselinonduty <contact@josselinonduty.fr>
-Date: Mon, 21 Apr 2025 00:50:26 +0900
+Date: Fri, 28 Nov 2025 16:48:32 +0100
 Subject: [PATCH] fix: reduce to systray on close with respect to execution
  option
 
 ---
- build/main.js | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ build/main.js | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/build/main.js b/build/main.js
-index 9623b50..c904158 100644
+index 2915d07..411964e 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3049,7 +3049,10 @@
-             this._adjustViewToContentSize(),
-             mainView.setAutoResize({ width: !0, height: !0 });
-         } else this.appService.setWindow(this.window, void 0);
--        if ((this.appService.setUserAgent(), isPlatform(PLATFORM.DARWIN))) {
-+        if (
-+          (this.appService.setUserAgent(), isPlatform(PLATFORM.LINUX)) &&
-+          !process.argv.some((arg) => arg === "--disable-systray")
-+        ) {
-           let isQuitting = !1;
-           external_electron_namespaceObject.app.on(
-             "before-quit",
+@@ -3000,7 +3000,13 @@
+           this._adjustViewToContentSize(),
+           mainView.setAutoResize({ width: !0, height: !0 });
+       } else this.appService.setWindow(this.window, void 0);
+-      if ((this.appService.setUserAgent(), isPlatform(PLATFORM.DARWIN))) {
++      if (
++        (this.appService.setUserAgent(), isPlatform(PLATFORM.LINUX)) &&
++        !(
++          process.argv.some((arg) => arg === "--disable-systray") ||
++          "yes" === process.env.DZ_DISABLE_SYSTRAY
++        )
++      ) {
+         let isQuitting = !1;
+         external_electron_namespaceObject.app.on(
+           "before-quit",
 -- 
-2.43.0
+2.48.1
 

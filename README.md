@@ -52,6 +52,7 @@ Other packages can be installed from you package manager, either by clicking on 
 | Environment variable        | Options                                            | Description                                                                                       |
 | --------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | `DZ_START_IN_TRAY`          | `yes`,`no`                                         | Start the app in the tray (see [patch](./patches/01-start-hidden-in-tray.patch))                  |
+| `DZ_DISABLE_SYSTRAY`        | `yes`,`no`                                         | Quit the app when the window is closed (see [patch](./patches/03-quit.patch))                     |
 | `DZ_HIDE_APPOFFLINE_BANNER` | `yes`,`no`                                         | Hide the "Application is offline" banner (see [patch](./patches/11-hide-appoffline-banner.patch)) |
 | `DZ_DISABLE_ANIMATIONS`     | `yes`,`no`                                         | Disable animations (see [patch](./patches/12-disable-animations.patch))                           |
 | `DZ_DISABLE_NOTIFICATIONS`  | `yes`,`no`                                         | Disable notifications (see [patch](./patches/13-disable-notifications.patch))                     |
