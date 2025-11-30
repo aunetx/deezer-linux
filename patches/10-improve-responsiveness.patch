@@ -1,6 +1,6 @@
-From 33ed1cce4b8831fc6412ca482d9867a9dff9ffec Mon Sep 17 00:00:00 2001
-From: Aurélien Hamy <me@aunetx.dev>
-Date: Thu, 22 May 2025 15:50:44 +0200
+From 96889273bf295cf518e511c05dc73a1c081bd6d5 Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Sun, 30 Nov 2025 23:59:25 +0100
 Subject: [PATCH] feat: improve responsiveness on small devices
 
 Based on patch by josselinonduty <contact@josselinonduty.fr>
@@ -107,20 +107,20 @@ index 8016bc8..4efcd23 100644
    <body class="electron">
      <div id="dzr-app"></div>
 diff --git a/build/main.js b/build/main.js
-index 22b50ff..99935cb 100644
+index b141aa2..e5bc640 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3245,8 +3245,8 @@
-           },
-           windowOptions = {
-             title: "Deezer Desktop",
--            minWidth: 990,
--            minHeight: 600,
-+            minWidth: 450,
-+            minHeight: 450,
-             icon: external_electron_namespaceObject.nativeImage.createFromPath(
-               getAppIcon(external_electron_namespaceObject.app)
-             ),
+@@ -3075,8 +3075,8 @@
+         },
+         windowOptions = {
+           title: "Deezer Desktop",
+-          minWidth: 990,
+-          minHeight: 600,
++          minWidth: 450,
++          minHeight: 450,
+           icon: external_electron_namespaceObject.nativeImage.createFromPath(
+             getAppIcon(external_electron_namespaceObject.app)
+           ),
 -- 
-2.49.0
+2.48.1
 
