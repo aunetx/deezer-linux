@@ -1,0 +1,403 @@
+From bb03d4664c7f7137c618cc575fc5d3029ae239a1 Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Sun, 30 Nov 2025 18:36:05 +0100
+Subject: [PATCH] feat: Provide metadata; Better MPRIS compatiblity
+
+---
+ build/main.js     | 144 ++++++++++++++++++++++++++++++++++++++--------
+ build/renderer.js | 118 +++++++++++++++++++++++++++++++------
+ 2 files changed, 222 insertions(+), 40 deletions(-)
+
+diff --git a/build/main.js b/build/main.js
+index 75182f1..481fc5c 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -87,6 +87,10 @@
+     external_events_namespaceObject = require("events"),
+     external_semver_namespaceObject =
+       (require("isomorphic-fetch"), require("semver"));
++  const external_electron_mpris_namespaceObject = require("@jellybrick/mpris-service");
++  var external_electron_mpris_default = __webpack_require__.n(
++    external_electron_mpris_namespaceObject
++  );
+   var PLATFORM,
+     external_semver_default = __webpack_require__.n(
+       external_semver_namespaceObject
+@@ -1168,8 +1172,9 @@
+       };
+     };
+   let MediaService = class extends external_events_namespaceObject.EventEmitter {
+-    constructor(ipc, user) {
++    constructor(ipc, user, app) {
+       super(),
++        (this.app = app),
+         (this.smtc = null),
+         (this.track = {}),
+         (this.player = {}),
+@@ -1177,6 +1182,11 @@
+         (this.debounceOptions = { leading: !0, maxWait: 500 }),
+         (this.ipc = ipc),
+         (this.user = user),
++        (this.mprisPlayer = new external_electron_mpris_namespaceObject({
++          name: "deezer",
++          identity: "Deezer",
++          supportedInterfaces: ["player"],
++        })),
+         isPlatform(PLATFORM.LINUX) &&
+           (this.user.addListener(UserEvents.LoggedIn, () => {
+             this.start();
+@@ -1184,6 +1194,24 @@
+           this.user.addListener(UserEvents.LoggedOut, () => {
+             this.stop();
+           }));
++      this.initMprisPlayerControls();
++    }
++    initMprisPlayerControls() {
++      // Events => ['raise', 'quit', 'next', 'previous', 'pause', 'playpause', 'stop', 'play', 'seek', 'position', 'open', 'volume', 'loopStatus', 'shuffle'];
++      this.mprisPlayer.on("play", this.play.bind(this));
++      this.mprisPlayer.on("pause", this.pause.bind(this));
++      this.mprisPlayer.on("playpause", () =>
++        this.player.state === "playing" ? this.pause() : this.play()
++      );
++      this.mprisPlayer.on("stop", this.stop.bind(this));
++      this.mprisPlayer.on("next", this.next.bind(this));
++      this.mprisPlayer.on("previous", this.prev.bind(this));
++      this.mprisPlayer.on("shuffle", this.setSuffle.bind(this));
++      this.mprisPlayer.on("loopStatus", this.setRepeatMode.bind(this));
++      this.mprisPlayer.on("raise", () => this.app.getWindow().show());
++      this.mprisPlayer.on("seek", this.seek.bind(this));
++      this.mprisPlayer.on("position", this.setPosition.bind(this));
++      this.mprisPlayer.on("volume", this.setVolume.bind(this));
+     }
+     play() {
+       this.ipc.send("channel-player-media-control", MediaPlayerControl.Play);
+@@ -1207,15 +1235,64 @@
+       this.ipc.send("channel-player-shuffle-update", shuffle);
+     }
+     setRepeatMode(repeatMode) {
+-      this.ipc.send("channel-player-repeat-mode-update", repeatMode);
+-    }
+-    setTrackInfo(track) {
++      const mode =
++        repeatMode === "Playlist"
++          ? MediaPlayerRepeatMode.All
++          : repeatMode === "Track"
++            ? MediaPlayerRepeatMode.Once
++            : MediaPlayerRepeatMode.None;
++      this.ipc.send("channel-player-repeat-mode-update", mode);
++    }
++    seek(offset) {
++      this.ipc.send("channel-player-seek", offset);
++    }
++    setPosition(event) {
++      this.ipc.send("channel-player-position", event.position);
++    }
++    setVolume(volume) {
++      this.ipc.send("channel-player-set-volume", volume);
++    }
++    setTrackInfo(track, data) {
++      const duration = data?.trackInfo?.song?.DURATION * 1000 * 1000;
++
++      if (data?.position) {
++        this.mprisPlayer.getPosition = () =>
++          Math.round(data?.position * 1000 * 1000 || 0);
++        return;
++      }
++
+       (this.track = Object.assign(this.track, track)),
+-        this.emit(MediaEvents.TrackUpdated, this.track);
++        this.emit(MediaEvents.TrackUpdated, this.track),
++        (this.mprisPlayer.metadata = {
++          ...(duration && {
++            "mpris:length": duration,
++          }),
++          "mpris:trackid": this.mprisPlayer.objectPath("track/0"),
++          "mpris:artUrl": track.coverUrl,
++          "xesam:title": track.title,
++          "xesam:album": track.album,
++          "xesam:artist": [track.artist],
++          ...(data?.trackInfo?.song?.SNG_ID && {
++            "xesam:url": `https://deezer.com/track/${data.trackInfo.song.SNG_ID}`,
++          }),
++        });
+     }
+-    setPlayerInfo(player) {
++    setPlayerInfo(player, data) {
+       (this.player = Object.assign(this.player, player)),
+-        this.emit(MediaEvents.PlayerUpdated, this.player);
++        this.emit(MediaEvents.PlayerUpdated, this.player),
++        (this.mprisPlayer.playbackStatus =
++          this.player.state === "playing"
++            ? external_electron_mpris_namespaceObject.PLAYBACK_STATUS_PLAYING
++            : external_electron_mpris_namespaceObject.PLAYBACK_STATUS_PAUSED),
++        (this.mprisPlayer.loopStatus =
++          this.player.repeatMode === MediaPlayerRepeatMode.All
++            ? "Playlist"
++            : this.player.repeatMode === MediaPlayerRepeatMode.Once
++              ? "Track"
++              : "None");
++      if (data?.player?.volume) {
++        this.mprisPlayer.volume = data.player.volume;
++      }
+     }
+     getTrackInfo() {
+       return this.track;
+@@ -1275,7 +1352,11 @@
+         1,
+         (0, external_inversify_namespaceObject.inject)(SERVICE_USER)
+       ),
+-      MediaService_metadata("design:paramtypes", [Object, Object]),
++      MediaService_param(
++        2,
++        (0, external_inversify_namespaceObject.inject)(SERVICE_APPLICATION)
++      ),
++      MediaService_metadata("design:paramtypes", [Object, Object, Object]),
+     ],
+     MediaService
+   );
+@@ -2457,7 +2538,7 @@
+         (this.ipc = ipc),
+         (this.app = app);
+     }
+-    setUserInfo(userInfo) {
++    setUserInfo(userInfo, data) {
+       const previousUserID = this.user.id;
+       (this.user = Object.assign(this.user, userInfo)),
+         previousUserID !== this.user.id &&
+@@ -2689,23 +2770,34 @@
+   const PlayerIpc_ipc = main_di.get(SERVICE_IPC),
+     media = main_di.get(SERVICE_MEDIA),
+     powerSave = main_di.get(SERVICE_POWER_SAVE);
+-  PlayerIpc_ipc.on(
+-    "channel-player-state-update",
+-    external_lodash_debounce_default()((event, state) => {
+-      media.setPlayerInfo({ state }),
++  var powerSaveTimeoutId;
++  PlayerIpc_ipc.on("channel-player-state-update", (event, state, data) => {
++    media.setPlayerInfo({ state }, data),
++      clearTimeout(powerSaveTimeoutId),
++      (powerSaveTimeoutId = setTimeout(() => {
+         state === MediaPlayerState.Playing
+           ? powerSave.start()
+           : powerSave.stop();
+-    }, 3e3)
+-  ),
+-    PlayerIpc_ipc.on("channel-player-track-update", (event, track, player) => {
+-      media.setPlayerInfo(player), media.setTrackInfo(track);
+-    }),
+-    PlayerIpc_ipc.on("channel-player-shuffle-update", (event, player) => {
+-      media.setPlayerInfo(player);
++      }, 3e3));
++  }),
++    PlayerIpc_ipc.on(
++      "channel-player-track-update",
++      (event, track, player, data) => {
++        if (event && player && data) media.setPlayerInfo(player, data);
++        if (event && track && data) media.setTrackInfo(track, data);
++      }
++    ),
++    PlayerIpc_ipc.on("channel-player-shuffle-update", (event, player, data) => {
++      media.setPlayerInfo(player, data);
+     }),
+-    PlayerIpc_ipc.on("channel-player-repeat-mode-update", (event, player) => {
+-      media.setPlayerInfo(player);
++    PlayerIpc_ipc.on(
++      "channel-player-repeat-mode-update",
++      (event, player, data) => {
++        media.setPlayerInfo(player, data);
++      }
++    ),
++    PlayerIpc_ipc.on("channel-player-volume-changed", (event, volume, data) => {
++      media.setPlayerInfo({ volume }, data);
+     });
+   const UpdaterIpc_ipc = main_di.get(SERVICE_IPC),
+     autoUpdater = main_di.get(SERVICE_UPDATER);
+@@ -2714,8 +2806,8 @@
+   });
+   const UserIpc_ipc = main_di.get(SERVICE_IPC),
+     user = main_di.get(SERVICE_USER);
+-  UserIpc_ipc.on("channel-user-store-updated", (event, userData) => {
+-    user.setUserInfo(userData);
++  UserIpc_ipc.on("channel-user-store-updated", (event, userData, data) => {
++    user.setUserInfo(userData, data);
+   });
+   var application_awaiter = function (thisArg, _arguments, P, generator) {
+     return new (P || (P = Promise))(function (resolve, reject) {
+@@ -2781,6 +2873,10 @@
+           "autoplay-policy",
+           "no-user-gesture-required"
+         ),
++        external_electron_namespaceObject.app.commandLine.appendSwitch(
++          "disable-features",
++          "HardwareMediaKeyHandling"
++        ),
+         external_electron_namespaceObject.app.on(
+           "second-instance",
+           (event, argv) => {
+diff --git a/build/renderer.js b/build/renderer.js
+index 7329ec8..d0f0f4d 100644
+--- a/build/renderer.js
++++ b/build/renderer.js
+@@ -285,6 +285,42 @@
+         dzPlayer.control.setVolume(
+           Math.max(0, Math.min(1, dzPlayer.volume + 0.1 * volume))
+         );
++    }),
++    PlayerIpc_ipc.on("channel-player-set-volume", (event, volume) => {
++      const dzPlayer = window.dzPlayer;
++      dzPlayer && dzPlayer.control.setVolume(volume);
++    }),
++    PlayerIpc_ipc.on("channel-player-seek", (event, offset) => {
++      const dzPlayer = window.dzPlayer;
++      if (dzPlayer) {
++        const duration =
++          dzPlayer.duration ||
++          document
++            .querySelector(".slider-track .slider-track-input")
++            ?.getAttribute("max");
++        const position =
++          dzPlayer.position ||
++          document
++            .querySelector(".slider-track .slider-track-input")
++            ?.getAttribute("value");
++        if (duration && position) {
++          const newPos = parseFloat(position) + offset / 1000000;
++          dzPlayer.control.seek(newPos / parseFloat(duration));
++        }
++      }
++    }),
++    PlayerIpc_ipc.on("channel-player-position", (event, position) => {
++      const dzPlayer = window.dzPlayer;
++      if (dzPlayer) {
++        const duration =
++          dzPlayer.duration ||
++          document
++            .querySelector(".slider-track .slider-track-input")
++            ?.getAttribute("max");
++        if (duration) {
++          dzPlayer.control.seek(position / 1000000 / parseFloat(duration));
++        }
++      }
+     });
+   const UserIpc_ipc = renderer_di.get(SERVICE_IPC);
+   UserIpc_ipc.on("channel-user-log-out", () => {
+@@ -337,23 +373,31 @@
+                 isFamily =
+                   multiAccount &&
+                   (multiAccount.ENABLED || multiAccount.CHILD_COUNT > 0);
+-              renderer_ipc.send("channel-user-store-updated", {
+-                id: userMetadata.USER_ID,
+-                isFamily,
+-                isEmployee: userMetadata.SETTING.global.is_employee,
+-                offerId: user.OFFER_ID,
+-                country: user.COUNTRY,
+-                gatekeeps: user.__DZR_GATEKEEPS__,
+-              });
++              renderer_ipc.send(
++                "channel-user-store-updated",
++                {
++                  id: userMetadata.USER_ID,
++                  isFamily,
++                  isEmployee: userMetadata.SETTING.global.is_employee,
++                  offerId: user.OFFER_ID,
++                  country: user.COUNTRY,
++                  gatekeeps: user.__DZR_GATEKEEPS__,
++                },
++                event.data
++              );
+               break;
+             }
+             case "player-repeat-changed":
+-              renderer_ipc.send("channel-player-repeat-mode-update", {
+-                repeatMode: event.data.player.repeat,
+-                canPrev: event.data.player.hasPrev,
+-                canNext: event.data.player.hasNext,
+-                canRepeat: event.data.player.hasRepeat,
+-              });
++              renderer_ipc.send(
++                "channel-player-repeat-mode-update",
++                {
++                  repeatMode: event.data.player.repeat,
++                  canPrev: event.data.player.hasPrev,
++                  canNext: event.data.player.hasNext,
++                  canRepeat: event.data.player.hasRepeat,
++                },
++                event.data
++              );
+               break;
+             case "player-shuffle-changed":
+               renderer_ipc.send("channel-player-shuffle-update", {
+@@ -363,12 +407,23 @@
+                 canShuffle: event.data.player.hasShuffle,
+               });
+               break;
++            case "player-volume-changed":
++              renderer_ipc.send(
++                "channel-player-volume-changed",
++                event.data.player.volume,
++                event.data
++              );
++              break;
+             case "player-playing-changed": {
+               const state =
+                 !0 === event.data.isPlaying
+                   ? MediaPlayerState.Playing
+                   : MediaPlayerState.Paused;
+-              renderer_ipc.send("channel-player-state-update", state);
++              renderer_ipc.send(
++                "channel-player-state-update",
++                state,
++                event.data
++              );
+               break;
+             }
+             case "player-track-updated": {
+@@ -396,13 +451,44 @@
+                   canRepeat: event.data.player.hasRepeat,
+                   canShuffle: event.data.player.hasShuffle,
+                 };
+-              renderer_ipc.send("channel-player-track-update", track, player);
++              renderer_ipc.send(
++                "channel-player-track-update",
++                track,
++                player,
++                event.data
++              );
+               break;
+             }
+           }
+       },
+       !1
+     ),
++    setInterval(() => {
++      if (document.readyState === "complete") {
++        renderer_ipc.send(
++          "channel-player-track-update",
++          {},
++          {},
++          {
++            position:
++              document
++                .querySelector(".slider-track .slider-track-input")
++                ?.getAttribute("value") || 0,
++            trackInfo: {
++              song: {
++                DURATION:
++                  document
++                    .querySelector(".slider-track .slider-track-input")
++                    ?.getAttribute("max") || 0,
++              },
++            },
++            player: {
++              volume: window.dzPlayer?.volume,
++            },
++          }
++        );
++      }
++    }, 50),
+     (function (layoutName, callback) {
+       const layouts = nodeRequire("./assets/layout.json"),
+         manifest = nodeRequire("./assets/manifest.json");
+-- 
+2.48.1
+

@@ -16,6 +16,9 @@
     "build-snap-arm64": "electron-builder --arm64 --linux snap",
     "build-appimage-arm64": "electron-builder --arm64 --linux AppImage"
   },
+  "dependencies": {
+    "@jellybrick/mpris-service": "2.1.5"
+  },
   "devDependencies": {
     "electron": "^38.4.0",
     "electron-builder": "^26.0.0"
