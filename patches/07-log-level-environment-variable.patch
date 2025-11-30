@@ -1,6 +1,6 @@
-From 5cc1a232e85c96163cba700321df9079ea4e4379 Mon Sep 17 00:00:00 2001
+From 32888596092dd2bded632299af0782a1eb871f18 Mon Sep 17 00:00:00 2001
 From: josselinonduty <contact@josselinonduty.fr>
-Date: Wed, 14 May 2025 14:55:20 +0900
+Date: Sun, 30 Nov 2025 22:37:18 +0100
 Subject: [PATCH] fix: set default log level to "warn" to respect Deezer TOS; 
  control log level from environment variable
 
@@ -9,34 +9,38 @@ This stops the excessive logging, since parts of the app will not run in develop
 mode anymore. It also stops the app from logging the urls for the mp3 files, which is
 against the Deezer TOS.
 ---
- build/main.js | 14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+ build/main.js | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
 diff --git a/build/main.js b/build/main.js
-index eabc5e1..485b953 100644
+index 481fc5c..b141aa2 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3305,12 +3305,14 @@
-         processType: isProcessMain() ? "main" : process.type,
-       }),
-       (external_electron_log_default().transports.console.format = `{h}:{i}:{s}.{ms} ({processType}/{level}) ${isPlatform(PLATFORM.WINDOWS) ? ">" : "›"}  {text}`),
--      (external_electron_log_default().transports.console.level = isDev
--        ? "silly"
--        : "warn"),
--      (external_electron_log_default().transports.file.level = isDev
--        ? "silly"
--        : "warn"),
-+      (external_electron_log_default().transports.console.level =
-+        isDev({ isPackaged: true }) || process.env.LOG_LEVEL
-+          ? process.env.LOG_LEVEL
-+          : "warn"),
-+      (external_electron_log_default().transports.file.level =
-+        isDev({ isPackaged: true }) || !process.env.LOG_LEVEL
-+          ? process.env.LOG_LEVEL
-+          : "warn"),
-       (external_electron_log_default().transports.sentry = function (msg) {
-         "error" === msg.level &&
-           (msg.data[0] instanceof Error
+@@ -3316,12 +3316,18 @@
+       processType: isProcessMain() ? "main" : process.type,
+     }),
+     (external_electron_log_default().transports.console.format = `{h}:{i}:{s}.{ms} ({processType}/{level}) ${isPlatform(PLATFORM.WINDOWS) ? ">" : "›"}  {text}`),
+-    (external_electron_log_default().transports.console.level = isDev
+-      ? "silly"
+-      : "warn"),
+-    (external_electron_log_default().transports.file.level = isDev
+-      ? "silly"
+-      : "warn"),
++    (external_electron_log_default().transports.console.level =
++      (process.argv.find((arg) => arg.startsWith("--log-level=")) || "").split(
++        "="
++      )[1] ||
++      process.env.DZ_LOG_LEVEL ||
++      "warn"),
++    (external_electron_log_default().transports.file.level =
++      (process.argv.find((arg) => arg.startsWith("--log-level=")) || "").split(
++        "="
++      )[1] ||
++      process.env.DZ_LOG_LEVEL ||
++      "warn"),
+     (external_electron_log_default().transports.sentry = function (msg) {
+       "error" === msg.level &&
+         (msg.data[0] instanceof Error
 -- 
-2.43.0
+2.48.1
 
