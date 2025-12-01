@@ -56,7 +56,7 @@
           "MimeType": "x-scheme-handler/deezer;",
           "Categories": "Audio;Music;Player;AudioVideo;",
           "Keywords": "Music;Player;Streaming;Online;",
-          "StartupWMClass": "Deezer",
+          "StartupWMClass": "deezer-desktop",
           "SingleMainWindow": "true",
           "X-GNOME-UsesNotifications": "true"
         }
