@@ -1,0 +1,232 @@
+From c53a3132b676ecaa30f8dcb30ecbaaabbbd63f76 Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Wed, 23 Jul 2025 21:36:05 +0200
+Subject: [PATCH] feat: add discord rich presence support (w/ opt-in arg.)
+
+---
+ build/main.js | 175 +++++++++++++++++++++++++++++++++++++++++++++++++-
+ package.json  |   1 +
+ 2 files changed, 175 insertions(+), 1 deletion(-)
+
+diff --git a/build/main.js b/build/main.js
+index 8332c3a..aba4098 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -93,6 +93,13 @@
+     var external_electron_mpris_default = __webpack_require__.n(
+       external_electron_mpris_namespaceObject
+     );
++    const external_discord_rpc_namespaceObject = require("@deezer-community/discord-rpc");
++    var external_discord_rpc_default = __webpack_require__.n(
++      external_discord_rpc_namespaceObject
++    );
++    /** @type {import("@deezer-community/discord-rpc").Client} */
++    var rpcClient;
++    var rpcData, rpcStartedAt, rpcPausedAt;
+     function isPlatform(platform) {
+       switch (platform) {
+         case PLATFORM.WINDOWS:
+@@ -1229,6 +1236,170 @@
+         this.mprisPlayer.on("loopStatus", this.setRepeatMode.bind(this));
+         this.mprisPlayer.on("raise", () => this.app.getWindow().show());
+       }
++      updateDiscordRichPresence(track, data) {
++        if (!process.argv.some((arg) => arg === "--enable-discord-rpc")) return;
++
++        if (!rpcClient) {
++          rpcClient = new external_discord_rpc_namespaceObject.Client({
++            clientId: "1244016234203185183",
++            transport: "ipc",
++          });
++          rpcClient.on("ready", () => {
++            external_electron_log_default().info(
++              "[Discord] Rich presence client is ready."
++            );
++          });
++          rpcClient.on("close", () => {
++            external_electron_log_default().info(
++              "[Discord] Rich presence client disconnected."
++            );
++          });
++          rpcClient
++            .login()
++            .then(() => {
++              external_electron_log_default().info(
++                "[Discord] Rich presence client logged in successfully."
++              );
++            })
++            .catch((err) => {
++              external_electron_log_default().error(
++                `[Discord] Rich presence client login error: ${err}`
++              );
++
++              rpcClient = null;
++            });
++        }
++
++        if (track && data) {
++          const duration = data?.trackInfo?.song?.DURATION;
++          const livestream = data?.trackInfo?.song?.LIVE_STREAM || false;
++
++          external_electron_log_default().debug(
++            "[Discord] Updating rich presence with track information."
++          );
++          rpcStartedAt = livestream
++            ? rpcData.startTimestamp || Date.now()
++            : Date.now();
++          rpcPausedAt = null;
++          rpcData = {
++            type: external_discord_rpc_namespaceObject.ActivityType.Listening,
++            smallImage: {
++              image: "play",
++              text: "Playing",
++            },
++            largeImage: track.coverUrl,
++            description: track.title,
++            state:
++              !track.album || track.title === track.album
++                ? `${track.artist}`
++                : `${track.artist} - ${track.album}`,
++            startTimestamp: rpcStartedAt,
++            ...(duration && {
++              endTimestamp: rpcStartedAt + duration * 1e3,
++              duration: duration * 1e3,
++            }),
++            ...(data?.trackInfo?.song?.SNG_ID && {
++              button: {
++                label: "Listen on Deezer",
++                url: `https://deezer.com/track/${data.trackInfo.song.SNG_ID}`,
++              },
++            }),
++          };
++
++          rpcClient
++            ?.setActivity({
++              state: rpcData.state,
++              type: rpcData.type,
++              details: rpcData.description,
++              assets: {
++                large_image: rpcData.largeImage,
++                small_image: rpcData.smallImage.image,
++                small_text: rpcData.smallImage.text,
++              },
++              timestamps: {
++                start: rpcData.startTimestamp,
++                end: rpcData.endTimestamp,
++              },
++              ...(rpcData.button && {
++                buttons: [
++                  {
++                    label: rpcData.button.label,
++                    url: rpcData.button.url,
++                  },
++                ],
++              }),
++            })
++            .then(() => {
++              external_electron_log_default().debug(
++                "[Discord] Rich presence updated successfully."
++              );
++            })
++            .catch((err) => {
++              external_electron_log_default().error(
++                `[Discord] Error updating rich presence: ${err}`
++              );
++            });
++        } else {
++          if (!rpcClient) return;
++          if (!rpcData) {
++            external_electron_log_default().debug(
++              "[Discord] No track data available for rich presence."
++            );
++            return;
++          }
++
++          if (this.player.state === "playing") {
++            if (rpcPausedAt) {
++              const elapsed = rpcPausedAt - rpcStartedAt;
++              rpcStartedAt = Date.now() - elapsed;
++              rpcData.startTimestamp = rpcStartedAt;
++              rpcData.endTimestamp = rpcStartedAt + (rpcData.duration || 0);
++            }
++            rpcPausedAt = undefined;
++            rpcData.smallImage = {
++              image: "play",
++              text: "Playing",
++            };
++          } else {
++            rpcData.startTimestamp = undefined;
++            rpcData.endTimestamp = undefined;
++            rpcPausedAt = Date.now();
++            rpcData.smallImage = {
++              image: "pause",
++              text: "Paused",
++            };
++          }
++
++          rpcClient
++            ?.setActivity({
++              state: rpcData.state,
++              type: rpcData.type,
++              details: rpcData.description,
++              assets: {
++                large_image: rpcData.largeImage,
++                small_image: rpcData.smallImage.image,
++                small_text: rpcData.smallImage.text,
++              },
++              timestamps: {
++                start: rpcData.startTimestamp,
++                end: rpcData.endTimestamp,
++              },
++              ...(rpcData.button && {
++                buttons: [
++                  {
++                    label: rpcData.button.label,
++                    url: rpcData.button.url,
++                  },
++                ],
++              }),
++            })
++            .catch((err) => {
++              external_electron_log_default().error(
++                `[Discord] Error updating rich presence: ${err}`
++              );
++            });
++        }
++      }
+       play() {
+         this.ipc.send("channel-player-media-control", MediaPlayerControl.Play);
+       }
+@@ -1269,6 +1440,7 @@
+               "xesam:url": `https://deezer.com/track/${data.trackInfo.song.SNG_ID}`,
+             }),
+           });
++        this.updateDiscordRichPresence(track, data);
+       }
+       setPlayerInfo(player, data) {
+         (this.player = Object.assign(this.player, player)),
+@@ -1276,7 +1448,8 @@
+           (this.mprisPlayer.playbackStatus =
+             this.player.state === "playing"
+               ? external_electron_mpris_namespaceObject.PLAYBACK_STATUS_PLAYING
+-              : external_electron_mpris_namespaceObject.PLAYBACK_STATUS_PAUSED);
++              : external_electron_mpris_namespaceObject.PLAYBACK_STATUS_PAUSED),
++          this.updateDiscordRichPresence();
+       }
+       getTrackInfo() {
+         return this.track;
+diff --git a/package.json b/package.json
+index 0dd2a5c..8aedf53 100644
+--- a/package.json
++++ b/package.json
+@@ -12,6 +12,7 @@
+   "author": "Deezer <support@deezer.com>",
+   "main": "build/main.js",
+   "dependencies": {
++    "@deezer-community/discord-rpc": "1.0.4",
+     "@electron/remote": "2.1.2",
+     "@jellybrick/mpris-service": "2.1.5",
+     "electron-log": "^5.1.2",
+-- 
+2.48.1
+

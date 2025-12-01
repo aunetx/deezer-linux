@@ -18,8 +18,8 @@
     "build-appimage-arm64": "electron-builder --arm64 --linux AppImage"
   },
   "devDependencies": {
-    "electron": "^33.2.0",
-    "electron-builder": "^23.0.3"
+    "electron": "^35.0.0",
+    "electron-builder": "^26.0.0"
   },
   "build": {
     "files": ["**"],
@@ -42,20 +42,63 @@
     "linux": {
       "maintainer": "aunetx <me@aunetx.dev>",
       "icon": "../icons",
-      "category": "Utility;AudioVideo;Audio;Player;Music;",
+      "category": "AudioVideo;Audio;Player;Music;",
       "desktop": {
-        "Name": "Deezer",
-        "Type": "Application",
-        "GenericName": "Online music streaming service",
-        "Comment": "Listen and download all your favorite music",
-        "MimeType": "x-scheme-handler/deezer;",
-        "Keywords": "Music;Player;Streaming;Online;",
-        "StartupWMClass": "Deezer"
+        "entry": {
+          "Type": "Application",
+          "Name": "Deezer",
+          "GenericName": "Online music streaming service",
+          "Comment": "Listen and download all your favorite music",
+          "StartupNotify": "true",
+          "Terminal": "false",
+          "MimeType": "x-scheme-handler/deezer;",
+          "Categories": "Audio;Music;Player;AudioVideo;",
+          "Keywords": "Music;Player;Streaming;Online;",
+          "StartupWMClass": "Deezer",
+          "SingleMainWindow": "true",
+          "X-GNOME-UsesNotifications": "true"
+        }
       },
       "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
     "snap": {
-      "artifactName": "${productName}_${version}_${arch}.${ext}"
+      "artifactName": "${productName}_${version}_${arch}.${ext}",
+      "publish": [
+        {
+          "provider": "generic",
+          "url": "https://null/"
+        }
+      ],
+      "base": "core22",
+      "grade": "stable",
+      "confinement": "classic",
+      "after": ["desktop-gtk4", "libnotify-bin"],
+      "slots": [
+        {
+          "mpris": {
+            "name": "deezer"
+          },
+          "desktop": {
+            "name": "deezer"
+          }
+        }
+      ],
+      "plugs": [
+        "desktop",
+        "desktop-legacy",
+        "wayland",
+        "x11",
+        "unity7",
+        "alsa",
+        "avahi-observe",
+        "browser-support",
+        "gsettings",
+        "network",
+        "opengl",
+        "audio-playback",
+        "screen-inhibit-control",
+        "upower-observe"
+      ]
     },
     "deb": {
       "artifactName": "${productName}_${version}_${arch}.${ext}"

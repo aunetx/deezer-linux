@@ -1,0 +1,42 @@
+From 5cc1a232e85c96163cba700321df9079ea4e4379 Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Wed, 14 May 2025 14:55:20 +0900
+Subject: [PATCH] fix: set default log level to "warn" to respect Deezer TOS; 
+ control log level from environment variable
+
+Original patch: Dorian Stoll <dorian.stoll@tmsp.io>
+This stops the excessive logging, since parts of the app will not run in development
+mode anymore. It also stops the app from logging the urls for the mp3 files, which is
+against the Deezer TOS.
+---
+ build/main.js | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/build/main.js b/build/main.js
+index eabc5e1..485b953 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -3305,12 +3305,14 @@
+         processType: isProcessMain() ? "main" : process.type,
+       }),
+       (external_electron_log_default().transports.console.format = `{h}:{i}:{s}.{ms} ({processType}/{level}) ${isPlatform(PLATFORM.WINDOWS) ? ">" : "›"}  {text}`),
+-      (external_electron_log_default().transports.console.level = isDev
+-        ? "silly"
+-        : "warn"),
+-      (external_electron_log_default().transports.file.level = isDev
+-        ? "silly"
+-        : "warn"),
++      (external_electron_log_default().transports.console.level =
++        isDev({ isPackaged: true }) || process.env.LOG_LEVEL
++          ? process.env.LOG_LEVEL
++          : "warn"),
++      (external_electron_log_default().transports.file.level =
++        isDev({ isPackaged: true }) || !process.env.LOG_LEVEL
++          ? process.env.LOG_LEVEL
++          : "warn"),
+       (external_electron_log_default().transports.sentry = function (msg) {
+         "error" === msg.level &&
+           (msg.data[0] instanceof Error
+-- 
+2.43.0
+

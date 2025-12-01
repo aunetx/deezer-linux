@@ -36,7 +36,7 @@ By participating in this project, you agree to maintain a respectful and inclusi
 
 Ensure you have all required dependencies:
 
-- Node.js (20 recommended)
+- Node.js (22 recommended)
 - npm
 - 7z
 - make
@@ -63,11 +63,20 @@ Edit the files you want to change in the `app` directory.
 > [!TIP]
 > You do not need to generate a patch file to test your changes. Open the `app` folder after running `make patch-new` and make your changes. Then run `make build_{target}_{arch}` to try your changes.
 
-When you are done, commit your changes, and then generate the patch:
+When you are done, make sure that the only files you modified are the ones you want to include in the patch. You can check this by running:
+
+```sh
+git status
+```
+
+Then, generate the patch:
 
 ```sh
 make patch-gen
 ```
+
+> [!NOTE]
+> This command will take care of pretty printing your patch and creating a patch file.
 
 The patch will be saved in the `patches` directory. Make sure to rename the patch file to something meaningful and follow the naming convention. Add the patch to the echoed list in the `Makefile`.
 

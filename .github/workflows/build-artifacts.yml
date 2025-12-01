@@ -14,7 +14,10 @@ jobs:
       uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
+    - name: prepare runner
+      run: |
+        sudo snap install snapcraft --classic
   
     - name: install_deps
       run: make install_deps
@@ -25,6 +28,8 @@ jobs:
       run: make build_rpm_x64
     - name: build_appimage_x64
       run: make build_appimage_x64
+    - name: build_snap_x64
+      run: make build_snap_x64
     - name: build_tar.xz_x64
       run: make build_tar.xz_x64
 
@@ -34,6 +39,8 @@ jobs:
       run: make build_rpm_arm64
     - name: build_appimage_arm64
       run: make build_appimage_arm64
+    # - name: build_snap_arm64 # This step is currently disabled due to issues with snapcraft + arm64 on github runners
+    #   run: make build_snap_arm64
     - name: build_tar.xz_arm64
       run: make build_tar.xz_arm64
 
@@ -41,7 +48,7 @@ jobs:
       run: echo "version=${GITHUB_REF/refs\/tags\//}" >> "$GITHUB_ENV"
 
     - name: Generate sha256
-      run: echo "$(sha256sum artifacts/{x64,arm64}/*.{deb,rpm,AppImage,tar.xz})" > sha256
+      run: echo "$(sha256sum artifacts/{x64,arm64}/*.{deb,rpm,AppImage,tar.xz} artifacts/x64/*.snap)" > sha256
 
     - name: create release
       uses: softprops/action-gh-release@v2
@@ -53,6 +60,7 @@ jobs:
             artifacts/x64/*.deb
             artifacts/x64/*.rpm
             artifacts/x64/*.AppImage
+            artifacts/x64/*.snap
             artifacts/x64/*.tar.xz
             artifacts/arm64/*.deb
             artifacts/arm64/*.rpm

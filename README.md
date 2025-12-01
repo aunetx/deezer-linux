@@ -9,9 +9,14 @@ It packages the app in a number of formats:
 
 - Flatpak, [available on flathub](https://flathub.org/apps/dev.aunetx.deezer)
 - AppImage
+- Snapcraft
 - `rpm` (Fedora, Red Hat, CentOS, openSUSE, ...)
 - `deb` (Debian, Ubuntu, Pop!\_OS, elementary OS, ...)
 - `tar.xz` to install anywhere else
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=aunetx/deezer-linux&type=date&legend=top-left)](https://www.star-history.com/#aunetx/deezer-linux&type=date&legend=top-left)
 
 Special thanks to [SibrenVasse](https://github.com/SibrenVasse) who made the [original AUR package](https://github.com/SibrenVasse/deezer) for this app!
 
@@ -36,17 +41,25 @@ Other packages can be installed from you package manager, either by clicking on 
 
 ## Usage
 
-| Option                  | Description                                                                                     |
-| ----------------------- | ----------------------------------------------------------------------------------------------- |
-| `--start-in-tray`       | Start the app in the tray (see [patch](./patches/01-start-hidden-in-tray.patch))                |
-| `--disable-systray`     | Quit the app when the window is closed (see [patch](./patches/03-quit.patch))                   |
-| `--disable-features`    | Disable some features (see [patch](./patches/06-better-management-of-MPRIS.patch))              |
-| `--enable-discord-rpc` | Enable Discord RPC integration (see [patch](./patches/08-discord-rich-presence-disable.patch)) |
+| Option                                                                               | Description                                                                                                                                    |
+| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--start-in-tray`                                                                    | Start the app in the tray (see [patch](./patches/01-start-hidden-in-tray.patch))                                                               |
+| `--disable-systray`                                                                  | Quit the app when the window is closed (see [patch](./patches/03-quit.patch))                                                                  |
+| `--keep-kernel`                                                                      | Use the exact kernel version (see [patch](./patches/05-remove-os-information.patch)) <br/> _This feature impacts privacy._                     |
+| `--disable-features`                                                                 | Disable some features (see [patch](./patches/06-better-management-of-MPRIS.patch))                                                             |
+| `--enable-discord-rpc`                                                               | Enable Discord RPC integration (see [patch](./patches/09-discord-rich-presence.patch))                                                         |
+| `--hide-appoffline-banner`                                                           | Hide the "Application is offline" banner that appears when using a VPN or DNS blocker (see [patch](./patches/11-hide-appoffline-banner.patch)) |
+| `--disable-animations`                                                               | Disable animations (see [patch](./patches/12-disable-animations.patch))                                                                        |
+| `--disable-notifications`                                                            | Disable notifications (see [patch](./patches/13-disable-notifications.patch))                                                                  |
+| `--enable-wayland-ime` `--ozone-platform-hint=auto` `--wayland-text-input-version=3` | Enable IME keyboard support on Wayland                                                                                                         |
 
-| Environment variable | Options                                            | Description                                                                        |
-| -------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `LOG_LEVEL`          | `silly`,`debug`,`verbose`,`info`,`warning`,`error` | Set the log level (see [patch](./patches/09-log-level-environment-variable.patch)) |
-| `DZ_DEVTOOLS`        | `yes`,`no`                                         | Enable the developer console (ctrl+shift+i)                                        |
+| Environment variable        | Options                                            | Description                                                                                       |
+| --------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `DZ_HIDE_APPOFFLINE_BANNER` | `yes`,`no`                                         | Hide the "Application is offline" banner (see [patch](./patches/11-hide-appoffline-banner.patch)) |
+| `DZ_DISABLE_ANIMATIONS`     | `yes`,`no`                                         | Disable animations (see [patch](./patches/12-disable-animations.patch))                           |
+| `DZ_DISABLE_NOTIFICATIONS`  | `yes`,`no`                                         | Disable notifications (see [patch](./patches/13-disable-notifications.patch))                     |
+| `LOG_LEVEL`                 | `silly`,`debug`,`verbose`,`info`,`warning`,`error` | Set the log level (see [patch](./patches/07-log-level-environment-variable.patch))                |
+| `DZ_DEVTOOLS`               | `yes`,`no`                                         | Enable the developer console (ctrl+shift+i)                                                       |
 
 ## Building from source
 
@@ -58,16 +71,16 @@ Other packages can be installed from you package manager, either by clicking on 
 | deb      | ⚠️    | ✅  |
 | rpm      | ⚠️    | ✅  |
 | tar.xz   | ⚠️    | ✅  |
-| snap     | ⛔    | ⛔  |
+| snap     | ⚠️    | ✅  |
 
-✅ Available ; ⚠️ Not tested ; ❌ Not available ; ⛔ Not planned (see [FAQ](#faq))
+✅ Available ; ⚠️ Not tested ; ❌ Not available ; ⛔ Not planned
 
 > [!NOTE]
-> Please open an issue if you want a specific target to be added.
+> Please open an issue if you want a specific target to be tested or added.
 
 ### Requirements
 
-- Node.js (20 recommended)
+- Node.js (22+ recommended)
 - npm (or yarn, see [FAQ](#i-want-to-use-yarn-instead-of-npm-is-it-possible))
 - 7z (try installing `p7zip` and `p7zip-full`)
 - make
@@ -131,6 +144,25 @@ Artifacts will be generated in `artifacts/{arch}`.
 
 If you generate the `tar.xz` package, you can run it directly by extracting to a directory, and calling `./deezer-desktop` from there.
 
+### snap
+
+To build the `snap` package, you can use:
+
+```sh
+make build_snap_{arch}
+```
+
+Then, you can install the package using:
+
+```sh
+sudo snap install ./artifacts/{arch}/deezer_desktop_{version}_{arch}.snap --dangerous --classic
+```
+
+> [!NOTE]
+> Snap packages require classic mode because of electron.
+> Because of this, it is not able to use your usual browser.
+> It will launch a clean instance of the browser, without extensions, settings, history, etc.
+
 ## Development
 
 If you want to contribute to this project, please read the [contribution guidelines](CONTRIBUTING.md) file.
@@ -141,11 +173,7 @@ If you want to contribute to this project, please read the [contribution guideli
 
 Deezer can be used on Linux through the web interface, but it does not allow downloading songs for offline listening. This project allows you to use the official Deezer app on Linux, with the same features as on Windows (plus some Linux-specific features).
 
-### Why can't I get the snap package?
-
-Please see [this issue](https://github.com/babluboy/bookworm/issues/178) or [this issue](https://github.com/babluboy/nutty/issues/68). Prefer using Flatpak or AppImage.
-
-###  Why are the patches published but not the app's source code? patches?
+### Why are the patches published but not the app's source code? patches?
 
 The source code of the Deezer app is not open-source. Reverse-engineering the app would be illegal and would violate the Deezer EULA. This project is a port of the official Windows app, and does not contain any reverse-engineered code, rather it bundles the official Windows app with a compatibility layer.
 
@@ -158,6 +186,16 @@ export PACKAGE_MANAGER=yarn
 export PACKAGE_MANAGER_SUBDIR_ARG=--cwd
 export PACKAGE_MANAGER_ADD_CMD=add
 export PACKAGE_MANAGER_INSTALL_CMD=install
+```
+
+### How can I use my IME/virtual keyboard on Deezer under Wayland?
+
+_IME: Input Method Editor. Usually used for languages like Chinese, Japanese, Korean, etc._
+
+You should launch the app with the following arguments:
+
+```sh
+--enable-wayland-ime --ozone-platform-hint=auto --wayland-text-input-version=3
 ```
 
 ## **LEGAL DISCLAIMER**

@@ -1,0 +1,120 @@
+name: 🐛 Bug Report
+description: Report a reproducible issue for the project on Linux systems
+title: "[BUG] <Short bug description>"
+labels: [bug]
+assignees: [josselinonduty]
+
+body:
+  - type: checkboxes
+    id: precheck
+    attributes:
+      label: Preliminary Checks
+      options:
+        - label: I am using a **recent version** of the project.
+          required: true
+        - label: I have **read the [FAQ section](https://github.com/aunetx/deezer-linux?tab=readme-ov-file#faq)** of the documentation.
+          required: true
+
+  - type: input
+    id: description
+    attributes:
+      label: Short Description
+      description: A concise description of the bug.
+      placeholder: "e.g., Application crashes when launched with --example-flag"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: List the precise steps to reproduce the issue.
+      placeholder: |
+        1. Run '...'
+        2. Click on '...'
+        3. Observe '...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed Behavior
+      description: Describe what actually happened.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: Describe what you expected to happen instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment-os
+    attributes:
+      label: Operating System
+      description: |
+        Please provide the results of the following command:
+        ```bash
+        lsb_release -a ; uname -mr
+        ```
+      placeholder: |
+        e.g.
+        Distributor ID: Ubuntu
+        Description:    Ubuntu 22.04.1 LTS
+        Release:        22.04
+        Codename:       jammy
+        6.7.0-26-generic x86_64
+    validations:
+      required: true
+
+  - type: input
+    id: environment-version
+    attributes:
+      label: Project Version and Package
+      description: |
+        Please provide information about the package version and architecture.
+        
+        For flatpak users, you can find this information with:
+        ```bash
+        flatpak info dev.aunetx.deezer
+        ```
+        For snap users, you can find this information with:
+        ```bash
+        snap list deezer-desktop
+        ```
+      placeholder: "e.g. deezer-desktop-7.0.110-arm64.AppImage"
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment-env
+    attributes:
+      label: Environment Variables
+      description: |
+        It is highly recommended to fill this section if your issue is related to running or logging into the app.
+      
+        You may provide a **redacted** version of the following command:
+        ```bash
+        env
+        ```
+        Make sure to remove any sensitive or private data.
+      placeholder: |
+        e.g.
+        PATH=/usr/bin:...
+        HOME=/home/<redacted>
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional Information (Optional)
+      description: |
+        Any additional context, logs, screenshots, or configuration details that could help us investigate the issue.
+      render: markdown
+    validations:
+      required: false

@@ -1,0 +1,40 @@
+From fead13c466b3f5fde6f6fdd62c77b22a070e8d97 Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Tue, 29 Jul 2025 10:46:31 +0200
+Subject: [PATCH] feat(patch): disable notifications (w/ cli arg or env var)
+
+---
+ build/main.js    | 3 +++
+ build/preload.js | 2 ++
+ 2 files changed, 5 insertions(+)
+
+diff --git a/build/main.js b/build/main.js
+index 5034587..315cab4 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -3259,6 +3259,9 @@
+               (process.argv.some((arg) => arg === "--disable-animations") ||
+                 "yes" === process.env.DZ_DISABLE_ANIMATIONS) &&
+                 "--disable-animations",
++              (process.argv.some((arg) => arg === "--disable-notifications") ||
++                "yes" === process.env.DZ_DISABLE_NOTIFICATIONS) &&
++                "--disable-notifications",
+             ].filter(Boolean),
+           },
+           windowOptions = {
+diff --git a/build/preload.js b/build/preload.js
+index 0df9150..aa4bb78 100644
+--- a/build/preload.js
++++ b/build/preload.js
+@@ -546,6 +546,8 @@
+           document
+             .getElementsByTagName("body")[0]
+             .classList.add("disable-animations");
++        if (process.argv.some((arg) => arg === "--disable-notifications"))
++          delete window.Notification;
+       });
+   })(),
+     (module.exports = __webpack_exports__);
+-- 
+2.48.1
+
