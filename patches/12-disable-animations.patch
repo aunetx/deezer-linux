@@ -1,7 +1,7 @@
-From a220daa47a06d19ff6a995d567c0f46e42d14f6b Mon Sep 17 00:00:00 2001
+From 6c90e3940ddb1053e2f705a96edb83d17249e77a Mon Sep 17 00:00:00 2001
 From: josselinonduty <contact@josselinonduty.fr>
-Date: Tue, 8 Jul 2025 14:37:23 +0200
-Subject: [PATCH] feat(patch): disable animations (cli/env)
+Date: Mon, 1 Dec 2025 14:15:09 +0100
+Subject: [PATCH] feat: disable animations
 
 ---
  build/index.html | 6 ++++++
@@ -10,7 +10,7 @@ Subject: [PATCH] feat(patch): disable animations (cli/env)
  3 files changed, 13 insertions(+)
 
 diff --git a/build/index.html b/build/index.html
-index 4be829c..2ef7709 100644
+index 4695231..c2cabd6 100644
 --- a/build/index.html
 +++ b/build/index.html
 @@ -92,6 +92,12 @@
@@ -27,34 +27,34 @@ index 4be829c..2ef7709 100644
    </head>
    <body class="electron">
 diff --git a/build/main.js b/build/main.js
-index 8fa4b6f..61028cd 100644
+index 8953617..69a734d 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3246,6 +3246,9 @@
-               (process.argv.some((arg) => arg === "--hide-appoffline-banner") ||
-                 "yes" === process.env.DZ_HIDE_APPOFFLINE_BANNER) &&
-                 "--hide-appoffline-banner",
-+              (process.argv.some((arg) => arg === "--disable-animations") ||
-+                "yes" === process.env.DZ_DISABLE_ANIMATIONS) &&
-+                "--disable-animations",
-             ].filter(Boolean),
-           },
-           windowOptions = {
+@@ -3076,6 +3076,9 @@
+             (process.argv.some((arg) => arg === "--hide-offline-banner") ||
+               "yes" === process.env.DZ_HIDE_OFFLINE_BANNER) &&
+               "--hide-offline-banner",
++            (process.argv.some((arg) => arg === "--disable-animations") ||
++              "yes" === process.env.DZ_DISABLE_ANIMATIONS) &&
++              "--disable-animations",
+           ].filter(Boolean),
+         },
+         windowOptions = {
 diff --git a/build/preload.js b/build/preload.js
-index 05939c4..0df9150 100644
+index 80dced7..4f72387 100644
 --- a/build/preload.js
 +++ b/build/preload.js
-@@ -542,6 +542,10 @@
-           document
-             .getElementsByTagName("body")[0]
-             .classList.add("hide-AppOffline-banner");
-+        if (process.argv.some((arg) => arg === "--disable-animations"))
-+          document
-+            .getElementsByTagName("body")[0]
-+            .classList.add("disable-animations");
-       });
-   })(),
-     (module.exports = __webpack_exports__);
+@@ -531,6 +531,10 @@
+         document
+           .getElementsByTagName("body")[0]
+           .classList.add("hide-offline-banner");
++      if (process.argv.some((arg) => arg === "--disable-animations"))
++        document
++          .getElementsByTagName("body")[0]
++          .classList.add("disable-animations");
+     }),
+     (module.exports = {});
+ })();
 -- 
 2.48.1
 
