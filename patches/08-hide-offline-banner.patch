@@ -37,7 +37,7 @@ diff --git a/build/main.js b/build/main.js
 index e5bc640..8953617 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3072,6 +3072,11 @@
+@@ -3074,6 +3074,11 @@
              getRealPath(external_electron_namespaceObject.app, __dirname),
              "preload.js"
            ),

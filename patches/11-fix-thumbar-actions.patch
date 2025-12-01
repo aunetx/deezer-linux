@@ -19,7 +19,7 @@ index edacdde..ba3d65e 100644
          (MenuItemType.PlayerNext = "player-next"),
          (MenuItemType.PlayerPrev = "player-prev"),
          (MenuItemType.PlayerShuffle = "player-shuffle"),
-@@ -1440,6 +1441,8 @@
+@@ -1442,6 +1443,8 @@
            return this.getPasteOptions();
          case MenuItemType.PlayerPlay:
            return this.getPlayerPlayOptions();
@@ -28,7 +28,7 @@ index edacdde..ba3d65e 100644
          case MenuItemType.PlayerNext:
            return this.getPlayerNextOptions();
          case MenuItemType.PlayerPrev:
-@@ -1580,15 +1583,26 @@
+@@ -1582,15 +1585,26 @@
          }),
        };
      }
@@ -57,7 +57,7 @@ index edacdde..ba3d65e 100644
        };
      }
      getPlayerPrevOptions() {
-@@ -1597,9 +1611,9 @@
+@@ -1599,9 +1613,9 @@
          label: i18n_t("menu_previous_label"),
          enabled: this.user.isLoggedIn() && canPrev,
          accelerator: "Shift+Left",
@@ -69,7 +69,7 @@ index edacdde..ba3d65e 100644
        };
      }
      getPlayerShuffleOptions() {
-@@ -2242,7 +2256,7 @@
+@@ -2244,7 +2258,7 @@
            external_electron_namespaceObject.Menu.buildFromTemplate([
              this.menu.getItem(MenuItemType.Open),
              this.menu.getItem(MenuItemType.Separator),
