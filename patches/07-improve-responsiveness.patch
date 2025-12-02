@@ -110,7 +110,7 @@ diff --git a/build/main.js b/build/main.js
 index b141aa2..e5bc640 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3077,8 +3077,8 @@
+@@ -3078,8 +3078,8 @@
          },
          windowOptions = {
            title: "Deezer Desktop",

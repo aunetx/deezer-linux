@@ -1,15 +1,15 @@
-From 04b442c083d2900f91a7d68abf3a89932a844e0c Mon Sep 17 00:00:00 2001
+From d97b60764e4a02f3f6a7fe91bbf952339640689d Mon Sep 17 00:00:00 2001
 From: josselinonduty <contact@josselinonduty.fr>
-Date: Mon, 1 Dec 2025 16:50:13 +0100
+Date: Tue, 2 Dec 2025 13:40:50 +0100
 Subject: [PATCH] feat: Provide metadata and MPRIS compatiblity
 
 ---
- build/main.js     | 148 ++++++++++++++++++++++++++++++++++++++--------
+ build/main.js     | 149 ++++++++++++++++++++++++++++++++++++++--------
  build/renderer.js | 118 +++++++++++++++++++++++++++++++-----
- 2 files changed, 225 insertions(+), 41 deletions(-)
+ 2 files changed, 226 insertions(+), 41 deletions(-)
 
 diff --git a/build/main.js b/build/main.js
-index 75182f1..859f11e 100644
+index 75182f1..14ea84b 100644
 --- a/build/main.js
 +++ b/build/main.js
 @@ -87,6 +87,10 @@
@@ -71,7 +71,7 @@ index 75182f1..859f11e 100644
      }
      play() {
        this.ipc.send("channel-player-media-control", MediaPlayerControl.Play);
-@@ -1207,15 +1235,66 @@
+@@ -1207,15 +1235,67 @@
        this.ipc.send("channel-player-shuffle-update", shuffle);
      }
      setRepeatMode(repeatMode) {
@@ -137,7 +137,8 @@ index 75182f1..859f11e 100644
 +              ? "Playlist"
 +              : this.player.repeatMode === MediaPlayerRepeatMode.Once
 +                ? "Track"
-+                : "None");
++                : "None"),
++          (this.mprisPlayer.shuffle = this.player.shuffle === true);
 +      }
 +      if (data?.player?.volume) {
 +        this.mprisPlayer.volume = data.player.volume;
@@ -145,7 +146,7 @@ index 75182f1..859f11e 100644
      }
      getTrackInfo() {
        return this.track;
-@@ -1275,7 +1354,11 @@
+@@ -1275,7 +1355,11 @@
          1,
          (0, external_inversify_namespaceObject.inject)(SERVICE_USER)
        ),
@@ -158,7 +159,7 @@ index 75182f1..859f11e 100644
      ],
      MediaService
    );
-@@ -2457,7 +2540,7 @@
+@@ -2457,7 +2541,7 @@
          (this.ipc = ipc),
          (this.app = app);
      }
@@ -167,7 +168,7 @@ index 75182f1..859f11e 100644
        const previousUserID = this.user.id;
        (this.user = Object.assign(this.user, userInfo)),
          previousUserID !== this.user.id &&
-@@ -2689,23 +2772,34 @@
+@@ -2689,23 +2773,34 @@
    const PlayerIpc_ipc = main_di.get(SERVICE_IPC),
      media = main_di.get(SERVICE_MEDIA),
      powerSave = main_di.get(SERVICE_POWER_SAVE);
@@ -215,7 +216,7 @@ index 75182f1..859f11e 100644
      });
    const UpdaterIpc_ipc = main_di.get(SERVICE_IPC),
      autoUpdater = main_di.get(SERVICE_UPDATER);
-@@ -2714,8 +2808,8 @@
+@@ -2714,8 +2809,8 @@
    });
    const UserIpc_ipc = main_di.get(SERVICE_IPC),
      user = main_di.get(SERVICE_USER);
@@ -226,7 +227,7 @@ index 75182f1..859f11e 100644
    });
    var application_awaiter = function (thisArg, _arguments, P, generator) {
      return new (P || (P = Promise))(function (resolve, reject) {
-@@ -2781,6 +2875,10 @@
+@@ -2781,6 +2876,10 @@
            "autoplay-policy",
            "no-user-gesture-required"
          ),
