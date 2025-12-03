@@ -71,6 +71,7 @@ Other packages can be installed from you package manager, either by clicking on 
 | rpm      | ⚠️    | ✅  |
 | tar.xz   | ⚠️    | ✅  |
 | snap     | ⚠️    | ✅  |
+| flatpak  | ⚠️    | ✅  |
 
 ✅ Available ; ⚠️ Not tested ; ❌ Not available ; ⛔ Not planned
 
@@ -161,6 +162,35 @@ sudo snap install ./artifacts/{arch}/deezer_desktop_{version}_{arch}.snap --dang
 > Snap packages require classic mode because of electron.
 > Because of this, it is not able to use your usual browser.
 > It will launch a clean instance of the browser, without extensions, settings, history, etc.
+
+### flatpak
+
+To build the `flatpak` package locally, you need to install `flatpak-builder` first.
+
+```sh
+sudo apt install flatpak-builder # Debian/Ubuntu
+```
+
+> [!NOTE]
+> If you want to build the `arm64` version on an `x64` machine, you also need to install `qemu-user-static` and `binfmt-support` to enable cross-compilation.
+
+Then, you can use:
+
+```sh
+make build_flatpak_{arch}
+```
+
+To install the generated flatpak, you can use:
+
+```sh
+flatpak install --user --reinstall ./artifacts/{arch}/deezer-desktop-{version}-{arch}.flatpak
+```
+
+To run it, you can use:
+
+```sh
+flatpak run dev.aunetx.deezer
+```
 
 ## Development
 

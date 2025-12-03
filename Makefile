@@ -97,6 +97,14 @@ build_snap_arm64:
 	@echo "Build Snap package"
 	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_SUBDIR_ARG) $(APP_DIR) run build-snap-arm64
 
+build_flatpak_x64:
+	@echo "Build Flatpak package"
+	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_SUBDIR_ARG) $(APP_DIR) run build-flatpak-x64
+
+build_flatpak_arm64:
+	@echo "Build Flatpak package"
+	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_SUBDIR_ARG) $(APP_DIR) run build-flatpak-arm64
+
 #! DEV
 
 patch-new: install_deps
