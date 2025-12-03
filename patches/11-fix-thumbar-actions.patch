@@ -1,0 +1,83 @@
+From 0dd32c7a033c4381da126865ca88723549546009 Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Mon, 1 Dec 2025 15:42:45 +0100
+Subject: [PATCH] feat: make thumbar actions actually work
+
+---
+ build/main.js | 24 +++++++++++++++++++-----
+ 1 file changed, 19 insertions(+), 5 deletions(-)
+
+diff --git a/build/main.js b/build/main.js
+index edacdde..ba3d65e 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -568,6 +568,7 @@
+         (MenuItemType.Open = "open"),
+         (MenuItemType.Paste = "paste"),
+         (MenuItemType.PlayerPlay = "player-play"),
++        (MenuItemType.PlayerPlayThumbar = "player-play-thumbar"),
+         (MenuItemType.PlayerNext = "player-next"),
+         (MenuItemType.PlayerPrev = "player-prev"),
+         (MenuItemType.PlayerShuffle = "player-shuffle"),
+@@ -1443,6 +1444,8 @@
+           return this.getPasteOptions();
+         case MenuItemType.PlayerPlay:
+           return this.getPlayerPlayOptions();
++        case MenuItemType.PlayerPlayThumbar:
++          return this.getPlayerPlayOptionsThumbar();
+         case MenuItemType.PlayerNext:
+           return this.getPlayerNextOptions();
+         case MenuItemType.PlayerPrev:
+@@ -1583,15 +1586,26 @@
+         }),
+       };
+     }
++    getPlayerPlayOptionsThumbar() {
++      const { state } = this.media.getPlayerInfo(),
++        isPlaying = state === MediaPlayerState.Playing;
++      return {
++        label: i18n_t(isPlaying ? "menu_pause_label" : "menu_play_label"),
++        enabled: this.user.isLoggedIn(),
++        click: () => {
++          isPlaying ? this.media.pause() : this.media.play();
++        },
++      };
++    }
+     getPlayerNextOptions() {
+       const { canNext } = this.media.getPlayerInfo();
+       return {
+         label: i18n_t("menu_next_label"),
+         enabled: this.user.isLoggedIn() && canNext,
+         accelerator: "Shift+Right",
+-        click: noAcceleratorTrigger(() => {
++        click: () => {
+           this.media.next();
+-        }),
++        },
+       };
+     }
+     getPlayerPrevOptions() {
+@@ -1600,9 +1614,9 @@
+         label: i18n_t("menu_previous_label"),
+         enabled: this.user.isLoggedIn() && canPrev,
+         accelerator: "Shift+Left",
+-        click: noAcceleratorTrigger(() => {
++        click: () => {
+           this.media.prev();
+-        }),
++        },
+       };
+     }
+     getPlayerShuffleOptions() {
+@@ -2245,7 +2259,7 @@
+           external_electron_namespaceObject.Menu.buildFromTemplate([
+             this.menu.getItem(MenuItemType.Open),
+             this.menu.getItem(MenuItemType.Separator),
+-            this.menu.getItem(MenuItemType.PlayerPlay),
++            this.menu.getItem(MenuItemType.PlayerPlayThumbar),
+             this.menu.getItem(MenuItemType.PlayerNext),
+             this.menu.getItem(MenuItemType.PlayerPrev),
+             this.menu.getItem(MenuItemType.Separator),
+-- 
+2.48.1
+

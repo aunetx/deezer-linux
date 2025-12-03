@@ -41,25 +41,28 @@ Other packages can be installed from you package manager, either by clicking on 
 
 ## Usage
 
-| Option                                                                               | Description                                                                                                                                    |
-| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--start-in-tray`                                                                    | Start the app in the tray (see [patch](./patches/01-start-hidden-in-tray.patch))                                                               |
-| `--disable-systray`                                                                  | Quit the app when the window is closed (see [patch](./patches/03-quit.patch))                                                                  |
-| `--keep-kernel`                                                                      | Use the exact kernel version (see [patch](./patches/05-remove-os-information.patch)) <br/> _This feature impacts privacy._                     |
-| `--disable-features`                                                                 | Disable some features (see [patch](./patches/06-better-management-of-MPRIS.patch))                                                             |
-| `--enable-discord-rpc`                                                               | Enable Discord RPC integration (see [patch](./patches/09-discord-rich-presence.patch))                                                         |
-| `--hide-appoffline-banner`                                                           | Hide the "Application is offline" banner that appears when using a VPN or DNS blocker (see [patch](./patches/11-hide-appoffline-banner.patch)) |
-| `--disable-animations`                                                               | Disable animations (see [patch](./patches/12-disable-animations.patch))                                                                        |
-| `--disable-notifications`                                                            | Disable notifications (see [patch](./patches/13-disable-notifications.patch))                                                                  |
-| `--enable-wayland-ime` `--ozone-platform-hint=auto` `--wayland-text-input-version=3` | Enable IME keyboard support on Wayland                                                                                                         |
+| Option                                                                               | Description                                                                                                                                 |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--start-in-tray`                                                                    | Start the app in the tray (see [patch](./patches/01-start-in-tray.patch))                                                                   |
+| `--disable-systray`                                                                  | Quit the app when the window is closed (see [patch](./patches/02-start-without-tray.patch))                                                 |
+| `--keep-kernel`                                                                      | Use the exact kernel version (see [patch](./patches/04-remove-os-information.patch)) <br/> _This feature impacts privacy._                  |
+| `--disable-features`                                                                 | Disable some features (see [patch](./patches/05-provide-metadata-mpris.patch))                                                              |
+| `--hide-offline-banner`                                                              | Hide the "Application is offline" banner that appears when using a VPN or DNS blocker (see [patch](./patches/08-hide-offline-banner.patch)) |
+| `--disable-animations`                                                               | Disable animations (see [patch](./patches/09-disable-animations.patch))                                                                     |
+| `--disable-notifications`                                                            | Disable notifications (see [patch](./patches/10-disable-notifications.patch))                                                               |
+| `--log-level`                                                                        | Set the log level (`silly`,`debug`,`verbose`,`info`,`warn`,`error`) (see [patch](./patches/06-control-log-level.patch))                     |
+| `--enable-wayland-ime` `--ozone-platform-hint=auto` `--wayland-text-input-version=3` | Enable IME keyboard support on Wayland                                                                                                      |
 
-| Environment variable        | Options                                            | Description                                                                                       |
-| --------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `DZ_HIDE_APPOFFLINE_BANNER` | `yes`,`no`                                         | Hide the "Application is offline" banner (see [patch](./patches/11-hide-appoffline-banner.patch)) |
-| `DZ_DISABLE_ANIMATIONS`     | `yes`,`no`                                         | Disable animations (see [patch](./patches/12-disable-animations.patch))                           |
-| `DZ_DISABLE_NOTIFICATIONS`  | `yes`,`no`                                         | Disable notifications (see [patch](./patches/13-disable-notifications.patch))                     |
-| `LOG_LEVEL`                 | `silly`,`debug`,`verbose`,`info`,`warning`,`error` | Set the log level (see [patch](./patches/07-log-level-environment-variable.patch))                |
-| `DZ_DEVTOOLS`               | `yes`,`no`                                         | Enable the developer console (ctrl+shift+i)                                                       |
+| Environment variable       | Options                                         | Description                                                                                    |
+| -------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `DZ_START_IN_TRAY`         | `yes`,`no`                                      | Start the app in the tray (see [patch](./patches/01-start-in-tray.patch))                      |
+| `DZ_DISABLE_SYSTRAY`       | `yes`,`no`                                      | Quit the app when the window is closed (see [patch](./patches/02-start-without-tray.patch))    |
+| `DZ_KEEP_KERNEL`           | `yes`,`no`                                      | Use the exact kernel version (see [patch](./patches/04-remove-os-information.patch))           |
+| `DZ_LOG_LEVEL`             | `silly`,`debug`,`verbose`,`info`,`warn`,`error` | Set the log level (see [patch](./patches/06-control-log-level.patch))                          |
+| `DZ_HIDE_OFFLINE_BANNER`   | `yes`,`no`                                      | Hide the "Application is offline" banner (see [patch](./patches/08-hide-offline-banner.patch)) |
+| `DZ_DISABLE_ANIMATIONS`    | `yes`,`no`                                      | Disable animations (see [patch](./patches/09-disable-animations.patch))                        |
+| `DZ_DISABLE_NOTIFICATIONS` | `yes`,`no`                                      | Disable notifications (see [patch](./patches/10-disable-notifications.patch))                  |
+| `DZ_DEVTOOLS`              | `yes`,`no`                                      | Enable the developer console (ctrl+shift+i)                                                    |
 
 ## Building from source
 
@@ -72,6 +75,7 @@ Other packages can be installed from you package manager, either by clicking on 
 | rpm      | ⚠️    | ✅  |
 | tar.xz   | ⚠️    | ✅  |
 | snap     | ⚠️    | ✅  |
+| flatpak  | ⚠️    | ✅  |
 
 ✅ Available ; ⚠️ Not tested ; ❌ Not available ; ⛔ Not planned
 
@@ -162,6 +166,35 @@ sudo snap install ./artifacts/{arch}/deezer_desktop_{version}_{arch}.snap --dang
 > Snap packages require classic mode because of electron.
 > Because of this, it is not able to use your usual browser.
 > It will launch a clean instance of the browser, without extensions, settings, history, etc.
+
+### flatpak
+
+To build the `flatpak` package locally, you need to install `flatpak-builder` first.
+
+```sh
+sudo apt install flatpak-builder # Debian/Ubuntu
+```
+
+> [!NOTE]
+> If you want to build the `arm64` version on an `x64` machine, you also need to install `qemu-user-static` and `binfmt-support` to enable cross-compilation.
+
+Then, you can use:
+
+```sh
+make build_flatpak_{arch}
+```
+
+To install the generated flatpak, you can use:
+
+```sh
+flatpak install --user --reinstall ./artifacts/{arch}/deezer-desktop-{version}-{arch}.flatpak
+```
+
+To run it, you can use:
+
+```sh
+flatpak run dev.aunetx.deezer
+```
 
 ## Development
 
