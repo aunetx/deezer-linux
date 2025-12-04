@@ -1,0 +1,45 @@
+name: deezer-desktop
+base: core24
+version: '7.0.190'
+platforms:
+  amd64:
+    build-on: [amd64]
+    build-for: [amd64]
+  arm64:
+    build-on: [arm64]
+    build-for: [arm64]
+summary: Online music streaming service
+description: |
+    An unofficial linux port of the deezer desktop application.
+
+    Access all of your favorite music, and save them offline for later!
+grade: stable
+confinement: strict
+
+apps:
+  deezer-desktop:
+    command: opt/deezer-desktop/deezer-desktop --no-sandbox
+    desktop: usr/share/applications/deezer-desktop.desktop
+    common-id: dev.aunetx.deezer
+    extensions: [kde-neon-6]
+    plugs:
+      - screen-inhibit-control
+      - home
+      - removable-media
+
+plugs:
+  shared-memory:
+    private: true
+
+parts:
+  deezer-linux:
+    plugin: dump
+    source:
+      - on amd64: https://github.com/aunetx/deezer-linux/releases/download/v$SNAPCRAFT_PROJECT_VERSION/deezer-desktop_$SNAPCRAFT_PROJECT_VERSION_amd64.deb
+      - on arm64: https://github.com/aunetx/deezer-linux/releases/download/v$SNAPCRAFT_PROJECT_VERSION/deezer-desktop_$SNAPCRAFT_PROJECT_VERSION_arm64.deb
+    override-build: |
+      craftctl default
+      sed -i 's|Icon=deezer-desktop|Icon=${SNAP}/usr/share/icons/hicolor/512x512/apps/deezer-desktop.png|' $CRAFT_PART_INSTALL/usr/share/applications/deezer-desktop.desktop
+    prime:
+      - usr
+      - opt
