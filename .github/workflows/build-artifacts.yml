@@ -74,5 +74,5 @@ jobs:
             artifacts/arm64/*.rpm
             artifacts/arm64/*.AppImage
             artifacts/arm64/*.tar.xz
-            artifacts/aarch64/*.flatpak
+            artifacts/arm64/*.flatpak
             sha256
