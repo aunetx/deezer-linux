@@ -3,67 +3,76 @@ name: Build artifacts
 on:
   push:
     tags:
-      - '*'
+      - "*"
 
 jobs:
   packages:
     name: "Build packages"
     runs-on: ubuntu-latest
     steps:
-    - name: checkout repo
-      uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 22
-    - name: prepare runner
-      run: |
-        sudo snap install snapcraft --classic
-  
-    - name: install_deps
-      run: make install_deps
+      - name: checkout repo
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: prepare runner
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak-builder qemu-user-static binfmt-support
+          flatpak remote-add --if-not-exists --user flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          sudo snap install snapcraft --classic
 
-    - name: build_deb_x64
-      run: make build_deb_x64
-    - name: build_rpm_x64
-      run: make build_rpm_x64
-    - name: build_appimage_x64
-      run: make build_appimage_x64
-    - name: build_snap_x64
-      run: make build_snap_x64
-    - name: build_tar.xz_x64
-      run: make build_tar.xz_x64
+      - name: install_deps
+        run: make install_deps
 
-    - name: build_deb_arm64
-      run: make build_deb_arm64
-    - name: build_rpm_arm64
-      run: make build_rpm_arm64
-    - name: build_appimage_arm64
-      run: make build_appimage_arm64
-    # - name: build_snap_arm64 # This step is currently disabled due to issues with snapcraft + arm64 on github runners
-    #   run: make build_snap_arm64
-    - name: build_tar.xz_arm64
-      run: make build_tar.xz_arm64
+      - name: build_deb_x64
+        run: make build_deb_x64
+      - name: build_rpm_x64
+        run: make build_rpm_x64
+      - name: build_appimage_x64
+        run: make build_appimage_x64
+      - name: build_snap_x64
+        run: make build_snap_x64
+      - name: build_tar.xz_x64
+        run: make build_tar.xz_x64
+      - name: build_flatpak_x64
+        run: make build_flatpak_x64
 
-    - name: Get the version
-      run: echo "version=${GITHUB_REF/refs\/tags\//}" >> "$GITHUB_ENV"
+      - name: build_deb_arm64
+        run: make build_deb_arm64
+      - name: build_rpm_arm64
+        run: make build_rpm_arm64
+      - name: build_appimage_arm64
+        run: make build_appimage_arm64
+      # - name: build_snap_arm64 # This step is currently disabled due to issues with snapcraft + arm64 on github runners
+      #   run: make build_snap_arm64
+      - name: build_tar.xz_arm64
+        run: make build_tar.xz_arm64
+      - name: build_flatpak_arm64
+        run: make build_flatpak_arm64
 
-    - name: Generate sha256
-      run: echo "$(sha256sum artifacts/{x64,arm64}/*.{deb,rpm,AppImage,tar.xz} artifacts/x64/*.snap)" > sha256
+      - name: Get the version
+        run: echo "version=${GITHUB_REF/refs\/tags\//}" >> "$GITHUB_ENV"
 
-    - name: create release
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: ${{ env.version }}
-        body: 'Update to version ${{ env.version }}'
-        draft: false
-        files: |
+      - name: Generate sha256
+        run: echo "$(sha256sum artifacts/{x64,arm64}/*.{deb,rpm,AppImage,tar.xz} artifacts/x64/*.snap)" > sha256
+
+      - name: create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.version }}
+          body: "Update to version ${{ env.version }}"
+          draft: false
+          files: |
             artifacts/x64/*.deb
             artifacts/x64/*.rpm
             artifacts/x64/*.AppImage
             artifacts/x64/*.snap
             artifacts/x64/*.tar.xz
+            artifacts/x64/*.flatpak
             artifacts/arm64/*.deb
             artifacts/arm64/*.rpm
             artifacts/arm64/*.AppImage
             artifacts/arm64/*.tar.xz
+            artifacts/aarch64/*.flatpak
             sha256

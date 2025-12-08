@@ -1,4 +1,6 @@
-# Maintainer: Aurélien Hamy <aunetx@yandex.com>
+# Maintainers:
+# - Aurélien Hamy <aunetx@yandex.com>
+# - Josselin Dulongcourty <contact@josselinonduty.fr>
 
 APPNAME = dev.aunetx.deezer
 BASE_URL = $(shell jq ".modules[0].sources[0].url" dev.aunetx.deezer.json)
@@ -37,25 +39,10 @@ prepare: clean install_build_deps
 	@cp .prettierrc.json $(APP_DIR)/
 	@npm run prettier -- --write "$(APP_DIR)/build/*.{js,html}" --config .prettierrc.json --ignore-path /dev/null
 
-	@echo "Apply patches from ./patches:"
-	@echo "01 - Hide to tray when closing (https://github.com/SibrenVasse/deezer/issues/4)"
-	@echo "02 - Start in tray cli option (https://github.com/SibrenVasse/deezer/pull/12)"
-	@echo "03 - Avoid to set the text/html mime type (https://github.com/aunetx/deezer-linux/issues/13)"
-	@echo "04 - Disable auto updater (https://github.com/aunetx/deezer-linux/pull/95)"
-	@echo "05 - Remove OS information (https://github.com/aunetx/deezer-linux/pull/95)"
-	@echo "06 - Add a better management of MPRIS (https://github.com/aunetx/deezer-linux/pull/61)"
-	@echo "07 - Add environment variable to change log level (https://github.com/aunetx/deezer-linux/pull/95)"
-	@echo "08 - Provide additional metadata (https://github.com/aunetx/deezer-linux/pull/95)"
-	@echo "09 - Add Discord Rich Presence (https://github.com/aunetx/deezer-linux/pull/82)"
-	@echo "10 - Improve responsiveness on small devices (https://github.com/aunetx/deezer-linux/pull/122)"
-	@echo "11 - Hide Application is offline banner (https://github.com/aunetx/deezer-linux/pull/124)"
-	@echo "12 - Disable animations (https://github.com/aunetx/deezer-linux/pull/133)"
-	@echo "13 - Disable notifications (https://github.com/aunetx/deezer-linux/pull/151)"
-	@echo "14 - Make thumbar actions work (https://github.com/aunetx/deezer-linux/pull/153)"
+	@echo "--------------------------------"
+	@$(foreach p,$(wildcard ./patches/*), echo "Applying $(p)"; patch -p 1 -d $(APP_DIR) < $(p) && echo "Applied $(p)\n";)
 
-	@$(foreach p, $(wildcard ./patches/*), patch -p 1 -d $(APP_DIR) < $(p);)
-
-	@echo "Append `package-append.json` to the `package.json` of the app"
+	@echo "Append package-append.json to the package.json of the app"
 	@echo "Adds electron, elecron-builder dependencies, prod and build directives"
 	@jq -s '.[0] * .[1]' $(APP_DIR)/package.json package-append.json > $(APP_DIR)/tmp.json && mv $(APP_DIR)/tmp.json $(APP_DIR)/package.json
 
@@ -114,6 +101,14 @@ build_appimage_arm64:
 build_snap_arm64:
 	@echo "Build Snap package"
 	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_SUBDIR_ARG) $(APP_DIR) run build-snap-arm64
+
+build_flatpak_x64:
+	@echo "Build Flatpak package"
+	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_SUBDIR_ARG) $(APP_DIR) run build-flatpak-x64
+
+build_flatpak_arm64:
+	@echo "Build Flatpak package"
+	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_SUBDIR_ARG) $(APP_DIR) run build-flatpak-arm64
 
 #! DEV
 
