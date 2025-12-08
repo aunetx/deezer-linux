@@ -1,0 +1,38 @@
+From f9e16f0f5975b2520a9fe645361827fc4aef2703 Mon Sep 17 00:00:00 2001
+From: Kmc <kmcgurty1@gmail.com>
+Date: Mon, 8 Dec 2025 16:15:32 -0500
+Subject: [PATCH] feat: adjust volume on mouse wheel
+
+---
+ build/renderer.js | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/build/renderer.js b/build/renderer.js
+index d0f0f4d..559cd1a 100644
+--- a/build/renderer.js
++++ b/build/renderer.js
+@@ -358,6 +358,21 @@
+     document.addEventListener("DOMContentLoaded", () => {
+       window.Events &&
+         window.Events.ready(window.Events.player.playerReady, () => {
++          const changeVolumeOnWheel = (e) => {
++            e.preventDefault();
++            const direction = Math.sign(e.deltaY) * -1;
++            const dzPlayer = window.dzPlayer;
++            dzPlayer &&
++              dzPlayer.control.setVolume(
++                Math.max(0, Math.min(1, dzPlayer.volume + 0.1 * direction))
++              );
++          };
++          document
++            .querySelector("#page_player [aria-label='volume button']")
++            .addEventListener("wheel", changeVolumeOnWheel);
++          document
++            .querySelector("#page_player [data-testid='volume_menu']")
++            .addEventListener("wheel", changeVolumeOnWheel);
+           window.electron.triggerAll();
+         });
+     }),
+-- 
+2.34.1
+
