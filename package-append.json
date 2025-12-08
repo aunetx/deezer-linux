@@ -121,7 +121,8 @@
       "baseVersion": "24.08",
       "finishArgs": [
         "--share=ipc",
-        "--socket=x11",
+        "--socket=fallback-x11",
+        "--socket=wayland",
         "--socket=pulseaudio",
         "--share=network",
         "--device=dri",
@@ -148,9 +149,7 @@
             {
               "type": "script",
               "dest-filename": "run.sh",
-              "commands": [
-                "env XDG_CURRENT_DESKTOP=Unity zypak-wrapper /app/main/deezer-desktop \"$@\""
-              ]
+              "commands": ["zypak-wrapper /app/main/deezer-desktop \"$@\""]
             }
           ]
         }
