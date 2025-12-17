@@ -1,6 +1,6 @@
 name: deezer-desktop
 base: core24
-version: '7.0.190'
+version: '7.1.20'
 platforms:
   amd64:
     build-on: [amd64]
@@ -21,8 +21,12 @@ apps:
     command: opt/deezer-desktop/deezer-desktop --no-sandbox
     desktop: usr/share/applications/deezer-desktop.desktop
     common-id: dev.aunetx.deezer
-    extensions: [kde-neon-6]
+    extensions: [gnome]
     plugs:
+      - audio-playback
+      - unity7
+      - network
+      - network-bind
       - screen-inhibit-control
       - home
       - removable-media
