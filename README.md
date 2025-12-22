@@ -26,18 +26,7 @@ You can find all of the packages on [the release page](https://github.com/aunetx
 
 To install the flatpak version, you can simply go to https://flathub.org/apps/dev.aunetx.deezer (or use your favorite flatpak package manager).
 
-> [!Important]
-> Old flatpak users must migrate to the flathub repository as soon as possible, as the flatpak repository was deleted from this repo (it weighed more that 2GB). In order to do so, you can use the following commands:
->
-> ```sh
-> flatpak uninstall dev.aunetx.deezer
-> flatpak remote-delete deezer-linux
-> flatpak install flathub dev.aunetx.deezer
-> ```
->
-> You _should_ not lose any data by doing this.
-
-Other packages can be installed from you package manager, either by clicking on them or from the command-line.
+Other packages can be installed from your package manager, either by clicking on them or from the command-line.
 
 ## Usage
 
