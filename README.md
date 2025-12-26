@@ -39,19 +39,21 @@ Other packages can be installed from your package manager, either by clicking on
 | `--hide-offline-banner`                                                              | Hide the "Application is offline" banner that appears when using a VPN or DNS blocker (see [patch](./patches/08-hide-offline-banner.patch)) |
 | `--disable-animations`                                                               | Disable animations (see [patch](./patches/09-disable-animations.patch))                                                                     |
 | `--disable-notifications`                                                            | Disable notifications (see [patch](./patches/10-disable-notifications.patch))                                                               |
+| `--disable-hardware-acceleration`                                                    | Disable hardware acceleration (useful for systems with GPU issues)                                                                          |
 | `--log-level`                                                                        | Set the log level (`silly`,`debug`,`verbose`,`info`,`warn`,`error`) (see [patch](./patches/06-control-log-level.patch))                     |
 | `--enable-wayland-ime` `--ozone-platform-hint=auto` `--wayland-text-input-version=3` | Enable IME keyboard support on Wayland                                                                                                      |
 
-| Environment variable       | Options                                         | Description                                                                                    |
-| -------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `DZ_START_IN_TRAY`         | `yes`,`no`                                      | Start the app in the tray (see [patch](./patches/01-start-in-tray.patch))                      |
-| `DZ_DISABLE_SYSTRAY`       | `yes`,`no`                                      | Quit the app when the window is closed (see [patch](./patches/02-start-without-tray.patch))    |
-| `DZ_KEEP_KERNEL`           | `yes`,`no`                                      | Use the exact kernel version (see [patch](./patches/04-remove-os-information.patch))           |
-| `DZ_LOG_LEVEL`             | `silly`,`debug`,`verbose`,`info`,`warn`,`error` | Set the log level (see [patch](./patches/06-control-log-level.patch))                          |
-| `DZ_HIDE_OFFLINE_BANNER`   | `yes`,`no`                                      | Hide the "Application is offline" banner (see [patch](./patches/08-hide-offline-banner.patch)) |
-| `DZ_DISABLE_ANIMATIONS`    | `yes`,`no`                                      | Disable animations (see [patch](./patches/09-disable-animations.patch))                        |
-| `DZ_DISABLE_NOTIFICATIONS` | `yes`,`no`                                      | Disable notifications (see [patch](./patches/10-disable-notifications.patch))                  |
-| `DZ_DEVTOOLS`              | `yes`,`no`                                      | Enable the developer console (ctrl+shift+i)                                                    |
+| Environment variable               | Options                                         | Description                                                                                    |
+| ---------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `DZ_START_IN_TRAY`                 | `yes`,`no`                                      | Start the app in the tray (see [patch](./patches/01-start-in-tray.patch))                      |
+| `DZ_DISABLE_SYSTRAY`               | `yes`,`no`                                      | Quit the app when the window is closed (see [patch](./patches/02-start-without-tray.patch))    |
+| `DZ_KEEP_KERNEL`                   | `yes`,`no`                                      | Use the exact kernel version (see [patch](./patches/04-remove-os-information.patch))           |
+| `DZ_LOG_LEVEL`                     | `silly`,`debug`,`verbose`,`info`,`warn`,`error` | Set the log level (see [patch](./patches/06-control-log-level.patch))                          |
+| `DZ_HIDE_OFFLINE_BANNER`           | `yes`,`no`                                      | Hide the "Application is offline" banner (see [patch](./patches/08-hide-offline-banner.patch)) |
+| `DZ_DISABLE_ANIMATIONS`            | `yes`,`no`                                      | Disable animations (see [patch](./patches/09-disable-animations.patch))                        |
+| `DZ_DISABLE_NOTIFICATIONS`         | `yes`,`no`                                      | Disable notifications (see [patch](./patches/10-disable-notifications.patch))                  |
+| `DZ_DISABLE_HARDWARE_ACCELERATION` | `yes`,`no`                                      | Disable hardware acceleration (see [patch](./patches/251226-1766789138.patch))                 |
+| `DZ_DEVTOOLS`                      | `yes`,`no`                                      | Enable the developer console (ctrl+shift+i)                                                    |
 
 ## Building from source
 

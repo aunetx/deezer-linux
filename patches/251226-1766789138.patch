@@ -1,0 +1,28 @@
+From 6648cde4fefd1f40219bffe72b9452ad978768e2 Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Fri, 26 Dec 2025 23:45:39 +0100
+Subject: [PATCH] feat: disable hardware acceleration
+
+---
+ build/main.js | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/build/main.js b/build/main.js
+index b2b1c55..63386d4 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -2894,6 +2894,11 @@
+           "disable-features",
+           "HardwareMediaKeyHandling"
+         ),
++        (process.argv.some(
++          (arg) => arg === "--disable-hardware-acceleration"
++        ) ||
++          "yes" === process.env.DZ_DISABLE_HARDWARE_ACCELERATION) &&
++          external_electron_namespaceObject.app.disableHardwareAcceleration(),
+         external_electron_namespaceObject.app.on(
+           "second-instance",
+           (event, argv) => {
+-- 
+2.48.1
+
