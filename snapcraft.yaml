@@ -11,10 +11,10 @@ platforms:
 summary: Online music streaming service
 description: |
     An unofficial linux port of the deezer desktop application.
-
     Access all of your favorite music, and save them offline for later!
 grade: stable
 confinement: strict
+icon: dev.aunetx.deezer.svg
 
 apps:
   deezer-desktop:
@@ -41,9 +41,6 @@ parts:
     source:
       - on amd64: https://github.com/aunetx/deezer-linux/releases/download/v$SNAPCRAFT_PROJECT_VERSION/deezer-desktop_$SNAPCRAFT_PROJECT_VERSION_amd64.deb
       - on arm64: https://github.com/aunetx/deezer-linux/releases/download/v$SNAPCRAFT_PROJECT_VERSION/deezer-desktop_$SNAPCRAFT_PROJECT_VERSION_arm64.deb
-    override-build: |
-      craftctl default
-      sed -i 's|Icon=deezer-desktop|Icon=${SNAP}/usr/share/icons/hicolor/512x512/apps/deezer-desktop.png|' $CRAFT_PART_INSTALL/usr/share/applications/deezer-desktop.desktop
     prime:
       - usr
       - opt
