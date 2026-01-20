@@ -1,4 +1,4 @@
-name: Build artifacts
+name: Release
 
 on:
   push:
