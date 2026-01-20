@@ -39,7 +39,7 @@ Other packages can be installed from your package manager, either by clicking on
 | `--hide-offline-banner`                                                              | Hide the "Application is offline" banner that appears when using a VPN or DNS blocker (see [patch](./patches/08-hide-offline-banner.patch)) |
 | `--disable-animations`                                                               | Disable animations (see [patch](./patches/09-disable-animations.patch))                                                                     |
 | `--disable-notifications`                                                            | Disable notifications (see [patch](./patches/10-disable-notifications.patch))                                                               |
-| `--disable-hardware-acceleration`                                                    | Disable hardware acceleration (useful for systems with GPU issues)                                                                          |
+| `--disable-hardware-acceleration`                                                    | Disable hardware acceleration (useful for systems with GPU issues) (see [patch](./patches/13-disable-hardware-acceleration.patch))                                                                          |
 | `--log-level`                                                                        | Set the log level (`silly`,`debug`,`verbose`,`info`,`warn`,`error`) (see [patch](./patches/06-control-log-level.patch))                     |
 | `--enable-wayland-ime` `--ozone-platform-hint=auto` `--wayland-text-input-version=3` | Enable IME keyboard support on Wayland                                                                                                      |
 
@@ -52,7 +52,7 @@ Other packages can be installed from your package manager, either by clicking on
 | `DZ_HIDE_OFFLINE_BANNER`           | `yes`,`no`                                      | Hide the "Application is offline" banner (see [patch](./patches/08-hide-offline-banner.patch)) |
 | `DZ_DISABLE_ANIMATIONS`            | `yes`,`no`                                      | Disable animations (see [patch](./patches/09-disable-animations.patch))                        |
 | `DZ_DISABLE_NOTIFICATIONS`         | `yes`,`no`                                      | Disable notifications (see [patch](./patches/10-disable-notifications.patch))                  |
-| `DZ_DISABLE_HARDWARE_ACCELERATION` | `yes`,`no`                                      | Disable hardware acceleration (see [patch](./patches/251226-1766789138.patch))                 |
+| `DZ_DISABLE_HARDWARE_ACCELERATION` | `yes`,`no`                                      | Disable hardware acceleration (see [patch](./patches/13-disable-hardware-acceleration.patch))                 |
 | `DZ_DEVTOOLS`                      | `yes`,`no`                                      | Enable the developer console (ctrl+shift+i)                                                    |
 
 ## Building from source
