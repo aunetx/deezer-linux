@@ -21,7 +21,7 @@ index d0f0f4d..559cd1a 100644
 +            const dzPlayer = window.dzPlayer;
 +            dzPlayer &&
 +              dzPlayer.control.setVolume(
-+                Math.max(0, Math.min(1, dzPlayer.volume + 0.1 * direction))
++                Math.max(0, Math.min(1, dzPlayer.volume + 0.05 * direction))
 +              );
 +          };
 +          document
