@@ -13,6 +13,7 @@ PACKAGE_MANAGER ?= npm
 PACKAGE_MANAGER_SUBDIR_ARG ?= --prefix
 PACKAGE_MANAGER_INSTALL_CMD ?= install
 PACKAGE_MANAGER_ADD_CMD ?= install
+PUBLISH_FOR_PULL_REQUEST = true
 
 install_build_deps:
 	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_INSTALL_CMD)
@@ -68,13 +69,14 @@ build_tar.xz_x64:
 
 build_deb_x64:
 	@echo "Build deb package"
-	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_SUBDIR_ARG) $(APP_DIR) run build-deb-x64
+	@PUBLISH_FOR_PULL_REQUEST=true $(PACKAGE_MANAGER) $(PACKAGE_MANAGER_SUBDIR_ARG) $(APP_DIR) run build-deb-x64
 
 build_rpm_x64:
 	@echo "Build rpm package"
 	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_SUBDIR_ARG) $(APP_DIR) run build-rpm-x64
 
 build_appimage_x64:
+	@export PUBLISH_FOR_PULL_REQUEST=true
 	@echo "Build AppImage binary"
 	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_SUBDIR_ARG) $(APP_DIR) run build-appimage-x64
 
