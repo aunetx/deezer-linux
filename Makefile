@@ -21,6 +21,7 @@ prepare: clean install_build_deps
 	@mkdir -p $(SOURCE_DIR)
 
 	@echo "Download installer"
+	@echo ${GITHUB_TOKEN}
 	@wget -nv $(BASE_URL) -O $(SOURCE_DIR)/deezer-setup-$(PKGVER).exe
 
 	@echo "Verify installer"
