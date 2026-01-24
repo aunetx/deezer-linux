@@ -3,12 +3,14 @@ name: Release
 on:
   push:
     tags:
-      - "*"
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-[0-9]+"
 
 jobs:
   packages:
     name: "Build packages"
     runs-on: ubuntu-latest
+    if: github.event.base_ref == 'refs/heads/master'
     steps:
       - name: checkout repo
         uses: actions/checkout@v4
