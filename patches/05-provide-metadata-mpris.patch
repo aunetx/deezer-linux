@@ -1,15 +1,15 @@
-From d97b60764e4a02f3f6a7fe91bbf952339640689d Mon Sep 17 00:00:00 2001
+From b3977537f865f9cada0884a41975495c67ecb402 Mon Sep 17 00:00:00 2001
 From: josselinonduty <contact@josselinonduty.fr>
-Date: Tue, 2 Dec 2025 13:40:50 +0100
+Date: Sun, 25 Jan 2026 03:14:31 +0100
 Subject: [PATCH] feat: Provide metadata and MPRIS compatiblity
 
 ---
- build/main.js     | 149 ++++++++++++++++++++++++++++++++++++++--------
- build/renderer.js | 118 +++++++++++++++++++++++++++++++-----
- 2 files changed, 226 insertions(+), 41 deletions(-)
+ build/main.js     | 152 ++++++++++++++++++++++++++++++++++++++--------
+ build/renderer.js | 123 ++++++++++++++++++++++++++++++++-----
+ 2 files changed, 234 insertions(+), 41 deletions(-)
 
 diff --git a/build/main.js b/build/main.js
-index 75182f1..14ea84b 100644
+index f7f5739..0e0ecf7 100644
 --- a/build/main.js
 +++ b/build/main.js
 @@ -87,6 +87,10 @@
@@ -71,7 +71,7 @@ index 75182f1..14ea84b 100644
      }
      play() {
        this.ipc.send("channel-player-media-control", MediaPlayerControl.Play);
-@@ -1207,15 +1235,67 @@
+@@ -1207,15 +1235,70 @@
        this.ipc.send("channel-player-shuffle-update", shuffle);
      }
      setRepeatMode(repeatMode) {
@@ -103,6 +103,9 @@ index 75182f1..14ea84b 100644
 +          Math.round(data?.position * 1000 * 1000 || 0);
 +        return;
 +      }
++
++      if (!track || Object.keys(track).length === 0) return;
++      if (!track.title && !track.artist) return;
 +
        (this.track = Object.assign(this.track, track)),
 -        this.emit(MediaEvents.TrackUpdated, this.track);
@@ -146,7 +149,7 @@ index 75182f1..14ea84b 100644
      }
      getTrackInfo() {
        return this.track;
-@@ -1275,7 +1355,11 @@
+@@ -1275,7 +1358,11 @@
          1,
          (0, external_inversify_namespaceObject.inject)(SERVICE_USER)
        ),
@@ -159,7 +162,7 @@ index 75182f1..14ea84b 100644
      ],
      MediaService
    );
-@@ -2457,7 +2541,7 @@
+@@ -2457,7 +2544,7 @@
          (this.ipc = ipc),
          (this.app = app);
      }
@@ -168,7 +171,7 @@ index 75182f1..14ea84b 100644
        const previousUserID = this.user.id;
        (this.user = Object.assign(this.user, userInfo)),
          previousUserID !== this.user.id &&
-@@ -2689,23 +2773,34 @@
+@@ -2689,23 +2776,34 @@
    const PlayerIpc_ipc = main_di.get(SERVICE_IPC),
      media = main_di.get(SERVICE_MEDIA),
      powerSave = main_di.get(SERVICE_POWER_SAVE);
@@ -216,7 +219,7 @@ index 75182f1..14ea84b 100644
      });
    const UpdaterIpc_ipc = main_di.get(SERVICE_IPC),
      autoUpdater = main_di.get(SERVICE_UPDATER);
-@@ -2714,8 +2809,8 @@
+@@ -2714,8 +2812,8 @@
    });
    const UserIpc_ipc = main_di.get(SERVICE_IPC),
      user = main_di.get(SERVICE_USER);
@@ -227,7 +230,7 @@ index 75182f1..14ea84b 100644
    });
    var application_awaiter = function (thisArg, _arguments, P, generator) {
      return new (P || (P = Promise))(function (resolve, reject) {
-@@ -2781,6 +2876,10 @@
+@@ -2781,6 +2879,10 @@
            "autoplay-policy",
            "no-user-gesture-required"
          ),
@@ -239,7 +242,7 @@ index 75182f1..14ea84b 100644
            "second-instance",
            (event, argv) => {
 diff --git a/build/renderer.js b/build/renderer.js
-index 7329ec8..d0f0f4d 100644
+index a30f35a..e6efc46 100644
 --- a/build/renderer.js
 +++ b/build/renderer.js
 @@ -285,6 +285,42 @@
@@ -356,7 +359,7 @@ index 7329ec8..d0f0f4d 100644
                break;
              }
              case "player-track-updated": {
-@@ -396,13 +451,44 @@
+@@ -396,13 +451,49 @@
                    canRepeat: event.data.player.hasRepeat,
                    canShuffle: event.data.player.hasShuffle,
                  };
@@ -374,34 +377,39 @@ index 7329ec8..d0f0f4d 100644
        !1
      ),
 +    setInterval(() => {
-+      if (document.readyState === "complete") {
-+        renderer_ipc.send(
-+          "channel-player-track-update",
-+          {},
-+          {},
-+          {
-+            position:
-+              document
-+                .querySelector(".slider-track .slider-track-input")
-+                ?.getAttribute("value") || 0,
-+            trackInfo: {
-+              song: {
-+                DURATION:
-+                  document
-+                    .querySelector(".slider-track .slider-track-input")
-+                    ?.getAttribute("max") || 0,
-+              },
++      if (!document.readyState === "complete") return;
++
++      const sliderValue = document
++        .querySelector(".slider-track .slider-track-input")
++        ?.getAttribute("value");
++      if (sliderValue === null) return;
++
++      renderer_ipc.send(
++        "channel-player-track-update",
++        {},
++        {},
++        {
++          position:
++            document
++              .querySelector(".slider-track .slider-track-input")
++              ?.getAttribute("value") || 0,
++          trackInfo: {
++            song: {
++              DURATION:
++                document
++                  .querySelector(".slider-track .slider-track-input")
++                  ?.getAttribute("max") || 0,
 +            },
-+            player: {
-+              volume: window.dzPlayer?.volume,
-+            },
-+          }
-+        );
-+      }
++          },
++          player: {
++            volume: window.dzPlayer?.volume,
++          },
++        }
++      );
 +    }, 50),
      (function (layoutName, callback) {
        const layouts = nodeRequire("./assets/layout.json"),
          manifest = nodeRequire("./assets/manifest.json");
 -- 
-2.48.1
+2.51.0
 
