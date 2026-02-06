@@ -1,6 +1,6 @@
 name: deezer-desktop
 base: core24
-version: '7.1.20'
+adopt-info: deezer-linux-app
 platforms:
   amd64:
     build-on: [amd64]
@@ -36,11 +36,22 @@ plugs:
     private: true
 
 parts:
-  deezer-linux:
-    plugin: dump
-    source:
-      - on amd64: https://github.com/aunetx/deezer-linux/releases/download/v$SNAPCRAFT_PROJECT_VERSION/deezer-desktop_$SNAPCRAFT_PROJECT_VERSION_amd64.deb
-      - on arm64: https://github.com/aunetx/deezer-linux/releases/download/v$SNAPCRAFT_PROJECT_VERSION/deezer-desktop_$SNAPCRAFT_PROJECT_VERSION_arm64.deb
+  deezer-linux-app:
+    plugin: nil
+    build-packages: [wget, curl]
+    override-build: |
+      if [ "$CRAFT_ARCH_TRIPLET_BUILD_FOR" = "x86_64-linux-gnu" ]; then
+        URL=$(curl -s "https://api.github.com/repos/aunetx/deezer-linux/releases/latest" | grep -o 'https.*amd64\.deb' | head -1)
+        wget "$URL"
+      elif [ "$CRAFT_ARCH_TRIPLET_BUILD_FOR" = "aarch64-linux-gnu" ]; then
+        URL=$(curl -s "https://api.github.com/repos/aunetx/deezer-linux/releases/latest" | grep -o 'https.*arm64\.deb' | head -1)
+        wget "$URL"
+      fi
+
+      DEB_FILE=$(basename "$URL")
+      dpkg-deb -x "$DEB_FILE" "$CRAFT_PART_INSTALL"
+      VERSION=$(echo "$DEB_FILE" | cut -d'_' -f2)
+      craftctl set version="$VERSION"
     prime:
       - usr
       - opt
