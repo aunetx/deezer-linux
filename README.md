@@ -52,6 +52,7 @@ Other packages can be installed from your package manager, either by clicking on
 | `DZ_DISABLE_ANIMATIONS`            | `yes`,`no`                                      | Disable animations (see [patch](./patches/09-disable-animations.patch))                        |
 | `DZ_DISABLE_NOTIFICATIONS`         | `yes`,`no`                                      | Disable notifications (see [patch](./patches/10-disable-notifications.patch))                  |
 | `DZ_DISABLE_HARDWARE_ACCELERATION` | `yes`,`no`                                      | Disable hardware acceleration (see [patch](./patches/13-disable-hardware-acceleration.patch))  |
+| `DZ_RESOURCES_PATH`                | _path_                                          | Override the default resources path (see [patch](./patches/14-override-resources-path.patch)) |
 | `DZ_DEVTOOLS`                      | `yes`,`no`                                      | Enable the developer console (ctrl+shift+i)                                                    |
 
 ## Building from source

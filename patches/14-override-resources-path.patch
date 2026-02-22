@@ -1,0 +1,29 @@
+From 411d15d899a87b8a09c4e4a9a0bfcbb0ec04d88b Mon Sep 17 00:00:00 2001
+From: FelixLusseau <94113911+FelixLusseau@users.noreply.github.com>
+Date: Sat, 21 Feb 2026 12:41:45 +0100
+Subject: [PATCH] feat: Allow custom resources path via environment variable
+
+This patch allows users to override the default resources path using
+the DZ_RESOURCES_PATH environment variable. This is useful for
+custom installations where resources like systray.png icon are not
+in the default location.
+---
+ build/main.js | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/build/main.js b/build/main.js
+index 6a6697d..0e03d05 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -134,7 +134,7 @@
+     return external_path_default().join(
+       isDev(app)
+         ? external_path_default().join(app.getAppPath(), "resources")
+-        : process.resourcesPath,
++        : process.env.DZ_RESOURCES_PATH || process.resourcesPath,
+       appIcon
+     );
+   }
+-- 
+2.52.0
+
