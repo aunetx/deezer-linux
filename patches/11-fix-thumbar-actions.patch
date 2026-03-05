@@ -28,7 +28,7 @@ index edacdde..ba3d65e 100644
          case MenuItemType.PlayerNext:
            return this.getPlayerNextOptions();
          case MenuItemType.PlayerPrev:
-@@ -1586,15 +1589,26 @@
+@@ -1587,15 +1590,26 @@
          }),
        };
      }
@@ -57,7 +57,7 @@ index edacdde..ba3d65e 100644
        };
      }
      getPlayerPrevOptions() {
-@@ -1603,9 +1617,9 @@
+@@ -1604,9 +1618,9 @@
          label: i18n_t("menu_previous_label"),
          enabled: this.user.isLoggedIn() && canPrev,
          accelerator: "Shift+Left",
@@ -69,7 +69,7 @@ index edacdde..ba3d65e 100644
        };
      }
      getPlayerShuffleOptions() {
-@@ -2248,7 +2262,7 @@
+@@ -2249,7 +2263,7 @@
            external_electron_namespaceObject.Menu.buildFromTemplate([
              this.menu.getItem(MenuItemType.Open),
              this.menu.getItem(MenuItemType.Separator),

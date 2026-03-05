@@ -11,7 +11,7 @@ diff --git a/build/main.js b/build/main.js
 index 411964e..307fc24 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -2286,8 +2286,8 @@
+@@ -2287,8 +2287,8 @@
      }
      init() {
        this.arch &&
