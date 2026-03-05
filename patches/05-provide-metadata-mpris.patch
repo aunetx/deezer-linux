@@ -162,7 +162,7 @@ index f7f5739..0e0ecf7 100644
      ],
      MediaService
    );
-@@ -2457,7 +2544,7 @@
+@@ -2458,7 +2545,7 @@
          (this.ipc = ipc),
          (this.app = app);
      }
@@ -171,7 +171,7 @@ index f7f5739..0e0ecf7 100644
        const previousUserID = this.user.id;
        (this.user = Object.assign(this.user, userInfo)),
          previousUserID !== this.user.id &&
-@@ -2689,23 +2776,34 @@
+@@ -2690,23 +2777,34 @@
    const PlayerIpc_ipc = main_di.get(SERVICE_IPC),
      media = main_di.get(SERVICE_MEDIA),
      powerSave = main_di.get(SERVICE_POWER_SAVE);
@@ -219,7 +219,7 @@ index f7f5739..0e0ecf7 100644
      });
    const UpdaterIpc_ipc = main_di.get(SERVICE_IPC),
      autoUpdater = main_di.get(SERVICE_UPDATER);
-@@ -2714,8 +2812,8 @@
+@@ -2715,8 +2813,8 @@
    });
    const UserIpc_ipc = main_di.get(SERVICE_IPC),
      user = main_di.get(SERVICE_USER);
@@ -230,7 +230,7 @@ index f7f5739..0e0ecf7 100644
    });
    var application_awaiter = function (thisArg, _arguments, P, generator) {
      return new (P || (P = Promise))(function (resolve, reject) {
-@@ -2781,6 +2879,10 @@
+@@ -2782,6 +2880,10 @@
            "autoplay-policy",
            "no-user-gesture-required"
          ),
