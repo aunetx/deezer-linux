@@ -23,7 +23,7 @@
     "@jellybrick/mpris-service": "2.1.5"
   },
   "devDependencies": {
-    "electron": "^38.4.0",
+    "electron": "^40.0.0",
     "electron-builder": "^26.0.0"
   },
   "build": {
