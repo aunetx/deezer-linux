@@ -23,7 +23,7 @@
     "@jellybrick/mpris-service": "2.1.5"
   },
   "devDependencies": {
-    "electron": "^38.4.0",
+    "electron": "^40.0.0",
     "electron-builder": "^26.0.0"
   },
   "build": {
@@ -149,9 +149,7 @@
             {
               "type": "script",
               "dest-filename": "run.sh",
-              "commands": [
-                "env XDG_CURRENT_DESKTOP=Unity zypak-wrapper /app/main/deezer-desktop \"$@\""
-              ]
+              "commands": ["zypak-wrapper /app/main/deezer-desktop \"$@\""]
             }
           ]
         }

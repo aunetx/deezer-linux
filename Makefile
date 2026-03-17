@@ -40,7 +40,12 @@ prepare: clean install_build_deps
 	@npm run prettier -- --write "$(APP_DIR)/build/*.{js,html}" --config .prettierrc.json --ignore-path /dev/null
 
 	@echo "--------------------------------"
-	@$(foreach p,$(wildcard ./patches/*), echo "Applying $(p)"; patch -p 1 -d $(APP_DIR) < $(p) && echo "Applied $(p)\n";)
+	@set -e; \
+	for p in ./patches/*; do \
+		echo "Applying $$p"; \
+		patch -p 1 -d $(APP_DIR) < $$p; \
+		echo "Applied $$p\n"; \
+	done
 
 	@echo "Append package-append.json to the package.json of the app"
 	@echo "Adds electron, elecron-builder dependencies, prod and build directives"

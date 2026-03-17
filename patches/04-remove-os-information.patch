@@ -28,7 +28,7 @@ index 307fc24..75182f1 100644
 @@ -2,7 +2,20 @@
    "use strict";
    var __webpack_modules__ = {
-       857: (module) => {
+       857(module) {
 -        module.exports = require("os");
 +        var __module_os = require("os");
 +        const release = __module_os.release();
@@ -45,7 +45,7 @@ index 307fc24..75182f1 100644
 +        };
 +        module.exports = __module_os;
        },
-       944: (module) => {
+       944(module) {
          module.exports = require("macos-version");
 diff --git a/build/preload.js b/build/preload.js
 index cc6a919..9a90de9 100644
@@ -54,7 +54,7 @@ index cc6a919..9a90de9 100644
 @@ -2,7 +2,20 @@
    "use strict";
    var __webpack_modules__ = {
-       857: (module) => {
+       857(module) {
 -        module.exports = require("os");
 +        var __module_os = require("os");
 +        const release = __module_os.release();
@@ -71,7 +71,7 @@ index cc6a919..9a90de9 100644
 +        };
 +        module.exports = __module_os;
        },
-       944: (module) => {
+       944(module) {
          module.exports = require("macos-version");
 diff --git a/build/renderer.js b/build/renderer.js
 index 6f3c29f..7329ec8 100644
@@ -80,7 +80,7 @@ index 6f3c29f..7329ec8 100644
 @@ -2,7 +2,20 @@
    "use strict";
    var __webpack_modules__ = {
-       857: (module) => {
+       857(module) {
 -        module.exports = require("os");
 +        var __module_os = require("os");
 +        const release = __module_os.release();
@@ -97,7 +97,7 @@ index 6f3c29f..7329ec8 100644
 +        };
 +        module.exports = __module_os;
        },
-       944: (module) => {
+       944(module) {
          module.exports = require("macos-version");
 diff --git a/build/titlebar.js b/build/titlebar.js
 index c07b3f1..886a825 100644
@@ -106,7 +106,7 @@ index c07b3f1..886a825 100644
 @@ -2,7 +2,20 @@
    "use strict";
    var __webpack_modules__ = {
-       857: (module) => {
+       857(module) {
 -        module.exports = require("os");
 +        var __module_os = require("os");
 +        const release = __module_os.release();
@@ -123,7 +123,7 @@ index c07b3f1..886a825 100644
 +        };
 +        module.exports = __module_os;
        },
-       944: (module) => {
+       944(module) {
          module.exports = require("macos-version");
 -- 
 2.48.1
