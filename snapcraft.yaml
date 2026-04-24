@@ -1,0 +1,57 @@
+name: deezer-desktop
+base: core24
+adopt-info: deezer-linux-app
+platforms:
+  amd64:
+    build-on: [amd64]
+    build-for: [amd64]
+  arm64:
+    build-on: [arm64]
+    build-for: [arm64]
+summary: Online music streaming service
+description: |
+    An unofficial linux port of the deezer desktop application.
+    Access all of your favorite music, and save them offline for later!
+grade: stable
+confinement: strict
+icon: dev.aunetx.deezer.svg
+
+apps:
+  deezer-desktop:
+    command: opt/deezer-desktop/deezer-desktop --no-sandbox
+    desktop: usr/share/applications/deezer-desktop.desktop
+    common-id: dev.aunetx.deezer
+    extensions: [gnome]
+    plugs:
+      - audio-playback
+      - unity7
+      - network
+      - network-bind
+      - screen-inhibit-control
+      - home
+      - removable-media
+
+plugs:
+  shared-memory:
+    private: true
+
+parts:
+  deezer-linux-app:
+    plugin: nil
+    build-packages: [wget, curl]
+    override-build: |
+      if [ "$CRAFT_ARCH_TRIPLET_BUILD_FOR" = "x86_64-linux-gnu" ]; then
+        URL=$(curl -s "https://api.github.com/repos/aunetx/deezer-linux/releases/latest" | grep -o 'https.*amd64\.deb' | head -1)
+        wget "$URL"
+      elif [ "$CRAFT_ARCH_TRIPLET_BUILD_FOR" = "aarch64-linux-gnu" ]; then
+        URL=$(curl -s "https://api.github.com/repos/aunetx/deezer-linux/releases/latest" | grep -o 'https.*arm64\.deb' | head -1)
+        wget "$URL"
+      fi
+
+      DEB_FILE=$(basename "$URL")
+      dpkg-deb -x "$DEB_FILE" "$CRAFT_PART_INSTALL"
+      VERSION=$(echo "$DEB_FILE" | cut -d'_' -f2)
+      craftctl set version="$VERSION"
+    prime:
+      - usr
+      - opt
