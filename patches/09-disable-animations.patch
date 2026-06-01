@@ -44,7 +44,7 @@ diff --git a/build/preload.js b/build/preload.js
 index 80dced7..4f72387 100644
 --- a/build/preload.js
 +++ b/build/preload.js
-@@ -531,6 +531,10 @@
+@@ -529,6 +529,10 @@
          document
            .getElementsByTagName("body")[0]
            .classList.add("hide-offline-banner");

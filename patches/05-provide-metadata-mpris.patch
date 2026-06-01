@@ -288,7 +288,7 @@ index a30f35a..e6efc46 100644
      });
    const UserIpc_ipc = renderer_di.get(SERVICE_IPC);
    UserIpc_ipc.on("channel-user-log-out", () => {
-@@ -337,23 +373,31 @@
+@@ -335,23 +371,31 @@
                  isFamily =
                    multiAccount &&
                    (multiAccount.ENABLED || multiAccount.CHILD_COUNT > 0);
@@ -334,7 +334,7 @@ index a30f35a..e6efc46 100644
                break;
              case "player-shuffle-changed":
                renderer_ipc.send("channel-player-shuffle-update", {
-@@ -363,12 +407,23 @@
+@@ -361,12 +405,23 @@
                  canShuffle: event.data.player.hasShuffle,
                });
                break;
@@ -359,7 +359,7 @@ index a30f35a..e6efc46 100644
                break;
              }
              case "player-track-updated": {
-@@ -396,13 +451,49 @@
+@@ -394,13 +449,49 @@
                    canRepeat: event.data.player.hasRepeat,
                    canShuffle: event.data.player.hasShuffle,
                  };
