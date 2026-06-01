@@ -1,0 +1,59 @@
+From 34fb41808b886ee3da632267a2f867d889a00bc5 Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Mon, 1 Jun 2026 16:55:10 +0200
+Subject: [PATCH] feat: sync app theme to system theme
+
+---
+ build/main.js    |  3 +++
+ build/preload.js | 21 +++++++++++++++++++++
+ 2 files changed, 24 insertions(+)
+
+diff --git a/build/main.js b/build/main.js
+index 054a558..6ca1492 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -3108,6 +3108,9 @@
+             (process.argv.some((arg) => arg === "--disable-notifications") ||
+               "yes" === process.env.DZ_DISABLE_NOTIFICATIONS) &&
+               "--disable-notifications",
++            (process.argv.some((arg) => arg === "--sync-theme") ||
++              "yes" === process.env.DZ_SYNC_THEME) &&
++              "--sync-theme",
+           ].filter(Boolean),
+         },
+         windowOptions = {
+diff --git a/build/preload.js b/build/preload.js
+index 0cffa6c..ad468eb 100644
+--- a/build/preload.js
++++ b/build/preload.js
+@@ -535,6 +535,27 @@
+           .classList.add("disable-animations");
+       if (process.argv.some((arg) => arg === "--disable-notifications"))
+         delete window.Notification;
++      if (process.argv.some((arg) => arg === "--sync-theme")) {
++        const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
++        const applyTheme = () => {
++          const theme = darkQuery.matches ? "dark" : "light";
++          const opposite = "dark" === theme ? "light" : "dark";
++          const html = document.documentElement;
++          if (html.dataset.theme === theme) return;
++          html.dataset.theme = theme;
++          html.style.colorScheme = theme;
++          if (document.body) {
++            document.body.classList.add("chakra-ui-" + theme);
++            document.body.classList.remove("chakra-ui-" + opposite);
++          }
++        };
++        applyTheme();
++        darkQuery.addEventListener("change", applyTheme);
++        new MutationObserver(applyTheme).observe(document.documentElement, {
++          attributes: true,
++          attributeFilter: ["data-theme"],
++        });
++      }
+     }),
+     (module.exports = {});
+ })();
+-- 
+2.53.0
+
