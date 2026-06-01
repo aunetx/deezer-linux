@@ -25,9 +25,9 @@ diff --git a/build/main.js b/build/main.js
 index 307fc24..75182f1 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -2,7 +2,20 @@
-   "use strict";
-   var __webpack_modules__ = {
+@@ -5,7 +5,20 @@
+         module.exports = require("macos-version");
+       },
        857(module) {
 -        module.exports = require("os");
 +        var __module_os = require("os");
@@ -45,15 +45,15 @@ index 307fc24..75182f1 100644
 +        };
 +        module.exports = __module_os;
        },
-       944(module) {
-         module.exports = require("macos-version");
+     },
+     __webpack_module_cache__ = {};
 diff --git a/build/preload.js b/build/preload.js
 index cc6a919..9a90de9 100644
 --- a/build/preload.js
 +++ b/build/preload.js
-@@ -2,7 +2,20 @@
-   "use strict";
-   var __webpack_modules__ = {
+@@ -5,7 +5,20 @@
+         module.exports = require("macos-version");
+       },
        857(module) {
 -        module.exports = require("os");
 +        var __module_os = require("os");
@@ -71,15 +71,15 @@ index cc6a919..9a90de9 100644
 +        };
 +        module.exports = __module_os;
        },
-       944(module) {
-         module.exports = require("macos-version");
+     },
+     __webpack_module_cache__ = {};
 diff --git a/build/renderer.js b/build/renderer.js
 index 6f3c29f..7329ec8 100644
 --- a/build/renderer.js
 +++ b/build/renderer.js
-@@ -2,7 +2,20 @@
-   "use strict";
-   var __webpack_modules__ = {
+@@ -5,7 +5,20 @@
+         module.exports = require("macos-version");
+       },
        857(module) {
 -        module.exports = require("os");
 +        var __module_os = require("os");
@@ -97,15 +97,15 @@ index 6f3c29f..7329ec8 100644
 +        };
 +        module.exports = __module_os;
        },
-       944(module) {
-         module.exports = require("macos-version");
+     },
+     __webpack_module_cache__ = {};
 diff --git a/build/titlebar.js b/build/titlebar.js
 index c07b3f1..886a825 100644
 --- a/build/titlebar.js
 +++ b/build/titlebar.js
-@@ -2,7 +2,20 @@
-   "use strict";
-   var __webpack_modules__ = {
+@@ -5,7 +5,20 @@
+         module.exports = require("macos-version");
+       },
        857(module) {
 -        module.exports = require("os");
 +        var __module_os = require("os");
@@ -123,8 +123,8 @@ index c07b3f1..886a825 100644
 +        };
 +        module.exports = __module_os;
        },
-       944(module) {
-         module.exports = require("macos-version");
+     },
+     __webpack_module_cache__ = {};
 -- 
 2.48.1
 
