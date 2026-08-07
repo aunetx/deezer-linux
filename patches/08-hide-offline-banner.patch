@@ -37,7 +37,7 @@ diff --git a/build/main.js b/build/main.js
 index e5bc640..8953617 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3079,6 +3079,11 @@
+@@ -3095,6 +3095,11 @@
              getRealPath(external_electron_namespaceObject.app, __dirname),
              "preload.js"
            ),
@@ -53,7 +53,7 @@ diff --git a/build/preload.js b/build/preload.js
 index 9a90de9..80dced7 100644
 --- a/build/preload.js
 +++ b/build/preload.js
-@@ -525,6 +525,10 @@
+@@ -540,6 +540,10 @@
            external_i18next_default().dir(external_i18next_default().language)
              ? "rtl"
              : "ltr");

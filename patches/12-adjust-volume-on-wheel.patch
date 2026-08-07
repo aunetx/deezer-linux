@@ -11,7 +11,7 @@ diff --git a/build/renderer.js b/build/renderer.js
 index d0f0f4d..559cd1a 100644
 --- a/build/renderer.js
 +++ b/build/renderer.js
-@@ -356,6 +356,21 @@
+@@ -340,6 +340,21 @@
      document.addEventListener("DOMContentLoaded", () => {
        window.Events &&
          window.Events.ready(window.Events.player.playerReady, () => {

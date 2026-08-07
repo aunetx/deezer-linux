@@ -12,7 +12,7 @@ diff --git a/build/main.js b/build/main.js
 index f7f5739..0e0ecf7 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -87,6 +87,10 @@
+@@ -103,6 +103,10 @@
      external_events_namespaceObject = require("events"),
      external_semver_namespaceObject =
        (require("isomorphic-fetch"), require("semver"));
@@ -23,7 +23,7 @@ index f7f5739..0e0ecf7 100644
    var PLATFORM,
      external_semver_default = __webpack_require__.n(
        external_semver_namespaceObject
-@@ -1168,8 +1172,9 @@
+@@ -1184,8 +1188,9 @@
        };
      };
    let MediaService = class extends external_events_namespaceObject.EventEmitter {
@@ -34,7 +34,7 @@ index f7f5739..0e0ecf7 100644
          (this.smtc = null),
          (this.track = {}),
          (this.player = {}),
-@@ -1177,6 +1182,11 @@
+@@ -1193,6 +1198,11 @@
          (this.debounceOptions = { leading: !0, maxWait: 500 }),
          (this.ipc = ipc),
          (this.user = user),
@@ -46,7 +46,7 @@ index f7f5739..0e0ecf7 100644
          isPlatform(PLATFORM.LINUX) &&
            (this.user.addListener(UserEvents.LoggedIn, () => {
              this.start();
-@@ -1184,6 +1194,24 @@
+@@ -1200,6 +1210,24 @@
            this.user.addListener(UserEvents.LoggedOut, () => {
              this.stop();
            }));
@@ -71,7 +71,7 @@ index f7f5739..0e0ecf7 100644
      }
      play() {
        this.ipc.send("channel-player-media-control", MediaPlayerControl.Play);
-@@ -1207,15 +1235,70 @@
+@@ -1223,15 +1251,70 @@
        this.ipc.send("channel-player-shuffle-update", shuffle);
      }
      setRepeatMode(repeatMode) {
@@ -149,7 +149,7 @@ index f7f5739..0e0ecf7 100644
      }
      getTrackInfo() {
        return this.track;
-@@ -1275,7 +1358,11 @@
+@@ -1291,7 +1374,11 @@
          1,
          (0, external_inversify_namespaceObject.inject)(SERVICE_USER)
        ),
@@ -162,7 +162,7 @@ index f7f5739..0e0ecf7 100644
      ],
      MediaService
    );
-@@ -2458,7 +2545,7 @@
+@@ -2474,7 +2561,7 @@
          (this.ipc = ipc),
          (this.app = app);
      }
@@ -171,7 +171,7 @@ index f7f5739..0e0ecf7 100644
        const previousUserID = this.user.id;
        (this.user = Object.assign(this.user, userInfo)),
          previousUserID !== this.user.id &&
-@@ -2690,23 +2777,34 @@
+@@ -2706,23 +2793,34 @@
    const PlayerIpc_ipc = main_di.get(SERVICE_IPC),
      media = main_di.get(SERVICE_MEDIA),
      powerSave = main_di.get(SERVICE_POWER_SAVE);
@@ -219,7 +219,7 @@ index f7f5739..0e0ecf7 100644
      });
    const UpdaterIpc_ipc = main_di.get(SERVICE_IPC),
      autoUpdater = main_di.get(SERVICE_UPDATER);
-@@ -2715,8 +2813,8 @@
+@@ -2731,8 +2829,8 @@
    });
    const UserIpc_ipc = main_di.get(SERVICE_IPC),
      user = main_di.get(SERVICE_USER);
@@ -230,7 +230,7 @@ index f7f5739..0e0ecf7 100644
    });
    var application_awaiter = function (thisArg, _arguments, P, generator) {
      return new (P || (P = Promise))(function (resolve, reject) {
-@@ -2782,6 +2880,10 @@
+@@ -2798,6 +2896,10 @@
            "autoplay-policy",
            "no-user-gesture-required"
          ),
@@ -245,7 +245,7 @@ diff --git a/build/renderer.js b/build/renderer.js
 index a30f35a..e6efc46 100644
 --- a/build/renderer.js
 +++ b/build/renderer.js
-@@ -285,6 +285,42 @@
+@@ -269,6 +269,42 @@
          dzPlayer.control.setVolume(
            Math.max(0, Math.min(1, dzPlayer.volume + 0.1 * volume))
          );
@@ -288,7 +288,7 @@ index a30f35a..e6efc46 100644
      });
    const UserIpc_ipc = renderer_di.get(SERVICE_IPC);
    UserIpc_ipc.on("channel-user-log-out", () => {
-@@ -335,23 +371,31 @@
+@@ -319,23 +355,31 @@
                  isFamily =
                    multiAccount &&
                    (multiAccount.ENABLED || multiAccount.CHILD_COUNT > 0);
@@ -334,7 +334,7 @@ index a30f35a..e6efc46 100644
                break;
              case "player-shuffle-changed":
                renderer_ipc.send("channel-player-shuffle-update", {
-@@ -361,12 +405,23 @@
+@@ -345,12 +389,23 @@
                  canShuffle: event.data.player.hasShuffle,
                });
                break;
@@ -359,7 +359,7 @@ index a30f35a..e6efc46 100644
                break;
              }
              case "player-track-updated": {
-@@ -394,13 +449,49 @@
+@@ -378,13 +433,49 @@
                    canRepeat: event.data.player.hasRepeat,
                    canShuffle: event.data.player.hasShuffle,
                  };
