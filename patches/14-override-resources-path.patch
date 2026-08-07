@@ -15,7 +15,7 @@ diff --git a/build/main.js b/build/main.js
 index 6a6697d..0e03d05 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -134,7 +134,7 @@
+@@ -150,7 +150,7 @@
      return external_path_default().join(
        isDev(app)
          ? external_path_default().join(app.getAppPath(), "resources")
