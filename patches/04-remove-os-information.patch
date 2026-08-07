@@ -26,105 +26,104 @@ index 307fc24..75182f1 100644
 --- a/build/main.js
 +++ b/build/main.js
 @@ -5,7 +5,20 @@
-         module.exports = require("macos-version");
-       },
-       857(module) {
--        module.exports = require("os");
-+        var __module_os = require("os");
-+        const release = __module_os.release();
-+        __module_os.release = () => {
-+          if (
-+            process.argv.some((arg) => arg === "--keep-kernel") ||
-+            "yes" === process.env.DZ_KEEP_KERNEL
-+          ) {
-+            const matcher = /(\d+\.\d+\.\d+)\.*/;
-+            var result = release.match(matcher);
-+            return result ? result[1] : "6.4.0";
-+          }
-+          return "6.4.0";
-+        };
-+        module.exports = __module_os;
-       },
+       module.exports = require("macos-version");
      },
-     __webpack_module_cache__ = {};
+     857(module) {
+-      module.exports = require("os");
++      var __module_os = require("os");
++      const release = __module_os.release();
++      __module_os.release = () => {
++        if (
++          process.argv.some((arg) => arg === "--keep-kernel") ||
++          "yes" === process.env.DZ_KEEP_KERNEL
++        ) {
++          const matcher = /(\d+\.\d+\.\d+)\.*/;
++          var result = release.match(matcher);
++          return result ? result[1] : "6.4.0";
++        }
++        return "6.4.0";
++      };
++      module.exports = __module_os;
+     },
+   };
+   const __webpack_module_cache__ = {};
 diff --git a/build/preload.js b/build/preload.js
 index cc6a919..9a90de9 100644
 --- a/build/preload.js
 +++ b/build/preload.js
 @@ -5,7 +5,20 @@
-         module.exports = require("macos-version");
-       },
-       857(module) {
--        module.exports = require("os");
-+        var __module_os = require("os");
-+        const release = __module_os.release();
-+        __module_os.release = () => {
-+          if (
-+            process.argv.some((arg) => arg === "--keep-kernel") ||
-+            "yes" === process.env.DZ_KEEP_KERNEL
-+          ) {
-+            const matcher = /(\d+\.\d+\.\d+)\.*/;
-+            var result = release.match(matcher);
-+            return result ? result[1] : "6.4.0";
-+          }
-+          return "6.4.0";
-+        };
-+        module.exports = __module_os;
-       },
+       module.exports = require("macos-version");
      },
-     __webpack_module_cache__ = {};
+     857(module) {
+-      module.exports = require("os");
++      var __module_os = require("os");
++      const release = __module_os.release();
++      __module_os.release = () => {
++        if (
++          process.argv.some((arg) => arg === "--keep-kernel") ||
++          "yes" === process.env.DZ_KEEP_KERNEL
++        ) {
++          const matcher = /(\d+\.\d+\.\d+)\.*/;
++          var result = release.match(matcher);
++          return result ? result[1] : "6.4.0";
++        }
++        return "6.4.0";
++      };
++      module.exports = __module_os;
+     },
+   };
+   const __webpack_module_cache__ = {};
 diff --git a/build/renderer.js b/build/renderer.js
 index 6f3c29f..7329ec8 100644
 --- a/build/renderer.js
 +++ b/build/renderer.js
 @@ -5,7 +5,20 @@
-         module.exports = require("macos-version");
-       },
-       857(module) {
--        module.exports = require("os");
-+        var __module_os = require("os");
-+        const release = __module_os.release();
-+        __module_os.release = () => {
-+          if (
-+            process.argv.some((arg) => arg === "--keep-kernel") ||
-+            "yes" === process.env.DZ_KEEP_KERNEL
-+          ) {
-+            const matcher = /(\d+\.\d+\.\d+)\.*/;
-+            var result = release.match(matcher);
-+            return result ? result[1] : "6.4.0";
-+          }
-+          return "6.4.0";
-+        };
-+        module.exports = __module_os;
-       },
+       module.exports = require("macos-version");
      },
-     __webpack_module_cache__ = {};
+     857(module) {
+-      module.exports = require("os");
++      var __module_os = require("os");
++      const release = __module_os.release();
++      __module_os.release = () => {
++        if (
++          process.argv.some((arg) => arg === "--keep-kernel") ||
++          "yes" === process.env.DZ_KEEP_KERNEL
++        ) {
++          const matcher = /(\d+\.\d+\.\d+)\.*/;
++          var result = release.match(matcher);
++          return result ? result[1] : "6.4.0";
++        }
++        return "6.4.0";
++      };
++      module.exports = __module_os;
+     },
+   };
+   const __webpack_module_cache__ = {};
 diff --git a/build/titlebar.js b/build/titlebar.js
 index c07b3f1..886a825 100644
 --- a/build/titlebar.js
 +++ b/build/titlebar.js
 @@ -5,7 +5,20 @@
-         module.exports = require("macos-version");
-       },
-       857(module) {
--        module.exports = require("os");
-+        var __module_os = require("os");
-+        const release = __module_os.release();
-+        __module_os.release = () => {
-+          if (
-+            process.argv.some((arg) => arg === "--keep-kernel") ||
-+            "yes" === process.env.DZ_KEEP_KERNEL
-+          ) {
-+            const matcher = /(\d+\.\d+\.\d+)\.*/;
-+            var result = release.match(matcher);
-+            return result ? result[1] : "6.4.0";
-+          }
-+          return "6.4.0";
-+        };
-+        module.exports = __module_os;
-       },
+       module.exports = require("macos-version");
      },
-     __webpack_module_cache__ = {};
--- 
+     857(module) {
+-      module.exports = require("os");
++      var __module_os = require("os");
++      const release = __module_os.release();
++      __module_os.release = () => {
++        if (
++          process.argv.some((arg) => arg === "--keep-kernel") ||
++          "yes" === process.env.DZ_KEEP_KERNEL
++        ) {
++          const matcher = /(\d+\.\d+\.\d+)\.*/;
++          var result = release.match(matcher);
++          return result ? result[1] : "6.4.0";
++        }
++        return "6.4.0";
++      };
++      module.exports = __module_os;
+     },
+   };
+   const __webpack_module_cache__ = {};
+--
 2.48.1
-
