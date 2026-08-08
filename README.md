@@ -214,6 +214,22 @@ export PACKAGE_MANAGER_ADD_CMD=add
 export PACKAGE_MANAGER_INSTALL_CMD=install
 ```
 
+### After logging in, the callback redirects to the app but the window stays on the auth page
+
+This is usually caused by stale site data from a previous session. Clear the app's old site data and log in again:
+
+1. Launch the app from your terminal with devtools enabled:
+
+```sh
+DZ_DEVTOOLS=yes ./deezer-desktop # or any other way to launch the app
+```
+
+2. Open the devtools (ctrl+shift+i) and go to the Application tab.
+
+3. In the left sidebar, under Storage, click on Clear storage.
+
+Once the old data is cleared, kill the app completely (make sure it is not running in the background) and relaunch it. You should now be able to log in successfully.
+
 ### How can I use my IME/virtual keyboard on Deezer under Wayland?
 
 _IME: Input Method Editor. Usually used for languages like Chinese, Japanese, Korean, etc._
