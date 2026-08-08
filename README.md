@@ -117,6 +117,21 @@ Artifacts will be generated in `artifacts/x64`.
 >
 > For more information, see [issue #29](https://github.com/aunetx/deezer-linux/issues/29)
 
+> [!NOTE]
+> Unlike the packaged builds, an AppImage is a standalone file that is not integrated into your desktop environment. For the app to show an icon and to handle deep links (such as `deezer://` login callbacks), you either need to use a launcher (like [Gear Lever](https://github.com/mijorus/gear-lever) or [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher)), or need to create and register a desktop entry manually:
+>
+> 1. Move the AppImage somewhere stable (e.g. `~/Applications/deezer-desktop.AppImage`) and make it executable with `chmod +x`.
+> 2. Extract or download the app icon and place it in a standard location, for example `~/.local/share/icons/deezer-desktop.png`.
+> 3. Create a desktop entry at `~/.local/share/applications/deezer-desktop.desktop` pointing `Exec=` to the AppImage (with `%u` so deep links are forwarded) and `Icon=` to the icon path, and declaring the `x-scheme-handler/deezer` MIME type so the app is registered as the `deezer://` handler
+> 4. Reload the deep link / MIME associations so the system picks up the new handler, either by running:
+>
+> ```sh
+> update-desktop-database ~/.local/share/applications
+> xdg-mime default deezer-desktop.desktop x-scheme-handler/deezer
+> ```
+>
+> or simply by reloading your user session (log out and back in). The app should now display its icon and correctly open `deezer://` deep links.
+
 > [!Caution]
 > If you want to open an issue about this, please do not share your own `deezer://autolog/...` link, as it would allow anyone to log into your account without your consent.
 
