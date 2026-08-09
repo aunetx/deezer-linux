@@ -117,6 +117,21 @@ Artifacts will be generated in `artifacts/x64`.
 >
 > For more information, see [issue #29](https://github.com/aunetx/deezer-linux/issues/29)
 
+> [!NOTE]
+> Unlike the packaged builds, an AppImage is a standalone file that is not integrated into your desktop environment. For the app to show an icon and to handle deep links (such as `deezer://` login callbacks), you either need to use a launcher (like [Gear Lever](https://github.com/mijorus/gear-lever) or [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher)), or need to create and register a desktop entry manually:
+>
+> 1. Move the AppImage somewhere stable (e.g. `~/Applications/deezer-desktop.AppImage`) and make it executable with `chmod +x`.
+> 2. Extract or download the app icon and place it in a standard location, for example `~/.local/share/icons/deezer-desktop.png`.
+> 3. Create a desktop entry at `~/.local/share/applications/deezer-desktop.desktop` pointing `Exec=` to the AppImage (with `%u` so deep links are forwarded) and `Icon=` to the icon path, and declaring the `x-scheme-handler/deezer` MIME type so the app is registered as the `deezer://` handler
+> 4. Reload the deep link / MIME associations so the system picks up the new handler, either by running:
+>
+> ```sh
+> update-desktop-database ~/.local/share/applications
+> xdg-mime default deezer-desktop.desktop x-scheme-handler/deezer
+> ```
+>
+> or simply by reloading your user session (log out and back in). The app should now display its icon and correctly open `deezer://` deep links.
+
 > [!Caution]
 > If you want to open an issue about this, please do not share your own `deezer://autolog/...` link, as it would allow anyone to log into your account without your consent.
 
@@ -152,7 +167,7 @@ make build_snap_{arch}
 Then, you can install the package using:
 
 ```sh
-sudo snap install ./artifacts/{arch}/deezer_desktop_{version}_{arch}.snap --dangerous --classic
+sudo snap install ./artifacts/{arch}/deezer_desktop_{version}_{arch}.snap --dangerous
 ```
 
 > [!NOTE]
@@ -213,6 +228,22 @@ export PACKAGE_MANAGER_SUBDIR_ARG=--cwd
 export PACKAGE_MANAGER_ADD_CMD=add
 export PACKAGE_MANAGER_INSTALL_CMD=install
 ```
+
+### After logging in, the callback redirects to the app but the window stays on the auth page
+
+This is usually caused by stale site data from a previous session. Clear the app's old site data and log in again:
+
+1. Launch the app from your terminal with devtools enabled:
+
+```sh
+DZ_DEVTOOLS=yes ./deezer-desktop # or any other way to launch the app
+```
+
+2. Open the devtools (ctrl+shift+i) and go to the Application tab.
+
+3. In the left sidebar, under Storage, click on Clear storage.
+
+Once the old data is cleared, kill the app completely (make sure it is not running in the background) and relaunch it. You should now be able to log in successfully.
 
 ### How can I use my IME/virtual keyboard on Deezer under Wayland?
 

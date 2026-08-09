@@ -6,3 +6,8 @@ artifacts/
 .vscode/
 package-lock.json
 yarn.lock
+
+parts/
+stage/
+prime/
+.craft/

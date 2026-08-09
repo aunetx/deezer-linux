@@ -23,33 +23,66 @@ jobs:
           sudo apt-get install -y flatpak-builder qemu-user-static binfmt-support
           flatpak remote-add --if-not-exists --user flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           sudo snap install snapcraft --classic
+          sudo snap install lxd
+          sudo lxd init --auto
+          sudo usermod -a -G lxd $USER
+          sudo sysctl -w net.ipv4.conf.all.forwarding=1
+          if sudo iptables -nL DOCKER-USER >/dev/null 2>&1; then
+            sudo iptables -I DOCKER-USER -i lxdbr0 -j ACCEPT
+            sudo iptables -I DOCKER-USER -o lxdbr0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+          fi
+          if sudo ip6tables -nL DOCKER-USER >/dev/null 2>&1; then
+            sudo ip6tables -I DOCKER-USER -i lxdbr0 -j ACCEPT
+            sudo ip6tables -I DOCKER-USER -o lxdbr0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+          fi
 
       - name: install_deps
         run: make install_deps
+      - name: cleanup source files
+        run: |
+          rm -rf source
+          df -h
 
       - name: build_deb_x64
         run: make build_deb_x64
+      - name: build_snap_x64
+        run: sg lxd -c 'make build_snap_x64'
+      - name: cleanup snap_x64
+        run: |
+          sg lxd -c 'snapcraft clean --use-lxd --platform amd64 || true'
+          df -h
       - name: build_rpm_x64
         run: make build_rpm_x64
       - name: build_appimage_x64
         run: make build_appimage_x64
-      - name: build_snap_x64
-        run: make build_snap_x64
       - name: build_tar.xz_x64
         run: make build_tar.xz_x64
       - name: build_flatpak_x64
         run: make build_flatpak_x64
+      - name: cleanup x64 build state
+        run: |
+          rm -rf artifacts/x64/linux*-unpacked artifacts/x64/__flatpak-*
+          flatpak uninstall --user --arch=x86_64 --unused --assumeyes --noninteractive || true
+          df -h
 
       - name: build_deb_arm64
         run: make build_deb_arm64
+      - name: build_snap_arm64
+        run: sg lxd -c 'make build_snap_arm64'
+      - name: cleanup snap_arm64
+        run: |
+          sg lxd -c 'snapcraft clean --use-lxd --platform arm64 || true'
+          df -h
       - name: build_rpm_arm64
         run: make build_rpm_arm64
       - name: build_appimage_arm64
         run: make build_appimage_arm64
-      # - name: build_snap_arm64 # This step is currently disabled due to issues with snapcraft + arm64 on github runners
-      #   run: make build_snap_arm64
       - name: build_tar.xz_arm64
         run: make build_tar.xz_arm64
+      - name: cleanup before build_flatpak_arm64
+        run: |
+          rm -rf artifacts/arm64/linux*-unpacked artifacts/arm64/__flatpak-*
+          df -h
       - name: build_flatpak_arm64
         run: make build_flatpak_arm64
 
@@ -57,7 +90,7 @@ jobs:
         run: echo "version=${GITHUB_REF/refs\/tags\//}" >> "$GITHUB_ENV"
 
       - name: Generate sha256
-        run: echo "$(sha256sum artifacts/{x64,arm64}/*.{deb,rpm,AppImage,tar.xz} artifacts/x64/*.snap)" > sha256
+        run: echo "$(sha256sum artifacts/{x64,arm64}/*.{deb,rpm,AppImage,tar.xz,snap,flatpak})" > sha256
 
       - name: create release
         uses: softprops/action-gh-release@v2
@@ -75,6 +108,7 @@ jobs:
             artifacts/arm64/*.deb
             artifacts/arm64/*.rpm
             artifacts/arm64/*.AppImage
+            artifacts/arm64/*.snap
             artifacts/arm64/*.tar.xz
             artifacts/arm64/*.flatpak
             sha256

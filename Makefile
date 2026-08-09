@@ -79,7 +79,8 @@ build_appimage_x64:
 
 build_snap_x64:
 	@echo "Build Snap package"
-	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_SUBDIR_ARG) $(APP_DIR) run build-snap-x64
+	@snapcraft clean deezer-linux-app --use-lxd
+	@snapcraft pack --use-lxd --platform amd64 --output artifacts/x64/deezer-desktop_$(shell jq -r .version $(APP_DIR)/package.json)_amd64.snap
 
 
 build_tar.xz_arm64:
@@ -100,7 +101,8 @@ build_appimage_arm64:
 
 build_snap_arm64:
 	@echo "Build Snap package"
-	@$(PACKAGE_MANAGER) $(PACKAGE_MANAGER_SUBDIR_ARG) $(APP_DIR) run build-snap-arm64
+	@snapcraft clean deezer-linux-app --use-lxd
+	@snapcraft pack --use-lxd --platform arm64 --output artifacts/arm64/deezer-desktop_$(shell jq -r .version $(APP_DIR)/package.json)_arm64.snap
 
 build_flatpak_x64:
 	@echo "Build Flatpak package"

@@ -36,7 +36,7 @@ By participating in this project, you agree to maintain a respectful and inclusi
 
 Ensure you have all required dependencies:
 
-- Node.js (22 recommended)
+- Node.js (24+ recommended)
 - npm
 - 7z
 - make
