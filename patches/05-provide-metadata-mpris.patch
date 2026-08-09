@@ -359,7 +359,7 @@ index a30f35a..e6efc46 100644
                break;
              }
              case "player-track-updated": {
-@@ -378,13 +433,49 @@
+@@ -378,13 +433,76 @@
                    canRepeat: event.data.player.hasRepeat,
                    canShuffle: event.data.player.hasShuffle,
                  };
@@ -407,6 +407,33 @@ index a30f35a..e6efc46 100644
 +        }
 +      );
 +    }, 50),
++    document.addEventListener("DOMContentLoaded", () => {
++      if (!window.Events) return;
++      let syncedSongId = null;
++      const syncTrack = () => {
++        const song = window.dzPlayer?.getCurrentSong?.();
++        if (!song || song.SNG_ID === syncedSongId) return;
++        syncedSongId = song.SNG_ID;
++        renderer_ipc.send(
++          "channel-player-track-update",
++          {
++            title:
++              song.SNG_TITLE ||
++              song.LIVESTREAM_TITLE ||
++              song.EPISODE_TITLE ||
++              "",
++            artist:
++              song.ART_NAME || song.LIVESTREAM_TITLE || song.SHOW_NAME || "",
++            album: song.ALB_TITLE,
++            coverUrl: `https://images.deezer.com/images/${song.SHOW_ART_MD5 ? "talk" : "cover"}/${song.ALB_PICTURE || song.SHOW_ART_MD5 || song.LIVESTREAM_IMAGE_MD5 || "d41d8cd98f00b204e9800998ecf8427e"}/250x250.jpg`,
++          },
++          {},
++          { trackInfo: { song } }
++        );
++      };
++      window.Events.ready(window.Events.player.playerReady, syncTrack);
++      window.Events.subscribe(window.Events.player.tracklistReset, syncTrack);
++    }),
      (function (layoutName, callback) {
        const layouts = nodeRequire("./assets/layout.json"),
          manifest = nodeRequire("./assets/manifest.json");
