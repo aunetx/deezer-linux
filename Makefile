@@ -144,4 +144,5 @@ release: prepare-release
 
 
 clean:
+	@snapcraft clean deezer-linux-app --use-lxd
 	@rm -rf ./$(APP_DIR) flatpak node_modules ./$(SOURCE_DIR) artifacts prime parts stage package-lock.json yarn.lock
