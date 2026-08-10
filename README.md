@@ -20,11 +20,58 @@ It packages the app in a number of formats:
 
 ## Installation
 
-You can find all of the packages on [the release page](https://github.com/aunetx/deezer-linux/releases/latest).
+> [!TIP]
+> The easiest way to install is from **Flathub** or the **Snap Store**. One click, automatic updates, and it works on any distro. Just pick a button below.
 
-To install the flatpak version, you can simply go to https://flathub.org/apps/dev.aunetx.deezer (or use your favorite flatpak package manager).
+<div align="center">
 
-Other packages can be installed from your package manager, either by clicking on them or from the command-line.
+<a href="https://flathub.org/apps/dev.aunetx.deezer">
+  <img height="60" alt="Get it on Flathub" src="https://flathub.org/api/badge?svg&locale=en">
+</a>
+&nbsp;&nbsp;
+<a href="https://snapcraft.io/deezer-desktop">
+  <img height="60" alt="Get it from the Snap Store" src="https://snapcraft.io/static/images/badges/en/snap-store-black.svg">
+</a>
+
+</div>
+
+### Which package should I choose?
+
+| Method        | Best for                                       | How to get it                                                                                                         |
+| ------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Flatpak**\* | Sandboxed, auto-updated, works everywhere      | [**Install from Flathub**](https://flathub.org/apps/dev.aunetx.deezer) or `flatpak install flathub dev.aunetx.deezer` |
+| **Snap**\*    | Ubuntu and Snap-based distros                  | [**Install from the Snap Store**](https://snapcraft.io/deezer-desktop) or `sudo snap install deezer-desktop`          |
+| **AppImage**  | A single portable file, no installation needed | [Download from the releases page](https://github.com/aunetx/deezer-linux/releases/latest)                             |
+| **`.deb`**    | Debian, Ubuntu, Pop!\_OS, elementary OS…       | [Download from the releases page](https://github.com/aunetx/deezer-linux/releases/latest)                             |
+| **`.rpm`**    | Fedora, Red Hat, CentOS, openSUSE…             | [Download from the releases page](https://github.com/aunetx/deezer-linux/releases/latest)                             |
+| **`.tar.xz`** | Any other distro. Set up and run               | [Download from the releases page](https://github.com/aunetx/deezer-linux/releases/latest)                             |
+
+All packages for every release are listed on the [**releases page**](https://github.com/aunetx/deezer-linux/releases/latest).
+
+**\*** Flatpak and Snap packages are sandboxed, which means they have limited access to your system. This is a security feature, but it can cause some issues with certain features. You may have to grant additional permissions to the app using **[Flatseal](https://flathub.org/apps/com.github.tchx84.Flatseal)** (for Flatpak) or `snap connect` (for Snap).
+
+### Using the AppImage
+
+An AppImage is a single, portable file: mark it executable and run it. Because it is not integrated into your desktop environment on its own, we recommend managing it with a helper so you get a proper app icon and menu entry:
+
+- [**Gear Lever**](https://github.com/mijorus/gear-lever): a modern GUI to install, update and manage AppImages ([also on Flathub](https://flathub.org/apps/it.mijorus.gearlever))
+- [**AppImageLauncher**](https://github.com/TheAssassin/AppImageLauncher): integrates AppImages into your system on first launch
+
+> [!NOTE]
+> Prefer to register the AppImage manually instead of using a helper? See the [detailed steps below](#appimage). If login does not redirect back to the app, see the [FAQ](#the-browser-doesnt-launch-the-app-after-login-how-do-i-log-in-manually).
+
+### Launching the app
+
+After installing, launch **Deezer** from your applications menu, or from a terminal:
+
+| Installed via        | Command                                                             |
+| -------------------- | ------------------------------------------------------------------- |
+| Flatpak              | `flatpak run dev.aunetx.deezer`                                     |
+| Snap                 | `deezer-desktop`                                                    |
+| `.deb` / `.rpm`      | `deezer-desktop`                                                    |
+| `.tar.xz` / AppImage | `./deezer-desktop` (from the extracted folder or the AppImage file) |
+
+You can tweak how the app behaves with the [launch options](#usage) below (start in tray, sync theme, disable animations, and more).
 
 ## Usage
 
@@ -36,7 +83,7 @@ Other packages can be installed from your package manager, either by clicking on
 | `--hide-offline-banner`                                                              | Hide the "Application is offline" banner that appears when using a VPN or DNS blocker (see [patch](./patches/08-hide-offline-banner.patch)) |
 | `--disable-animations`                                                               | Disable animations (see [patch](./patches/09-disable-animations.patch))                                                                     |
 | `--disable-notifications`                                                            | Disable notifications (see [patch](./patches/10-disable-notifications.patch))                                                               |
-| `--sync-theme`                                                                       | Sync the app's theme (dark/light) to the OS theme (see [patch](./patches/15-sync-theme.systempatch))                                        |
+| `--sync-theme` _\*_                                                                  | Sync the app's theme (dark/light) to the OS theme (see [patch](./patches/15-sync-theme.systempatch))                                        |
 | `--disable-hardware-acceleration`                                                    | Disable hardware acceleration (useful for systems with GPU issues) (see [patch](./patches/13-disable-hardware-acceleration.patch))          |
 | `--log-level`                                                                        | Set the log level (`silly`,`debug`,`verbose`,`info`,`warn`,`error`) (see [patch](./patches/06-control-log-level.patch))                     |
 | `--enable-wayland-ime` `--ozone-platform-hint=auto` `--wayland-text-input-version=3` | Enable IME keyboard support on Wayland                                                                                                      |
@@ -50,10 +97,12 @@ Other packages can be installed from your package manager, either by clicking on
 | `DZ_HIDE_OFFLINE_BANNER`           | `yes`,`no`                                      | Hide the "Application is offline" banner (see [patch](./patches/08-hide-offline-banner.patch)) |
 | `DZ_DISABLE_ANIMATIONS`            | `yes`,`no`                                      | Disable animations (see [patch](./patches/09-disable-animations.patch))                        |
 | `DZ_DISABLE_NOTIFICATIONS`         | `yes`,`no`                                      | Disable notifications (see [patch](./patches/10-disable-notifications.patch))                  |
-| `DZ_SYNC_THEME`                    | `yes`,`no`                                      | Sync the app's theme to the OS theme (see [patch](./patches/15-sync-theme.patch))              |
+| `DZ_SYNC_THEME` _\*_               | `yes`,`no`                                      | Sync the app's theme to the OS theme (see [patch](./patches/15-sync-theme.patch))              |
 | `DZ_DISABLE_HARDWARE_ACCELERATION` | `yes`,`no`                                      | Disable hardware acceleration (see [patch](./patches/13-disable-hardware-acceleration.patch))  |
 | `DZ_RESOURCES_PATH`                | _path_                                          | Override the default resources path (see [patch](./patches/14-override-resources-path.patch))  |
 | `DZ_DEVTOOLS`                      | `yes`,`no`                                      | Enable the developer console (ctrl+shift+i)                                                    |
+
+_\*_ This feature does not work on Flatpak because of strict sandboxing.
 
 ## Building from source
 
@@ -65,8 +114,8 @@ Other packages can be installed from your package manager, either by clicking on
 | deb      | ⚠️    | ✅  |
 | rpm      | ⚠️    | ✅  |
 | tar.xz   | ⚠️    | ✅  |
-| snap     | ⚠️    | ✅  |
-| flatpak  | ⚠️    | ✅  |
+| snap     | ✅    | ✅  |
+| flatpak  | ✅    | ✅  |
 
 ✅ Available ; ⚠️ Not tested ; ❌ Not available ; ⛔ Not planned
 
@@ -75,7 +124,7 @@ Other packages can be installed from your package manager, either by clicking on
 
 ### Requirements
 
-- Node.js (22+ recommended)
+- Node.js (24+ recommended)
 - npm (or yarn, see [FAQ](#i-want-to-use-yarn-instead-of-npm-is-it-possible))
 - 7z (try installing `p7zip` and `p7zip-full`)
 - make
@@ -103,17 +152,7 @@ make build_appimage_x64
 Artifacts will be generated in `artifacts/x64`.
 
 > [!WARNING]
-> You _may_ encounter a problem with the AppImage, where you are not able to login. This is a known issue, and is due to the way AppImage works. In this case, you can copy the link shown in `https://www.deezer.com/desktop/login/electron/callback`.
->
-> In the same directory as the AppImage file, use:
->
-> ```sh
-> deezer-desktop-*.AppImage deezer://autolog/...
-> ```
->
-> You should now be logged in.
->
-> For more information, see [issue #29](https://github.com/aunetx/deezer-linux/issues/29)
+> You _may_ encounter a problem with the AppImage, where you are not able to login. This is a known issue, and is due to the way AppImage works. See [The browser doesn't launch the app after login, how do I log in manually?](#the-browser-doesnt-launch-the-app-after-login-how-do-i-log-in-manually) in the FAQ for how to complete the login manually.
 
 > [!NOTE]
 > Unlike the packaged builds, an AppImage is a standalone file that is not integrated into your desktop environment. For the app to show an icon and to handle deep links (such as `deezer://` login callbacks), you either need to use a launcher (like [Gear Lever](https://github.com/mijorus/gear-lever) or [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher)), or need to create and register a desktop entry manually:
@@ -129,9 +168,6 @@ Artifacts will be generated in `artifacts/x64`.
 > ```
 >
 > or simply by reloading your user session (log out and back in). The app should now display its icon and correctly open `deezer://` deep links.
-
-> [!Caution]
-> If you want to open an issue about this, please do not share your own `deezer://autolog/...` link, as it would allow anyone to log into your account without your consent.
 
 ### rpm / deb / tar.xz
 
@@ -202,7 +238,7 @@ To run it, you can use:
 flatpak run dev.aunetx.deezer
 ```
 
-## Development
+## Contributing
 
 If you want to contribute to this project, please read the [contribution guidelines](CONTRIBUTING.md) file.
 
@@ -242,6 +278,35 @@ DZ_DEVTOOLS=yes ./deezer-desktop # or any other way to launch the app
 3. In the left sidebar, under Storage, click on Clear storage.
 
 Once the old data is cleared, kill the app completely (make sure it is not running in the background) and relaunch it. You should now be able to log in successfully.
+
+### The browser doesn't launch the app after login, how do I log in manually?
+
+When you log in, the browser is supposed to open a `deezer://autolog/<id>` callback URL that hands the session over to the app. If your browser fails to launch the app automatically (for example, the `deezer://` handler is not registered, which is common with AppImages), you can trigger the callback manually.
+
+1. Complete the login flow in your browser. Copy the callback URL by right-clicking on the "Open Deezer" button and copying the link address. It should look like this:
+
+```
+deezer://autolog/<id>
+```
+
+2. Open that URL manually in your terminal. You can use `xdg-open`, `gio open` or pass it directly to the app executable. For example:
+
+```
+xdg-open deezer://www.deezer.com/autolog/<id>
+```
+
+If the plain `deezer://autolog/<id>` form does not work, use the full web URL variant instead: `deezer://www.deezer.com/autolog/<id>`.
+
+This is especially common with the AppImage, since it is not integrated into your desktop environment and the `deezer://` handler is often not registered. In that case, you can pass the URL directly to the AppImage from its directory:
+
+```sh
+deezer-desktop-*.AppImage deezer://www.deezer.com/autolog/<id>
+```
+
+For more information, see [issue #29](https://github.com/aunetx/deezer-linux/issues/29).
+
+> [!Caution]
+> Never share your `deezer://autolog/...` link with anyone, as it would allow them to log into your account without your consent. If you open an issue about this, make sure to remove your link first.
 
 ### How can I use my IME/virtual keyboard on Deezer under Wayland?
 
