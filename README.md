@@ -14,11 +14,9 @@ It packages the app in a number of formats:
 - `deb` (Debian, Ubuntu, Pop!\_OS, elementary OS, ...)
 - `tar.xz` to install anywhere else
 
-<!--
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=aunetx/deezer-linux&type=date&legend=top-left)](https://www.star-history.com/#aunetx/deezer-linux&type=date&legend=top-left)
--->
+[![Star History Chart](https://star-history.dera.page/svg?repos=aunetx/deezer-linux&type=date&legend=top-left)](https://star-history.dera.page/#aunetx/deezer-linux&type=date&legend=top-left)
 
 ## Installation
 
