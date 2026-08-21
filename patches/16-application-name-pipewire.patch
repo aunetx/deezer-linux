@@ -1,0 +1,13 @@
+diff --git a/build/main.js b/build/main.js
+index d01b1dc..84d08a9 100755
+--- a/build/main.js
++++ b/build/main.js
+@@ -2912,7 +2912,7 @@
+         ),
+         external_electron_namespaceObject.app.commandLine.appendSwitch(
+           "disable-features",
+-          "HardwareMediaKeyHandling"
++          "HardwareMediaKeyHandling,AudioServiceOutOfProcess"
+         ),
+         (process.argv.some(
+           (arg) => arg === "--disable-hardware-acceleration"
