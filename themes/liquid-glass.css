@@ -1,0 +1,1659 @@
+/* =========================================================================
+ * Liquid Glass — a custom theme for Deezer for Linux
+ * =========================================================================
+ *
+ * Apple's macOS/iOS "Liquid Glass" material language: frosted, translucent
+ * panels that float as rounded islands over a soft system-grey canvas, an
+ * iOS-blue accent, and continuous (very round) corners instead of Deezer's
+ * boxier defaults. See themes/template.css for the full variable list.
+ *
+ *   deezer-desktop --sync-theme --custom-theme=/path/to/themes/liquid-glass.css
+ *
+ * ---- Reference -------------------------------------------------------
+ *   Accent (iOS blue):  #0a84ff / strong #0060df / weak #5ac8fa
+ *   System grey ramp (Apple systemGray6..systemGray, light -> dark):
+ *     #f2f2f7 #e5e5ea #d1d1d6 #c7c7cc #aeaeb2 #8e8e93 #636366 #48484a #2c2c2e #1c1c1e
+ *   Feedback: error #ff3b30  success #34c759  warning #ff9500
+ * ========================================================================= */
+
+/* =========================================================================
+ * Shared base palette
+ * ========================================================================= */
+:root {
+  /* Accent: iOS system blue instead of Deezer purple */
+  --color-accent-main: #0a84ff;
+  --color-accent-strong: #0060df;
+  --color-accent-weak: #5ac8fa;
+  --color-accent-light: #9dd6ff;
+  --color-accent-stronger: #0048a8; /* deeper "pressed" tier */
+
+  /* Feedback (error / success / warning) — iOS system colors, one
+   * default/disabled/hovered/pressed variable per type */
+  --color-feedback-error: #ff3b30;
+  --color-feedback-error-disabled: #ff9d97;
+  --color-feedback-error-hovered: #e0332a;
+  --color-feedback-error-pressed: #c22a22;
+  --color-feedback-success: #34c759;
+  --color-feedback-success-disabled: #94e0a8;
+  --color-feedback-success-hovered: #2aa848;
+  --color-feedback-success-pressed: #228a3b;
+  --color-feedback-warning: #ff9500;
+  --color-feedback-warning-disabled: #ffc477;
+  --color-feedback-warning-hovered: #e08600;
+  --color-feedback-warning-pressed: #c27200;
+
+  /* Neutral ramp mapped onto Apple's systemGray6 -> systemGray -> dark
+   * systemGray tiers (light -> dark) */
+  --color-grey-50: #f2f2f7; /* systemGray6 light */
+  --color-grey-100: #e5e5ea; /* systemGray5 light */
+  --color-grey-200: #d1d1d6; /* systemGray4 light */
+  --color-grey-300: #c7c7cc; /* systemGray3 light */
+  --color-grey-400: #aeaeb2; /* systemGray2 light */
+  --color-grey-500: #8e8e93; /* systemGray  light */
+  --color-grey-600: #636366; /* systemGray2 dark  */
+  --color-grey-700: #48484a; /* systemGray4 dark  */
+  --color-grey-800: #2c2c2e; /* systemGray5 dark  */
+  --color-grey-900: #1c1c1e; /* systemGray6 dark  */
+
+  /* Fixed dark/light grey ramps — do NOT swap with the mode; always-dark
+   * chrome (e.g. the player bar even in light mode) reads from these */
+  --color-dark-grey-200: #86868b;
+  --color-dark-grey-300: #757579;
+  --color-dark-grey-400: #636366;
+  --color-dark-grey-500: #48484a;
+  --color-dark-grey-600: #3a3a3c;
+  --color-dark-grey-700: #2c2c2e;
+  --color-dark-grey-800: #242426;
+  --color-dark-grey-900: #1c1c1e;
+  --color-light-grey-50: #f9f9fb;
+  --color-light-grey-100: #f2f2f7;
+  --color-light-grey-200: #e9e9ee;
+  --color-light-grey-300: #e5e5ea;
+  --color-light-grey-400: #d8d8dd;
+  --color-light-grey-500: #d1d1d6;
+  --color-light-grey-600: #c7c7cc;
+  --color-light-grey-700: #b6b6bb;
+  --color-light-grey-800: #aeaeb2;
+  --color-light-grey-900: #8e8e93;
+
+  /* Continuous, very round "glass island" corners instead of Deezer's
+   * tighter defaults. Confirmed consumed by --thumbnail-radius (app-web
+   * css), popper/account headers, and search-result chips via
+   * var(--tempo-radii-*) — same tokens primer.css uses for the opposite
+   * (flatter) effect. */
+  --tempo-radii-lg: 20px !important;
+  --tempo-radii-s: 14px !important;
+  --tempo-radii-xs: 10px !important;
+
+  /* SF Pro stand-in — Apple's system font stack, matching the rest of the
+   * "liquid glass" identity. Chakra's theme provider sets these two as
+   * runtime inline custom properties, so !important is required (same
+   * caveat documented in primer.css). */
+  --tempo-fonts-body:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
+    Helvetica, Arial, sans-serif !important;
+  --tempo-fonts-heading:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue",
+    Helvetica, Arial, sans-serif !important;
+}
+
+/* =========================================================================
+ * Tempo design tokens — see themes/template.css section 4 for the full
+ * rationale. Mode-independent tokens (accent + feedback + onDark/onLight).
+ * ========================================================================= */
+:root {
+  --tempo-colors-background-accent-onColorDark-default: var(
+    --color-accent-light
+  ) !important;
+  --tempo-colors-background-accent-onColorDark-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-background-accent-onColorDark-hovered: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-background-accent-onColorDark-pressed: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-background-accent-onColorLight-default: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-background-accent-onColorLight-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-background-accent-onColorLight-hovered: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-background-accent-onColorLight-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-background-accent-onContent-default: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-background-accent-onContent-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-background-accent-onContent-hovered: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-background-accent-onContent-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-background-accent-onDark-default: var(
+    --color-accent-light
+  ) !important;
+  --tempo-colors-background-accent-onDark-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-background-accent-onDark-hovered: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-background-accent-onDark-pressed: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-background-accent-onDark-selected: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-background-accent-onLight-default: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-background-accent-onLight-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-background-accent-onLight-hovered: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-background-accent-onLight-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-background-accent-onLight-selected: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-background-accent-primary-default: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-background-accent-primary-disabled: var(
+    --color-accent-light
+  ) !important;
+  --tempo-colors-background-accent-primary-hovered: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-background-accent-primary-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-background-accent-secondary-default: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-background-accent-secondary-disabled: var(
+    --color-accent-light
+  ) !important;
+  --tempo-colors-background-accent-secondary-hovered: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-background-accent-secondary-pressed: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-background-feedback-error-default: var(
+    --color-feedback-error
+  ) !important;
+  --tempo-colors-background-feedback-error-disabled: var(
+    --color-feedback-error-disabled
+  ) !important;
+  --tempo-colors-background-feedback-error-hovered: var(
+    --color-feedback-error-hovered
+  ) !important;
+  --tempo-colors-background-feedback-error-pressed: var(
+    --color-feedback-error-pressed
+  ) !important;
+  --tempo-colors-background-feedback-success-default: var(
+    --color-feedback-success
+  ) !important;
+  --tempo-colors-background-feedback-success-disabled: var(
+    --color-feedback-success-disabled
+  ) !important;
+  --tempo-colors-background-feedback-success-hovered: var(
+    --color-feedback-success-hovered
+  ) !important;
+  --tempo-colors-background-feedback-success-pressed: var(
+    --color-feedback-success-pressed
+  ) !important;
+  --tempo-colors-background-feedback-warning-default: var(
+    --color-feedback-warning
+  ) !important;
+  --tempo-colors-background-feedback-warning-disabled: var(
+    --color-feedback-warning-disabled
+  ) !important;
+  --tempo-colors-background-feedback-warning-hovered: var(
+    --color-feedback-warning-hovered
+  ) !important;
+  --tempo-colors-background-feedback-warning-pressed: var(
+    --color-feedback-warning-pressed
+  ) !important;
+  --tempo-colors-background-neutral-onDark-default: var(
+    --color-dark-grey-700
+  ) !important;
+  --tempo-colors-background-neutral-onDark-disabled: var(
+    --color-dark-grey-800
+  ) !important;
+  --tempo-colors-background-neutral-onDark-hovered: var(
+    --color-dark-grey-600
+  ) !important;
+  --tempo-colors-background-neutral-onDark-pressed: var(
+    --color-dark-grey-500
+  ) !important;
+  --tempo-colors-background-neutral-onLight-default: var(
+    --color-light-grey-300
+  ) !important;
+  --tempo-colors-background-neutral-onLight-disabled: var(
+    --color-light-grey-200
+  ) !important;
+  --tempo-colors-background-neutral-onLight-hovered: var(
+    --color-light-grey-400
+  ) !important;
+  --tempo-colors-background-neutral-onLight-pressed: var(
+    --color-light-grey-500
+  ) !important;
+  --tempo-colors-border-accent-onContent-default: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-border-accent-onContent-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-border-accent-onContent-focused: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-border-accent-onContent-hovered: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-border-accent-onContent-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-border-accent-primary-default: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-border-accent-primary-disabled: var(
+    --color-accent-light
+  ) !important;
+  --tempo-colors-border-accent-primary-focused: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-border-accent-primary-hovered: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-border-accent-primary-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-border-accent-secondary-default: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-border-cover-neutral-default: var(
+    --color-border-neutral-primary
+  ) !important;
+  --tempo-colors-border-feedback-error-default: var(
+    --color-feedback-error
+  ) !important;
+  --tempo-colors-border-feedback-error-disabled: var(
+    --color-feedback-error-disabled
+  ) !important;
+  --tempo-colors-border-feedback-error-focused: var(
+    --color-feedback-error
+  ) !important;
+  --tempo-colors-border-feedback-error-hovered: var(
+    --color-feedback-error-hovered
+  ) !important;
+  --tempo-colors-border-feedback-error-pressed: var(
+    --color-feedback-error-pressed
+  ) !important;
+  --tempo-colors-border-feedback-success-default: var(
+    --color-feedback-success
+  ) !important;
+  --tempo-colors-border-feedback-success-disabled: var(
+    --color-feedback-success-disabled
+  ) !important;
+  --tempo-colors-border-feedback-success-focused: var(
+    --color-feedback-success
+  ) !important;
+  --tempo-colors-border-feedback-success-hovered: var(
+    --color-feedback-success-hovered
+  ) !important;
+  --tempo-colors-border-feedback-success-pressed: var(
+    --color-feedback-success-pressed
+  ) !important;
+  --tempo-colors-border-feedback-warning-default: var(
+    --color-feedback-warning
+  ) !important;
+  --tempo-colors-border-feedback-warning-disabled: var(
+    --color-feedback-warning-disabled
+  ) !important;
+  --tempo-colors-border-feedback-warning-focused: var(
+    --color-feedback-warning
+  ) !important;
+  --tempo-colors-border-feedback-warning-hovered: var(
+    --color-feedback-warning-hovered
+  ) !important;
+  --tempo-colors-border-feedback-warning-pressed: var(
+    --color-feedback-warning-pressed
+  ) !important;
+  --tempo-colors-icon-accent-onAccent-default: var(--color-grey-50) !important;
+  --tempo-colors-icon-accent-onAccent-disabled: var(--color-grey-50) !important;
+  --tempo-colors-icon-accent-onAccent-hovered: var(--color-grey-50) !important;
+  --tempo-colors-icon-accent-onAccent-pressed: var(--color-grey-50) !important;
+  --tempo-colors-icon-accent-onAccent-selected: var(--color-grey-50) !important;
+  --tempo-colors-icon-accent-onDark-default: var(
+    --color-accent-light
+  ) !important;
+  --tempo-colors-icon-accent-onDark-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-icon-accent-onDark-hovered: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-icon-accent-onDark-pressed: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-icon-accent-onDark-selected: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-icon-accent-onLight-default: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-icon-accent-onLight-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-icon-accent-onLight-hovered: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-icon-accent-onLight-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-icon-accent-onLight-selected: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-icon-accent-primary-default: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-icon-accent-primary-disabled: var(
+    --color-accent-light
+  ) !important;
+  --tempo-colors-icon-accent-primary-hovered: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-icon-accent-primary-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-icon-feedback-error-default: var(
+    --color-feedback-error
+  ) !important;
+  --tempo-colors-icon-feedback-error-disabled: var(
+    --color-feedback-error-disabled
+  ) !important;
+  --tempo-colors-icon-feedback-error-hovered: var(
+    --color-feedback-error-hovered
+  ) !important;
+  --tempo-colors-icon-feedback-error-pressed: var(
+    --color-feedback-error-pressed
+  ) !important;
+  --tempo-colors-icon-feedback-info-default: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-icon-feedback-success-default: var(
+    --color-feedback-success
+  ) !important;
+  --tempo-colors-icon-feedback-success-disabled: var(
+    --color-feedback-success-disabled
+  ) !important;
+  --tempo-colors-icon-feedback-success-hovered: var(
+    --color-feedback-success-hovered
+  ) !important;
+  --tempo-colors-icon-feedback-success-pressed: var(
+    --color-feedback-success-pressed
+  ) !important;
+  --tempo-colors-icon-feedback-warning-default: var(
+    --color-feedback-warning
+  ) !important;
+  --tempo-colors-icon-feedback-warning-disabled: var(
+    --color-feedback-warning-disabled
+  ) !important;
+  --tempo-colors-icon-feedback-warning-hovered: var(
+    --color-feedback-warning-hovered
+  ) !important;
+  --tempo-colors-icon-feedback-warning-pressed: var(
+    --color-feedback-warning-pressed
+  ) !important;
+  --tempo-colors-text-accent-onAccent-default: var(--color-grey-50) !important;
+  --tempo-colors-text-accent-onAccent-disabled: var(--color-grey-50) !important;
+  --tempo-colors-text-accent-onAccent-hovered: var(--color-grey-50) !important;
+  --tempo-colors-text-accent-onAccent-pressed: var(--color-grey-50) !important;
+  --tempo-colors-text-accent-onAccent-selected: var(--color-grey-50) !important;
+  --tempo-colors-text-accent-onColor-default: var(--color-grey-50) !important;
+  --tempo-colors-text-accent-onColor-disabled: var(--color-grey-50) !important;
+  --tempo-colors-text-accent-onColor-hovered: var(--color-grey-50) !important;
+  --tempo-colors-text-accent-onColor-pressed: var(--color-grey-50) !important;
+  --tempo-colors-text-accent-onContent-default: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-text-accent-onDark-default: var(
+    --color-accent-light
+  ) !important;
+  --tempo-colors-text-accent-onDark-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-text-accent-onDark-hovered: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-text-accent-onDark-pressed: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-text-accent-onDark-selected: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-text-accent-onLight-default: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-text-accent-onLight-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-text-accent-onLight-hovered: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-text-accent-onLight-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-text-accent-onLight-selected: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-text-accent-primary-default: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-text-accent-primary-disabled: var(
+    --color-accent-light
+  ) !important;
+  --tempo-colors-text-accent-primary-hovered: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-text-accent-primary-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-text-accent-secondary-default: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-text-color-secondary-default: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-text-feedback-error-default: var(
+    --color-feedback-error
+  ) !important;
+  --tempo-colors-text-feedback-error-disabled: var(
+    --color-feedback-error-disabled
+  ) !important;
+  --tempo-colors-text-feedback-error-hovered: var(
+    --color-feedback-error-hovered
+  ) !important;
+  --tempo-colors-text-feedback-error-pressed: var(
+    --color-feedback-error-pressed
+  ) !important;
+  --tempo-colors-text-feedback-success-default: var(
+    --color-feedback-success
+  ) !important;
+  --tempo-colors-text-feedback-success-disabled: var(
+    --color-feedback-success-disabled
+  ) !important;
+  --tempo-colors-text-feedback-success-hovered: var(
+    --color-feedback-success-hovered
+  ) !important;
+  --tempo-colors-text-feedback-success-pressed: var(
+    --color-feedback-success-pressed
+  ) !important;
+  --tempo-colors-text-feedback-warning-default: var(
+    --color-feedback-warning
+  ) !important;
+  --tempo-colors-text-feedback-warning-disabled: var(
+    --color-feedback-warning-disabled
+  ) !important;
+  --tempo-colors-text-feedback-warning-hovered: var(
+    --color-feedback-warning-hovered
+  ) !important;
+  --tempo-colors-text-feedback-warning-pressed: var(
+    --color-feedback-warning-pressed
+  ) !important;
+  --tempo-colors-gray-200: var(--color-grey-200) !important;
+}
+
+/* =========================================================================
+ * Light mode  (Apple systemGray6 canvas, white glass panels)
+ * ========================================================================= */
+:root,
+[data-theme="light"] {
+  /* Backgrounds */
+  --color-bg-main: #f2f2f7;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #e9e9ee;
+  --color-bg-tertiary-hover: #dedee4;
+  --color-bg-tertiary-pressed: #d1d1d6;
+  --color-bg-contrast: #e5e5ea;
+  --color-bg-inverse: #1c1c1e;
+  /* The "glass" material itself — white at ~72% opacity, blurred in
+   * section 5 below. Consumed as a flat fill anywhere blur can't apply. */
+  --transparent-bg: rgba(255, 255, 255, 0.72);
+
+  /* Text */
+  --color-text-main: #1c1c1e;
+  --color-text-secondary: #6e6e73; /* Apple secondaryLabel */
+  --color-text-disabled: #aeaeb2;
+  --color-text-inverse: #fff;
+
+  /* Borders & dividers — soft hairlines, not heavy Deezer greys */
+  --color-border-neutral-primary: #d8d8dd;
+  --color-border-neutral-secondary: #c7c7cc;
+  --color-divider-main: #d8d8dd;
+
+  /* Neutral aliases */
+  --color-neutral-main: #c7c7cc;
+  --color-neutral-strong: #6e6e73;
+  --color-neutral-weak: #e5e5ea;
+
+  --tempo-colors-background-neutral-inverse-default: var(
+    --color-bg-inverse
+  ) !important;
+  --tempo-colors-background-neutral-inverse-disabled: var(
+    --color-bg-inverse
+  ) !important;
+  --tempo-colors-background-neutral-inverse-hovered: var(
+    --color-dark-grey-800
+  ) !important;
+  --tempo-colors-background-neutral-inverse-pressed: var(
+    --color-dark-grey-700
+  ) !important;
+  --tempo-colors-background-neutral-inverse-selected: var(
+    --color-dark-grey-800
+  ) !important;
+  --tempo-colors-background-neutral-primary-default: var(
+    --color-bg-main
+  ) !important;
+  --tempo-colors-background-neutral-primary-disabled: var(
+    --color-bg-secondary
+  ) !important;
+  /* The "-hovered" tempo tokens (unlike -default/-disabled/-pressed/
+   * -selected) drive hover washes across dozens of unrelated surfaces —
+   * track-list rows, popover/dropdown menu items, the context menu, the
+   * notification list, sidebar-adjacent poppers (grep-confirmed live in
+   * the compiled CSS: .jHMC1 track rows, .popper-account/.popper-search/
+   * .popper-notifications items, .page-contextmenu .menu-item,
+   * .dropdown-item). Left pointing at the opaque --color-bg-tertiary
+   * ramp, every one of those reads as a flat grey slab dropped on top of
+   * the glass — most visibly the track-row hover, which is otherwise
+   * unstyled by this theme. Point them at the same translucent wash
+   * --lg-hover uses for sidebar rows/cards instead, so hovering
+   * anything gets a soft frosted tint rather than a hard grey box. */
+  --tempo-colors-background-neutral-primary-hovered: rgba(
+    120,
+    130,
+    150,
+    0.12
+  ) !important;
+  --tempo-colors-background-neutral-primary-pressed: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-background-neutral-primary-selected: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-background-neutral-secondary-default: var(
+    --color-bg-secondary
+  ) !important;
+  --tempo-colors-background-neutral-secondary-disabled: var(
+    --color-bg-secondary
+  ) !important;
+  --tempo-colors-background-neutral-secondary-hovered: rgba(
+    120,
+    130,
+    150,
+    0.12
+  ) !important;
+  --tempo-colors-background-neutral-secondary-pressed: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-background-neutral-secondary-selected: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-default: var(
+    --color-bg-tertiary
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-disabled: var(
+    --color-bg-tertiary
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-hovered: rgba(
+    120,
+    130,
+    150,
+    0.12
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-pressed: var(
+    --color-bg-tertiary-pressed
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-selected: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-border-neutral-primary-default: var(
+    --color-border-neutral-primary
+  ) !important;
+  --tempo-colors-border-neutral-primary-disabled: var(
+    --color-border-neutral-primary
+  ) !important;
+  --tempo-colors-border-neutral-primary-focused: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-border-neutral-primary-hovered: var(
+    --color-border-neutral-secondary
+  ) !important;
+  --tempo-colors-border-neutral-primary-pressed: var(
+    --color-border-neutral-secondary
+  ) !important;
+  --tempo-colors-divider-neutral-primary-default: var(
+    --color-divider-main
+  ) !important;
+  --tempo-colors-divider-neutral-primary-disabled: var(
+    --color-border-neutral-primary
+  ) !important;
+  --tempo-colors-divider-neutral-primary-hovered: var(
+    --color-divider-main
+  ) !important;
+  --tempo-colors-divider-neutral-primary-pressed: var(
+    --color-divider-main
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-default: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-disabled: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-hovered: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-pressed: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-selected: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-primary-default: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-icon-neutral-primary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-primary-hovered: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-icon-neutral-primary-pressed: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-icon-neutral-primary-selected: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-default: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-hovered: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-pressed: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-selected: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-default: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-hovered: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-pressed: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-selected: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-text-neutral-inverse-default: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-inverse-disabled: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-inverse-hovered: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-inverse-pressed: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-inverse-selected: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-primary-default: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-text-neutral-primary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-text-neutral-primary-hovered: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-text-neutral-primary-pressed: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-text-neutral-primary-selected: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-text-neutral-secondary-default: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-text-neutral-secondary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-text-neutral-secondary-hovered: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-text-neutral-secondary-pressed: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-text-neutral-secondary-selected: var(
+    --color-text-secondary
+  ) !important;
+}
+
+/* =========================================================================
+ * Dark mode  (near-black canvas, dark glass panels)
+ * ========================================================================= */
+[data-theme="dark"] {
+  /* Backgrounds */
+  --color-bg-main: #1c1c1e;
+  --color-bg-secondary: #242426;
+  --color-bg-tertiary: #2c2c2e;
+  --color-bg-tertiary-hover: #3a3a3c;
+  --color-bg-tertiary-pressed: #48484a;
+  --color-bg-contrast: #2c2c2e;
+  --color-bg-inverse: #f2f2f7;
+  --transparent-bg: rgba(28, 28, 30, 0.72);
+
+  /* Text */
+  --color-text-main: #f5f5f7;
+  --color-text-secondary: #aeaeb2; /* Apple secondaryLabel, dark */
+  --color-text-disabled: #636366;
+  --color-text-inverse: #1c1c1e;
+
+  /* Borders & dividers */
+  --color-border-neutral-primary: #3a3a3c;
+  --color-border-neutral-secondary: #48484a;
+  --color-divider-main: #3a3a3c;
+
+  /* Neutral aliases */
+  --color-neutral-main: #48484a;
+  --color-neutral-strong: #aeaeb2;
+  --color-neutral-weak: #2c2c2e;
+
+  /* Brand accents retinted toward the iOS blue/cyan glass palette */
+  --color-bg-brand-duo: #5ac8fa;
+  --color-bg-brand-trio: #5ac8fa;
+  --color-bg-brand-duo-selected: #16324a;
+  --color-bg-brand-family-selected: #3a2416;
+  --color-bg-brand-premium-selected: #241a3a;
+  --color-text-brand-duo: #1c1c1e;
+  --color-text-brand-trio: #1c1c1e;
+
+  --tempo-colors-background-neutral-inverse-default: var(
+    --color-bg-inverse
+  ) !important;
+  --tempo-colors-background-neutral-inverse-disabled: var(
+    --color-bg-inverse
+  ) !important;
+  --tempo-colors-background-neutral-inverse-hovered: var(
+    --color-light-grey-300
+  ) !important;
+  --tempo-colors-background-neutral-inverse-pressed: var(
+    --color-light-grey-300
+  ) !important;
+  --tempo-colors-background-neutral-inverse-selected: var(
+    --color-light-grey-300
+  ) !important;
+  --tempo-colors-background-neutral-primary-default: var(
+    --color-bg-main
+  ) !important;
+  --tempo-colors-background-neutral-primary-disabled: var(
+    --color-bg-secondary
+  ) !important;
+  /* Dark-mode counterpart of the light-block override above — same
+   * reasoning (track-row hover, popovers, context menu, notifications all
+   * read this token), swapped for the dark-mode --lg-hover wash so hover
+   * states stay a light frosted lift rather than the app's flat grey. */
+  --tempo-colors-background-neutral-primary-hovered: rgba(
+    255,
+    255,
+    255,
+    0.08
+  ) !important;
+  --tempo-colors-background-neutral-primary-pressed: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-background-neutral-primary-selected: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-background-neutral-secondary-default: var(
+    --color-bg-secondary
+  ) !important;
+  --tempo-colors-background-neutral-secondary-disabled: var(
+    --color-bg-secondary
+  ) !important;
+  --tempo-colors-background-neutral-secondary-hovered: rgba(
+    255,
+    255,
+    255,
+    0.08
+  ) !important;
+  --tempo-colors-background-neutral-secondary-pressed: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-background-neutral-secondary-selected: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-default: var(
+    --color-bg-tertiary
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-disabled: var(
+    --color-bg-tertiary
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-hovered: rgba(
+    255,
+    255,
+    255,
+    0.08
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-pressed: var(
+    --color-bg-tertiary-pressed
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-selected: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-border-neutral-primary-default: var(
+    --color-border-neutral-primary
+  ) !important;
+  --tempo-colors-border-neutral-primary-disabled: var(
+    --color-border-neutral-primary
+  ) !important;
+  --tempo-colors-border-neutral-primary-focused: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-border-neutral-primary-hovered: var(
+    --color-border-neutral-secondary
+  ) !important;
+  --tempo-colors-border-neutral-primary-pressed: var(
+    --color-border-neutral-secondary
+  ) !important;
+  --tempo-colors-divider-neutral-primary-default: var(
+    --color-divider-main
+  ) !important;
+  --tempo-colors-divider-neutral-primary-disabled: var(
+    --color-border-neutral-primary
+  ) !important;
+  --tempo-colors-divider-neutral-primary-hovered: var(
+    --color-divider-main
+  ) !important;
+  --tempo-colors-divider-neutral-primary-pressed: var(
+    --color-divider-main
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-default: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-disabled: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-hovered: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-pressed: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-selected: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-primary-default: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-icon-neutral-primary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-primary-hovered: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-icon-neutral-primary-pressed: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-icon-neutral-primary-selected: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-default: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-hovered: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-pressed: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-selected: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-default: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-hovered: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-pressed: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-selected: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-text-neutral-inverse-default: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-inverse-disabled: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-inverse-hovered: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-inverse-pressed: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-inverse-selected: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-primary-default: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-text-neutral-primary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-text-neutral-primary-hovered: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-text-neutral-primary-pressed: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-text-neutral-primary-selected: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-text-neutral-secondary-default: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-text-neutral-secondary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-text-neutral-secondary-hovered: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-text-neutral-secondary-pressed: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-text-neutral-secondary-selected: var(
+    --color-text-secondary
+  ) !important;
+}
+
+/* =========================================================================
+ * 5. ARBITRARY CSS — the Liquid Glass material
+ * =========================================================================
+ * Sections 1-4 only recolor Deezer. The iOS 26 "Liquid Glass" look is a
+ * *structural* language, so this section rebuilds the shell as discrete
+ * floating islands:
+ *
+ *   - every major surface (sidebar, top bar, player, content sections)
+ *     becomes a rounded card inset from its neighbours by --lg-gap
+ *   - each card gets a layered shadow (tight contact + wide ambient)
+ *     instead of Deezer's single flat edge
+ *   - each card gets a specular rim: a bright 1px inset highlight along
+ *     the top edge, the way light catches the lip of real glass
+ *   - chrome that *overlaps* content (sidebar, top bar, player, popovers,
+ *     modals) gets a real backdrop-filter; content sections deliberately
+ *     do NOT, since only the flat page background sits behind them —
+ *     refracting nothing is both physically wrong and 25x the GPU cost
+ *
+ * Layout geometry, all confirmed live over CDP against the running app:
+ *   sidebar      position:fixed  top:0 left:0   243x100%   z-index 2
+ *   #page_topbar position:fixed  top:0 left:243 1189 wide  z-index 200
+ *   #page_player > div  position:fixed bottom:0 left:0 100%x80  z-index 300
+ *   #page_content.page-main  margin-left:243px  (static flow)
+ *   [data-testid=section-renderer] > *  padding:0 40px; margin:24px 0
+ *
+ * CAUTION — the containing-block trap: backdrop-filter (like transform and
+ * filter) makes an element a containing block for position:fixed
+ * descendants. #page_player is NOT itself fixed, its child div is, so the
+ * blur goes on `#page_player > div`. Putting it on #page_player throws the
+ * player ~8000px down the page. The sidebar and #page_topbar ARE
+ * themselves the fixed elements, so blurring them directly is safe.
+ * ========================================================================= */
+
+:root {
+  /* Island geometry */
+  --lg-gap: 14px;
+  --lg-radius: 22px;
+  --lg-radius-sm: 16px;
+  /* Fallback only — the live value is redeclared on .naboo below. Custom
+   * properties resolve var() once, at the element that specifies them, and
+   * then inherit that already-resolved value downward. Declaring these on
+   * :root would freeze them at :root's own (unset) --layout-sidebar-width
+   * forever, so the sidebar-collapse toggle — which sets
+   * --layout-sidebar-width inline on .naboo, 243px expanded / 80px
+   * collapsed — would never be reflected here. */
+  --lg-sidebar-w: 243px;
+  --lg-player-h: 80px; /* app's own fixed player height */
+  /* Left edge of the content column: clears the sidebar island plus a gap */
+  --lg-content-x: calc(var(--lg-sidebar-w) + var(--lg-gap) * 2);
+
+  /* Glass material — light mode */
+  --lg-fill: rgba(255, 255, 255, 0.55);
+  --lg-fill-solid: rgba(255, 255, 255, 0.46);
+  --lg-blur: blur(30px) saturate(180%);
+  --lg-rim: rgba(255, 255, 255, 0.75);
+  --lg-edge: rgba(255, 255, 255, 0.5);
+
+  /* Recessed well (search field): a faint darkening carved into the glass,
+   * replacing the app's opaque grey input fill. */
+  --lg-well: rgba(120, 130, 150, 0.12);
+  --lg-well-focus: rgba(120, 130, 150, 0.06);
+  /* Selected/active affordance: a translucent accent wash instead of the
+   * app's flat grey selection box — the iOS way of showing "current". */
+  --lg-selected: rgba(10, 132, 255, 0.16);
+  --lg-selected-hover: rgba(10, 132, 255, 0.22);
+  --lg-hover: rgba(120, 130, 150, 0.12);
+  /* Card frame tint on hover — a light frosted lift, not the app's grey */
+  --lg-card-hover: rgba(255, 255, 255, 0.55);
+
+  /* Layered depth: contact shadow + mid lift + wide ambient */
+  --lg-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 20px -6px rgba(16, 24, 40, 0.12),
+    0 24px 48px -16px rgba(16, 24, 40, 0.14);
+  --lg-shadow-lifted:
+    0 2px 4px rgba(16, 24, 40, 0.08), 0 16px 32px -8px rgba(16, 24, 40, 0.18),
+    0 40px 64px -20px rgba(16, 24, 40, 0.2);
+}
+
+/* Re-resolve --lg-sidebar-w (and --lg-content-x, which depends on it)
+ * directly on .naboo — the element the app's collapse toggle sets
+ * --layout-sidebar-width on (243px expanded / 80px collapsed). Declaring
+ * it here, not at :root, makes the substitution happen using .naboo's own
+ * live value instead of freezing it at :root's unset fallback. Sidebar,
+ * top bar and content are all descendants of .naboo (confirmed live over
+ * CDP), so they inherit the correctly re-resolved value. */
+.naboo {
+  --lg-sidebar-w: var(--layout-sidebar-width, 243px);
+  --lg-content-x: calc(var(--lg-sidebar-w) + var(--lg-gap) * 2);
+}
+
+[data-theme="dark"] {
+  /* Glass material — dark mode. Dark glass reads as a *lighter* film over
+   * a dark ground, so the fill is a white wash, not a black one. */
+  --lg-fill: rgba(40, 40, 44, 0.68);
+  --lg-fill-solid: rgba(255, 255, 255, 0.055);
+  --lg-rim: rgba(255, 255, 255, 0.14);
+  --lg-edge: rgba(255, 255, 255, 0.09);
+
+  --lg-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 20px -6px rgba(0, 0, 0, 0.5),
+    0 24px 48px -16px rgba(0, 0, 0, 0.55);
+  --lg-shadow-lifted:
+    0 2px 4px rgba(0, 0, 0, 0.5), 0 16px 32px -8px rgba(0, 0, 0, 0.6),
+    0 40px 64px -20px rgba(0, 0, 0, 0.65);
+
+  --lg-well: rgba(0, 0, 0, 0.28);
+  --lg-well-focus: rgba(0, 0, 0, 0.18);
+  --lg-selected: rgba(10, 132, 255, 0.28);
+  --lg-selected-hover: rgba(10, 132, 255, 0.36);
+  --lg-hover: rgba(255, 255, 255, 0.08);
+  --lg-card-hover: rgba(255, 255, 255, 0.1);
+}
+
+/* -------------------------------------------------------------------------
+ * Ambient ground
+ * -------------------------------------------------------------------------
+ * Glass needs something behind it or the blur is a no-op. Deezer's page
+ * background is a flat token fill, so lay a soft wallpaper-ish bloom under
+ * everything — fixed, pointer-events:none, z-index 0, so it never touches
+ * layout or hit-testing.
+ *
+ * NOTE: only background/pseudo-elements go on .naboo. Never filter,
+ * transform or backdrop-filter here — .naboo is the ancestor of every
+ * fixed element in the shell (see the containing-block caution above).
+ * ---------------------------------------------------------------------- */
+.naboo {
+  position: relative;
+}
+/* The ground lives entirely on this fixed, viewport-filling layer — the
+ * four colour blooms AND the opaque base gradient (last, bottom-most). It
+ * must NOT sit on .naboo's own box background: during a route change the
+ * content collapses to a spinner, .naboo shrinks below the viewport, and a
+ * box background would leave the body colour (a flat dark/near-white)
+ * showing under it. position:fixed keeps this painting the whole viewport
+ * regardless of .naboo's height. z-index:0 + pointer-events:none keep it
+ * behind and inert; the sidebar (z-index 2) and content (later in DOM)
+ * both paint above it. */
+.naboo::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 70% 55% at 10% 6%,
+      rgba(10, 132, 255, 0.13),
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 62% 52% at 90% 10%,
+      rgba(90, 200, 250, 0.12),
+      transparent 64%
+    ),
+    radial-gradient(
+      ellipse 85% 62% at 72% 94%,
+      rgba(175, 82, 222, 0.09),
+      transparent 66%
+    ),
+    radial-gradient(
+      ellipse 58% 48% at 22% 88%,
+      rgba(48, 209, 176, 0.07),
+      transparent 62%
+    ),
+    linear-gradient(155deg, #dde7f3 0%, #e9eff7 38%, #dfe8f4 100%);
+}
+[data-theme="dark"] .naboo::before {
+  background:
+    radial-gradient(
+      ellipse 70% 55% at 10% 6%,
+      rgba(10, 132, 255, 0.28),
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 62% 52% at 90% 10%,
+      rgba(90, 200, 250, 0.16),
+      transparent 64%
+    ),
+    radial-gradient(
+      ellipse 85% 62% at 72% 94%,
+      rgba(175, 82, 222, 0.26),
+      transparent 66%
+    ),
+    radial-gradient(
+      ellipse 58% 48% at 22% 88%,
+      rgba(48, 209, 176, 0.14),
+      transparent 62%
+    ),
+    linear-gradient(155deg, #10141c 0%, #161b26 42%, #0e1219 100%);
+}
+
+/* -------------------------------------------------------------------------
+ * Sidebar island
+ * -------------------------------------------------------------------------
+ * The app pins it at top:0 left:0, full height, solid white. Inset it on
+ * all four sides so it floats, stopping clear of the player island. It
+ * keeps its full 243px width (the nav rows reflow but get cramped if it
+ * shrinks); the content column is pushed right instead, below.
+ *
+ * The app's own box reserves an extra 80px of padding-bottom on top of its
+ * top:0/bottom:80px inset (so the last nav row clears the docked player in
+ * the *undecorated* layout). Our island already stops clear of the player
+ * via the gap math below, so that padding is pure dead air here — visible
+ * as a blank strip inside the glass card, confirmed live over CDP
+ * (paddingBottom: 80px on this exact box). Zero it out. */
+.naboo > div:not([id]):has(a) > div {
+  top: var(--lg-gap) !important;
+  left: var(--lg-gap) !important;
+  height: calc(100% - var(--lg-player-h) - var(--lg-gap) * 3) !important;
+  width: var(--lg-sidebar-w) !important;
+  padding-bottom: 8px !important;
+
+  background: var(--lg-fill) !important;
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  border-radius: var(--lg-radius) !important;
+  box-shadow:
+    inset 0 1px 0 var(--lg-rim),
+    inset 0 0 0 1px var(--lg-edge),
+    var(--lg-shadow);
+  overflow: hidden !important;
+}
+
+/* -------------------------------------------------------------------------
+ * Top bar island
+ * -------------------------------------------------------------------------
+ * Pinned at left:243px with an explicit width:1189px — swap to a
+ * left/right pair so it tracks the window and lines up with the content
+ * sections. --lg-content-x clears the sidebar island: sidebar occupies
+ * gap..(gap + 243), so content starts one more gap past that.
+ * ---------------------------------------------------------------------- */
+#page_topbar,
+.page-topbar {
+  top: var(--lg-gap) !important;
+  left: var(--lg-content-x) !important;
+  right: var(--lg-gap) !important;
+  width: auto !important;
+
+  background: var(--lg-fill) !important;
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  border-radius: var(--lg-radius) !important;
+  border-bottom: none !important;
+  box-shadow:
+    inset 0 1px 0 var(--lg-rim),
+    inset 0 0 0 1px var(--lg-edge),
+    var(--lg-shadow) !important;
+}
+
+/* Search field inside the top bar: a recessed glass slot, not a raised one.
+ * The app ships the input itself as an opaque grey fill (#e9e9ee), which
+ * reads as a hard grey box sitting ON the glass topbar. Replace it with a
+ * translucent well — a faint darkening plus an inset shadow so it looks
+ * carved INTO the glass — and give it an accent focus ring. The outer
+ * .topbar-search-form keeps the pill radius so the well matches its frame. */
+.topbar-search-form {
+  border-radius: 999px !important;
+}
+.topbar-search .chakra-input {
+  background: var(--lg-well) !important;
+  border-radius: 999px !important;
+  box-shadow:
+    inset 0 1px 2px rgba(16, 24, 40, 0.08),
+    inset 0 0 0 1px var(--lg-edge) !important;
+  transition:
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+.topbar-search .chakra-input:focus,
+.topbar-search .chakra-input:focus-visible {
+  background: var(--lg-well-focus) !important;
+  box-shadow:
+    inset 0 1px 2px rgba(16, 24, 40, 0.06),
+    0 0 0 2px rgba(10, 132, 255, 0.55) !important;
+}
+
+/* Same recessed-well treatment for the small per-tab filter search boxes in
+ * the Library ("Coups de cœur", "Playlists", "Albums", "Artistes", ...) —
+ * they ship as the same opaque grey #e9e9ee input, just a different Chakra
+ * size variant, so they weren't caught by the .topbar-search scope above.
+ * Scoped to #page_content (vs the topbar's own fixed island) and to inputs
+ * that carry a placeholder, which is how these filter fields are built
+ * across every tab — confirmed live over CDP: "Rechercher parmi les
+ * titres" / "une playlist" / "un album" / "un artiste" all match, nothing
+ * else in #page_content does. */
+#page_content input.chakra-input[placeholder] {
+  background: var(--lg-well) !important;
+  border-radius: 999px !important;
+  box-shadow:
+    inset 0 1px 2px rgba(16, 24, 40, 0.08),
+    inset 0 0 0 1px var(--lg-edge) !important;
+  transition:
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+#page_content input.chakra-input[placeholder]:focus,
+#page_content input.chakra-input[placeholder]:focus-visible {
+  background: var(--lg-well-focus) !important;
+  box-shadow:
+    inset 0 1px 2px rgba(16, 24, 40, 0.06),
+    0 0 0 2px rgba(10, 132, 255, 0.55) !important;
+}
+
+/* -------------------------------------------------------------------------
+ * Player island
+ * -------------------------------------------------------------------------
+ * `#page_player > div` is the fixed element (see caution above). Detach it
+ * from all three window edges so it reads as a floating capsule rather
+ * than a docked bar, and round every corner instead of just the top two.
+ * ---------------------------------------------------------------------- */
+#page_player > div {
+  left: var(--lg-gap) !important;
+  right: var(--lg-gap) !important;
+  bottom: var(--lg-gap) !important;
+  width: auto !important;
+
+  background: var(--lg-fill) !important;
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  border-radius: var(--lg-radius) !important;
+  border-top: none !important;
+  box-shadow:
+    inset 0 1px 0 var(--lg-rim),
+    inset 0 0 0 1px var(--lg-edge),
+    var(--lg-shadow-lifted) !important;
+}
+
+/* Transport controls: circular glass keys with a hover bloom */
+#page_player button {
+  border-radius: 999px !important;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+#page_player button:hover {
+  background-color: var(--lg-fill-solid) !important;
+  box-shadow: 0 0 0 1px var(--lg-edge);
+}
+#page_player button:active {
+  transform: scale(0.94);
+}
+
+/* -------------------------------------------------------------------------
+ * Content section islands
+ * -------------------------------------------------------------------------
+ * Each home/browse section becomes its own card. The inner wrapper already
+ * ships `padding: 0 40px; margin: 24px 0` — reuse that padding as the
+ * island's interior and move the vertical rhythm out to the card itself,
+ * otherwise the margin punches gaps *inside* the glass.
+ *
+ * No backdrop-filter here on purpose: only the flat page background sits
+ * behind these, so a translucent fill is both truer and far cheaper than
+ * 25 stacked blur layers.
+ * ---------------------------------------------------------------------- */
+[data-testid="section-renderer"],
+.channel-section {
+  margin: 0 var(--lg-gap) var(--lg-gap) 0 !important;
+  background: var(--lg-fill-solid);
+  border-radius: var(--lg-radius) !important;
+  box-shadow:
+    inset 0 1px 0 var(--lg-rim),
+    inset 0 0 0 1px var(--lg-edge),
+    var(--lg-shadow);
+}
+[data-testid="section-renderer"] > *,
+.channel-section > * {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 20px !important;
+  padding-bottom: 20px !important;
+}
+
+/* Re-seat the content column around the floating chrome. The app's own
+ * layout assumes flush-docked bars: margin-left:243px for a flush-left
+ * sidebar, and a content top of exactly the 80px topbar height. Both
+ * assumptions break once those bars are inset, so:
+ *
+ *   left   — clear the sidebar island (--lg-content-x)
+ *   top    — the topbar now ends at (gap + 80px) rather than 80px, so add
+ *            gap*2: one for its top inset, one for the gap beneath it.
+ *            Without this the first card sits 14px UNDER the topbar
+ *            (measured live: card top 80, topbar bottom 94).
+ *   bottom — clear the floating player so the last card scrolls fully in
+ *
+ * The bars stay position:fixed, so content still slides *under* them as
+ * you scroll — which is the point of giving them a backdrop-filter. This
+ * only stops the first card being born clipped. */
+#page_content.page-main {
+  margin-left: var(--lg-content-x) !important;
+  padding-top: calc(var(--lg-gap) * 2) !important;
+  padding-bottom: calc(var(--lg-player-h) + var(--lg-gap) * 2) !important;
+}
+
+/* -------------------------------------------------------------------------
+ * Popovers, menus and modals
+ * -------------------------------------------------------------------------
+ * These float above everything and genuinely have content behind them, so
+ * they get the full blur treatment. .chakra-popover__content backs the
+ * account menu, search popper and context menus alike (confirmed live:
+ * account-popover-content / popover-content / context-menu-content all
+ * resolve to it).
+ * ---------------------------------------------------------------------- */
+.chakra-popover__content,
+.dropdown-menu,
+.modal-dialog {
+  background: var(--lg-fill) !important;
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  border: none !important;
+  border-radius: var(--lg-radius-sm) !important;
+  box-shadow:
+    inset 0 1px 0 var(--lg-rim),
+    inset 0 0 0 1px var(--lg-edge),
+    var(--lg-shadow-lifted) !important;
+}
+.modal-dialog {
+  border-radius: var(--lg-radius) !important;
+}
+.modal-header-partner,
+.modal-family-upsale-header {
+  border-radius: var(--lg-radius) var(--lg-radius) 0 0 !important;
+}
+.modal-footer {
+  border-radius: 0 0 var(--lg-radius) var(--lg-radius) !important;
+}
+/* Dim the page behind a modal so the glass has contrast to sit against */
+.modal-backdrop {
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+/* -------------------------------------------------------------------------
+ * Cover art
+ * -------------------------------------------------------------------------
+ * Rounded like iOS app icons, with a hairline edge and a lift on hover.
+ * Three selector families, all confirmed live: the legacy list-row classes
+ * (still real, just not rendered on every route); the horizontal-row
+ * covers home/browse use (`*_thumbnail`); and the Library's grid/list
+ * cells, which use a DIFFERENT testid shape — `thumbnail-<kind>-li`
+ * (thumbnail-album-li / -playlist-li / -artist-li). The attribute
+ * selector `[data-testid^="thumbnail-"][data-testid$="-li"]` catches that
+ * whole family while excluding thumbnail-title (text) and thumbnail-grid
+ * (the row container) — confirmed live: 39 real cells, 0 false matches. */
+.thumbnail,
+.playlist-cover-solo,
+.playlist-cover,
+.cell-thumbnail,
+.block_cover,
+[data-testid="playlist_thumbnail"],
+[data-testid="artist_thumbnail"],
+[data-testid="album_thumbnail"],
+[data-testid="channel_thumbnail"],
+[data-testid="channel_cover"],
+[data-testid="show_thumbnail"],
+[data-testid="smarttracklist_thumbnail"],
+[data-testid="livestream_thumbnail"],
+[data-testid^="thumbnail-"][data-testid$="-li"],
+[data-testid="item_cover"] {
+  border-radius: var(--lg-radius-sm);
+  transition:
+    transform 0.28s cubic-bezier(0.32, 0.72, 0, 1),
+    box-shadow 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.thumbnail:hover,
+.playlist-cover-solo:hover,
+.playlist-cover:hover,
+.cell-thumbnail:hover,
+.block_cover:hover,
+[data-testid="playlist_thumbnail"]:hover,
+[data-testid="artist_thumbnail"]:hover,
+[data-testid="album_thumbnail"]:hover,
+[data-testid="channel_thumbnail"]:hover,
+[data-testid="channel_cover"]:hover,
+[data-testid="show_thumbnail"]:hover,
+[data-testid="smarttracklist_thumbnail"]:hover,
+[data-testid="livestream_thumbnail"]:hover,
+[data-testid^="thumbnail-"][data-testid$="-li"]:hover {
+  /* The app paints the card frame a flat opaque grey on hover (its
+   * neutral-hover token), which reads as a dull grey slab under the glass
+   * language. Override it with a light frosted-glass tint so the whole
+   * card looks like it catches light as it lifts. */
+  background: var(--lg-card-hover) !important;
+  transform: translateY(-4px) scale(1.015);
+  box-shadow: var(--lg-shadow-lifted);
+}
+
+/* Give horizontal card rows vertical breathing room so the lifted hover
+ * shadow isn't sheared off. Each row is `overflow-x: scroll`, which per
+ * spec also clips overflow-Y — so a card's shadow (and its -4px lift) get
+ * cut at the row's top/bottom edge. Padding opens room for the shadow
+ * INSIDE the clip region; the equal negative margin cancels the layout
+ * shift, and overflow-Y stays non-scrolling because the cards still fit.
+ *
+ * Selector, deliberately GLOBAL rather than scoped to one page's wrapper:
+ * every card row across the app (home's "section-renderer" sections, the
+ * Library's "naboo-catalog" sections, search results, etc.) has the same
+ * shape — a scroll row > inner wrapper > card cells — so the row is "a div
+ * whose GRANDCHILD is a card cell". Scoped to #page_content so it can
+ * never hit the player's own now-playing cover (which is an item_cover,
+ * excluded here anyway) or the sidebar. Confirmed live on both the home
+ * and Library layouts: matches every clipping scroll row, zero false
+ * positives. Two cell-testid shapes are covered: home's `*_thumbnail`
+ * and the Library grid's `thumbnail-<kind>-li`.
+ *
+ * The padding is ASYMMETRIC because the lifted shadow is. Its widest layer
+ * is `0 40px 64px -20px`, so it reaches 40 + 64/2 - 20 = 52px BELOW the
+ * card and nothing above it (the -4px hover lift is all the headroom the
+ * top needs). 56px of bottom padding clears the full falloff — 20px cut it
+ * mid-gradient and left a hard horizontal seam under hovered cards. The top
+ * stays small on purpose: the padding box is a scroll container and sits
+ * over whatever it overlaps, so a large top inset would swallow clicks on
+ * the section title/"Voir tout" above it. Hit-tested live at these values —
+ * every section title, "Voir tout" and carousel arrow still resolves to
+ * itself under elementFromPoint. */
+#page_content div:has(> div > [data-testid$="_thumbnail"]),
+#page_content div:has(> div > [data-testid^="thumbnail-"][data-testid$="-li"]) {
+  padding-top: 24px !important;
+  padding-bottom: 56px !important;
+  margin-top: -24px !important;
+  margin-bottom: -56px !important;
+}
+
+/* Genre/category cards ("Tes genres favoris", Explorer > Catégories) sit one
+ * level shallower: the grid cell wrapping each `channel_thumbnail` card is
+ * `overflow:hidden` with only an 8px margin (the app's own spacing token),
+ * so the lifted hover shadow gets hard-clipped a few pixels out instead of
+ * fading — a visible sharp-edged cutoff instead of the soft falloff every
+ * other card gets. There's nothing this wrapper needs to clip (the card's
+ * rounded shape comes from the cover image's own SVG mask, not this box),
+ * so just let it paint outside its box. Confirmed live over CDP: hover
+ * shadow now falls off softly on all four sides instead of stopping dead
+ * at the wrapper edge. */
+#page_content div:has(> [data-testid="channel_thumbnail"]) {
+  overflow: visible !important;
+}
+
+/* -------------------------------------------------------------------------
+ * Controls
+ * ---------------------------------------------------------------------- */
+
+/* Sidebar internals.
+ * The nav block and the two sticky group headers ("Raccourcis",
+ * "Playlists") ship an opaque white fill, which would tile a solid slab
+ * over the glass. Blank the block fills entirely; the sticky headers keep
+ * a fill — they have to mask rows scrolling underneath — but as blurred
+ * glass rather than a hard white bar, the way iOS section headers read. */
+.naboo > div:not([id]):has(a) > div > div {
+  background: transparent !important;
+}
+.naboo > div:not([id]):has(a) > div > div:nth-child(2) > div > div:first-child {
+  background: var(--lg-fill) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  backdrop-filter: blur(12px) saturate(180%);
+}
+
+/* Sidebar nav rows: pill-shaped, with a glass wash on hover.
+ * All rows get the rounded shape + hover wash. */
+.naboo > div:not([id]):has(a) > div a {
+  border-radius: var(--lg-radius-sm) !important;
+  transition: background-color 0.2s ease;
+}
+.naboo > div:not([id]):has(a) > div a:hover {
+  background: var(--lg-hover) !important;
+}
+
+/* Selected primary-nav row.
+ * The app marks the current page by painting that row an opaque grey
+ * (#e9e9ee) — a hard grey box on the glass. There's no stable class or
+ * aria-current to hook, but the active row is the only one whose icon is
+ * the *Filled* variant (HouseFilledIcon vs the Outlined icons on the
+ * rest), so :has([data-testid$="FilledIcon"]) selects it robustly.
+ * Scope to the first sidebar block (the primary nav) so it doesn't also
+ * fire on pinned shortcuts further down, whose heart/pin icons are also
+ * "Filled". Swap the grey for a translucent accent wash — the iOS way of
+ * showing "current" — with a matching hover. */
+.naboo
+  > div:not([id]):has(a)
+  > div
+  > div:first-child
+  a:has([data-testid$="FilledIcon"]) {
+  background: var(--lg-selected) !important;
+}
+.naboo
+  > div:not([id]):has(a)
+  > div
+  > div:first-child
+  a:has([data-testid$="FilledIcon"]):hover {
+  background: var(--lg-selected-hover) !important;
+}
+
+/* Thinner scrollbars inside the sidebar island — the default 10px thumb
+ * reads as a hard rule against the rounded glass edge */
+.naboo > div:not([id]):has(a) > div ::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* Primary buttons keep their accent fill but pick up a capsule shape */
+.navbar-button {
+  border-radius: 999px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 2px 8px -2px rgba(10, 132, 255, 0.45);
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+.navbar-button:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 4px 16px -2px rgba(10, 132, 255, 0.6);
+}
+.navbar-button:active {
+  transform: scale(0.97);
+}
+
+/* Sliders: capsule tracks, lit accent fill */
+.slider-track,
+.slider-track-default,
+.slider-track-active,
+.nano-slider {
+  border-radius: 999px !important;
+}
+.slider-track-active {
+  box-shadow: 0 0 8px 0 rgba(10, 132, 255, 0.5);
+}
+
+/* Scrollbars: floating capsule thumbs, no track furniture */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-main) !important;
+  border: 3px solid transparent !important;
+  background-clip: padding-box !important;
+  border-radius: 999px !important;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-strong) !important;
+  background-clip: padding-box !important;
+}

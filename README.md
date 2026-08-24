@@ -148,16 +148,17 @@ Pair this with [`--sync-theme`](#usage) so the mode follows your OS setting auto
 
 The [`themes/`](./themes) folder contains drop-in themes you can use as-is or as a reference:
 
-| Theme                                   | Modes        |
-| --------------------------------------- | ------------ |
-| [Solarized](./themes/solarized.css)     | Light & dark |
-| [Nord](./themes/nord.css)               | Light & dark |
-| [Everforest](./themes/everforest.css)   | Light & dark |
-| [Monokai](./themes/monokai.css)         | Light & dark |
-| [SynthWave '84](./themes/synthwave.css) | Dark only    |
-| [Primer](./themes/primer.css)           | Light & dark |
-| [Gruvbox](./themes/gruvbox.css)         | Light & dark |
-| [Matrix](./themes/matrix.css)           | Dark only    |
+| Theme                                     | Modes        |
+| ----------------------------------------- | ------------ |
+| [Solarized](./themes/solarized.css)       | Light & dark |
+| [Nord](./themes/nord.css)                 | Light & dark |
+| [Everforest](./themes/everforest.css)     | Light & dark |
+| [Monokai](./themes/monokai.css)           | Light & dark |
+| [SynthWave '84](./themes/synthwave.css)   | Dark only    |
+| [Primer](./themes/primer.css)             | Light & dark |
+| [Gruvbox](./themes/gruvbox.css)           | Light & dark |
+| [Matrix](./themes/matrix.css)             | Dark only    |
+| [Liquid Glass](./themes/liquid-glass.css) | Light & dark |
 
 For example:
 
