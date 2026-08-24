@@ -151,6 +151,7 @@ The [`themes/`](./themes) folder contains drop-in themes you can use as-is or as
 | Theme                               | Modes        |
 | ----------------------------------- | ------------ |
 | [Solarized](./themes/solarized.css) | Light & dark |
+| [Nord](./themes/nord.css)           | Light & dark |
 
 For example:
 
