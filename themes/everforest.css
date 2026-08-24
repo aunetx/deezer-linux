@@ -1,0 +1,965 @@
+/* =========================================================================
+ * Everforest — a custom theme for Deezer for Linux
+ * =========================================================================
+ *
+ * https://github.com/sainnhe/everforest — see themes/template.css for the
+ * full list of variables. Values below are the "medium" contrast variant
+ * (Everforest's default) of both the dark and light palettes.
+ *
+ *   deezer-desktop --sync-theme --custom-theme=/path/to/themes/everforest.css
+ *
+ * ---- Everforest reference (medium contrast) --------------------------
+ *   Dark bg:   bg_dim #232a2e  bg0 #2d353b  bg1 #343f44  bg2 #3d484d
+ *              bg3 #475258  bg4 #4f585e  bg5 #56635f
+ *   Dark fg:   fg #d3c6aa  grey0 #7a8478  grey1 #859289  grey2 #9da9a0
+ *   Light bg:  bg0 #fdf6e3  bg1 #f4f0d9  bg3 #e6e2cc  bg4 #e0dcc7
+ *              bg5 #bdc3af
+ *   Light fg:  fg #5c6a72  grey0 #a6b0a0  grey1 #939f91  grey2 #829181
+ *   Accents (dark/light): red #e67e80/#f85552  orange #e69875/#f57d26
+ *              yellow #dbbc7f/#dfa000  green #a7c080/#8da101
+ *              aqua #83c092/#35a77c  blue #7fbbb3/#3a94c5
+ *              purple #d699b6/#df69ba
+ * ========================================================================= */
+
+/* =========================================================================
+ * Shared base palette — Everforest aqua accent (kept distinct from the
+ * green/yellow/red feedback colors below) + a bg0..bg5/fg neutral ramp.
+ * Remapping the grey ramp shifts every neutral surface in both modes.
+ * ========================================================================= */
+:root {
+  /* Accent: Everforest aqua instead of Deezer purple. The light-palette
+   * aqua (#35a77c) is used as "main" because, unlike the pastel dark-palette
+   * aqua, it stays legible on both the cream light background and the dark
+   * background. */
+  --color-accent-main: #35a77c;
+  --color-accent-strong: #278a65;
+  --color-accent-weak: #83c092; /* dark-palette aqua */
+  --color-accent-light: #a8d4b7;
+  --color-accent-stronger: #1d6b4d; /* deeper "pressed" tier */
+
+  /* Feedback (error / success / warning) — one default/disabled/hovered/
+   * pressed variable per type, unlike template.css's single flat color.
+   * Uses the light-palette (more saturated) accents for the same
+   * both-backgrounds-legible reason as the main accent above. */
+  --color-feedback-error: #f85552;
+  --color-feedback-error-disabled: #f9938f;
+  --color-feedback-error-hovered: #d93f3c;
+  --color-feedback-error-pressed: #b93330;
+  --color-feedback-success: #8da101;
+  --color-feedback-success-disabled: #b9c766;
+  --color-feedback-success-hovered: #748501;
+  --color-feedback-success-pressed: #5c6a01;
+  --color-feedback-warning: #dfa000;
+  --color-feedback-warning-disabled: #ecc466;
+  --color-feedback-warning-hovered: #b98400;
+  --color-feedback-warning-pressed: #936900;
+
+  /* Neutral ramp mapped onto Everforest bg/grey tones (light -> dark) */
+  --color-grey-50: #fdf6e3; /* light bg0  */
+  --color-grey-100: #f4f0d9; /* light bg1  */
+  --color-grey-200: #e6e2cc; /* light bg3  */
+  --color-grey-300: #bdc3af; /* light bg5  */
+  --color-grey-400: #939f91; /* light grey1 */
+  --color-grey-500: #829181; /* light grey2 */
+  --color-grey-600: #475258; /* dark bg3  */
+  --color-grey-700: #3d484d; /* dark bg2  */
+  --color-grey-800: #343f44; /* dark bg1  */
+  --color-grey-900: #2d353b; /* dark bg0  */
+
+  /* Fixed dark/light grey ramps — do NOT swap with the mode */
+  --color-dark-grey-200: #56635f; /* dark bg5  */
+  --color-dark-grey-300: #4f585e; /* dark bg4  */
+  --color-dark-grey-400: #475258; /* dark bg3  */
+  --color-dark-grey-500: #3d484d; /* dark bg2  */
+  --color-dark-grey-600: #343f44; /* dark bg1  */
+  --color-dark-grey-700: #2d353b; /* dark bg0  */
+  --color-dark-grey-800: #262e33;
+  --color-dark-grey-900: #232a2e; /* dark bg_dim */
+  --color-light-grey-50: #fdf6e3; /* light bg0  */
+  --color-light-grey-100: #f8f5e4; /* light bg1 (hard) */
+  --color-light-grey-200: #f4f0d9; /* light bg1  */
+  --color-light-grey-300: #e6e2cc; /* light bg3  */
+  --color-light-grey-400: #e0dcc7; /* light bg4  */
+  --color-light-grey-500: #bdc3af; /* light bg5  */
+  --color-light-grey-600: #a6b0a0; /* light grey0 */
+  --color-light-grey-700: #939f91; /* light grey1 */
+  --color-light-grey-800: #829181; /* light grey2 */
+  --color-light-grey-900: #5c6a72; /* light fg   */
+}
+
+/* =========================================================================
+ * Tempo design tokens — see themes/template.css section 4 for the full
+ * rationale. Mode-independent tokens (accent + feedback + onDark/onLight).
+ * ========================================================================= */
+:root {
+  --tempo-colors-background-accent-onColorDark-default: var(
+    --color-accent-light
+  ) !important;
+  --tempo-colors-background-accent-onColorDark-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-background-accent-onColorDark-hovered: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-background-accent-onColorDark-pressed: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-background-accent-onColorLight-default: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-background-accent-onColorLight-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-background-accent-onColorLight-hovered: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-background-accent-onColorLight-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-background-accent-onContent-default: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-background-accent-onContent-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-background-accent-onContent-hovered: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-background-accent-onContent-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-background-accent-onDark-default: var(
+    --color-accent-light
+  ) !important;
+  --tempo-colors-background-accent-onDark-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-background-accent-onDark-hovered: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-background-accent-onDark-pressed: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-background-accent-onDark-selected: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-background-accent-onLight-default: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-background-accent-onLight-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-background-accent-onLight-hovered: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-background-accent-onLight-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-background-accent-onLight-selected: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-background-accent-primary-default: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-background-accent-primary-disabled: var(
+    --color-accent-light
+  ) !important;
+  --tempo-colors-background-accent-primary-hovered: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-background-accent-primary-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-background-accent-secondary-default: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-background-accent-secondary-disabled: var(
+    --color-accent-light
+  ) !important;
+  --tempo-colors-background-accent-secondary-hovered: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-background-accent-secondary-pressed: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-background-feedback-error-default: var(
+    --color-feedback-error
+  ) !important;
+  --tempo-colors-background-feedback-error-disabled: var(
+    --color-feedback-error-disabled
+  ) !important;
+  --tempo-colors-background-feedback-error-hovered: var(
+    --color-feedback-error-hovered
+  ) !important;
+  --tempo-colors-background-feedback-error-pressed: var(
+    --color-feedback-error-pressed
+  ) !important;
+  --tempo-colors-background-feedback-success-default: var(
+    --color-feedback-success
+  ) !important;
+  --tempo-colors-background-feedback-success-disabled: var(
+    --color-feedback-success-disabled
+  ) !important;
+  --tempo-colors-background-feedback-success-hovered: var(
+    --color-feedback-success-hovered
+  ) !important;
+  --tempo-colors-background-feedback-success-pressed: var(
+    --color-feedback-success-pressed
+  ) !important;
+  --tempo-colors-background-feedback-warning-default: var(
+    --color-feedback-warning
+  ) !important;
+  --tempo-colors-background-feedback-warning-disabled: var(
+    --color-feedback-warning-disabled
+  ) !important;
+  --tempo-colors-background-feedback-warning-hovered: var(
+    --color-feedback-warning-hovered
+  ) !important;
+  --tempo-colors-background-feedback-warning-pressed: var(
+    --color-feedback-warning-pressed
+  ) !important;
+  --tempo-colors-background-neutral-onDark-default: var(
+    --color-dark-grey-700
+  ) !important;
+  --tempo-colors-background-neutral-onDark-disabled: var(
+    --color-dark-grey-800
+  ) !important;
+  --tempo-colors-background-neutral-onDark-hovered: var(
+    --color-dark-grey-600
+  ) !important;
+  --tempo-colors-background-neutral-onDark-pressed: var(
+    --color-dark-grey-500
+  ) !important;
+  --tempo-colors-background-neutral-onLight-default: var(
+    --color-light-grey-300
+  ) !important;
+  --tempo-colors-background-neutral-onLight-disabled: var(
+    --color-light-grey-200
+  ) !important;
+  --tempo-colors-background-neutral-onLight-hovered: var(
+    --color-light-grey-400
+  ) !important;
+  --tempo-colors-background-neutral-onLight-pressed: var(
+    --color-light-grey-500
+  ) !important;
+  --tempo-colors-border-accent-onContent-default: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-border-accent-onContent-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-border-accent-onContent-focused: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-border-accent-onContent-hovered: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-border-accent-onContent-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-border-accent-primary-default: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-border-accent-primary-disabled: var(
+    --color-accent-light
+  ) !important;
+  --tempo-colors-border-accent-primary-focused: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-border-accent-primary-hovered: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-border-accent-primary-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-border-accent-secondary-default: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-border-cover-neutral-default: var(
+    --color-border-neutral-primary
+  ) !important;
+  --tempo-colors-border-feedback-error-default: var(
+    --color-feedback-error
+  ) !important;
+  --tempo-colors-border-feedback-error-disabled: var(
+    --color-feedback-error-disabled
+  ) !important;
+  --tempo-colors-border-feedback-error-focused: var(
+    --color-feedback-error
+  ) !important;
+  --tempo-colors-border-feedback-error-hovered: var(
+    --color-feedback-error-hovered
+  ) !important;
+  --tempo-colors-border-feedback-error-pressed: var(
+    --color-feedback-error-pressed
+  ) !important;
+  --tempo-colors-border-feedback-success-default: var(
+    --color-feedback-success
+  ) !important;
+  --tempo-colors-border-feedback-success-disabled: var(
+    --color-feedback-success-disabled
+  ) !important;
+  --tempo-colors-border-feedback-success-focused: var(
+    --color-feedback-success
+  ) !important;
+  --tempo-colors-border-feedback-success-hovered: var(
+    --color-feedback-success-hovered
+  ) !important;
+  --tempo-colors-border-feedback-success-pressed: var(
+    --color-feedback-success-pressed
+  ) !important;
+  --tempo-colors-border-feedback-warning-default: var(
+    --color-feedback-warning
+  ) !important;
+  --tempo-colors-border-feedback-warning-disabled: var(
+    --color-feedback-warning-disabled
+  ) !important;
+  --tempo-colors-border-feedback-warning-focused: var(
+    --color-feedback-warning
+  ) !important;
+  --tempo-colors-border-feedback-warning-hovered: var(
+    --color-feedback-warning-hovered
+  ) !important;
+  --tempo-colors-border-feedback-warning-pressed: var(
+    --color-feedback-warning-pressed
+  ) !important;
+  --tempo-colors-icon-accent-onAccent-default: var(--color-grey-50) !important;
+  --tempo-colors-icon-accent-onAccent-disabled: var(--color-grey-50) !important;
+  --tempo-colors-icon-accent-onAccent-hovered: var(--color-grey-50) !important;
+  --tempo-colors-icon-accent-onAccent-pressed: var(--color-grey-50) !important;
+  --tempo-colors-icon-accent-onAccent-selected: var(--color-grey-50) !important;
+  --tempo-colors-icon-accent-onDark-default: var(
+    --color-accent-light
+  ) !important;
+  --tempo-colors-icon-accent-onDark-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-icon-accent-onDark-hovered: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-icon-accent-onDark-pressed: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-icon-accent-onDark-selected: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-icon-accent-onLight-default: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-icon-accent-onLight-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-icon-accent-onLight-hovered: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-icon-accent-onLight-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-icon-accent-onLight-selected: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-icon-accent-primary-default: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-icon-accent-primary-disabled: var(
+    --color-accent-light
+  ) !important;
+  --tempo-colors-icon-accent-primary-hovered: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-icon-accent-primary-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-icon-feedback-error-default: var(
+    --color-feedback-error
+  ) !important;
+  --tempo-colors-icon-feedback-error-disabled: var(
+    --color-feedback-error-disabled
+  ) !important;
+  --tempo-colors-icon-feedback-error-hovered: var(
+    --color-feedback-error-hovered
+  ) !important;
+  --tempo-colors-icon-feedback-error-pressed: var(
+    --color-feedback-error-pressed
+  ) !important;
+  --tempo-colors-icon-feedback-info-default: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-icon-feedback-success-default: var(
+    --color-feedback-success
+  ) !important;
+  --tempo-colors-icon-feedback-success-disabled: var(
+    --color-feedback-success-disabled
+  ) !important;
+  --tempo-colors-icon-feedback-success-hovered: var(
+    --color-feedback-success-hovered
+  ) !important;
+  --tempo-colors-icon-feedback-success-pressed: var(
+    --color-feedback-success-pressed
+  ) !important;
+  --tempo-colors-icon-feedback-warning-default: var(
+    --color-feedback-warning
+  ) !important;
+  --tempo-colors-icon-feedback-warning-disabled: var(
+    --color-feedback-warning-disabled
+  ) !important;
+  --tempo-colors-icon-feedback-warning-hovered: var(
+    --color-feedback-warning-hovered
+  ) !important;
+  --tempo-colors-icon-feedback-warning-pressed: var(
+    --color-feedback-warning-pressed
+  ) !important;
+  --tempo-colors-text-accent-onAccent-default: var(--color-grey-50) !important;
+  --tempo-colors-text-accent-onAccent-disabled: var(--color-grey-50) !important;
+  --tempo-colors-text-accent-onAccent-hovered: var(--color-grey-50) !important;
+  --tempo-colors-text-accent-onAccent-pressed: var(--color-grey-50) !important;
+  --tempo-colors-text-accent-onAccent-selected: var(--color-grey-50) !important;
+  --tempo-colors-text-accent-onColor-default: var(--color-grey-50) !important;
+  --tempo-colors-text-accent-onColor-disabled: var(--color-grey-50) !important;
+  --tempo-colors-text-accent-onColor-hovered: var(--color-grey-50) !important;
+  --tempo-colors-text-accent-onColor-pressed: var(--color-grey-50) !important;
+  --tempo-colors-text-accent-onContent-default: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-text-accent-onDark-default: var(
+    --color-accent-light
+  ) !important;
+  --tempo-colors-text-accent-onDark-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-text-accent-onDark-hovered: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-text-accent-onDark-pressed: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-text-accent-onDark-selected: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-text-accent-onLight-default: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-text-accent-onLight-disabled: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-text-accent-onLight-hovered: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-text-accent-onLight-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-text-accent-onLight-selected: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-text-accent-primary-default: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-text-accent-primary-disabled: var(
+    --color-accent-light
+  ) !important;
+  --tempo-colors-text-accent-primary-hovered: var(
+    --color-accent-strong
+  ) !important;
+  --tempo-colors-text-accent-primary-pressed: var(
+    --color-accent-stronger
+  ) !important;
+  --tempo-colors-text-accent-secondary-default: var(
+    --color-accent-weak
+  ) !important;
+  --tempo-colors-text-color-secondary-default: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-text-feedback-error-default: var(
+    --color-feedback-error
+  ) !important;
+  --tempo-colors-text-feedback-error-disabled: var(
+    --color-feedback-error-disabled
+  ) !important;
+  --tempo-colors-text-feedback-error-hovered: var(
+    --color-feedback-error-hovered
+  ) !important;
+  --tempo-colors-text-feedback-error-pressed: var(
+    --color-feedback-error-pressed
+  ) !important;
+  --tempo-colors-text-feedback-success-default: var(
+    --color-feedback-success
+  ) !important;
+  --tempo-colors-text-feedback-success-disabled: var(
+    --color-feedback-success-disabled
+  ) !important;
+  --tempo-colors-text-feedback-success-hovered: var(
+    --color-feedback-success-hovered
+  ) !important;
+  --tempo-colors-text-feedback-success-pressed: var(
+    --color-feedback-success-pressed
+  ) !important;
+  --tempo-colors-text-feedback-warning-default: var(
+    --color-feedback-warning
+  ) !important;
+  --tempo-colors-text-feedback-warning-disabled: var(
+    --color-feedback-warning-disabled
+  ) !important;
+  --tempo-colors-text-feedback-warning-hovered: var(
+    --color-feedback-warning-hovered
+  ) !important;
+  --tempo-colors-text-feedback-warning-pressed: var(
+    --color-feedback-warning-pressed
+  ) !important;
+  --tempo-colors-gray-200: var(--color-grey-200) !important;
+}
+
+/* =========================================================================
+ * Everforest Light  (cream background, dark fg text)
+ * ========================================================================= */
+:root,
+[data-theme="light"] {
+  /* Backgrounds */
+  --color-bg-main: #fdf6e3; /* light bg0  */
+  --color-bg-secondary: #f4f0d9; /* light bg1  */
+  --color-bg-tertiary: #e6e2cc; /* light bg3  */
+  --color-bg-tertiary-hover: #e0dcc7; /* light bg4  */
+  --color-bg-tertiary-pressed: #bdc3af; /* light bg5  */
+  --color-bg-contrast: #e6e2cc;
+  --color-bg-inverse: #2d353b; /* dark bg0  */
+  --transparent-bg: #fdf6e380;
+
+  /* Text */
+  --color-text-main: #5c6a72; /* light fg (strong body) */
+  --color-text-secondary: #829181; /* light grey2  */
+  --color-text-disabled: #a6b0a0; /* light grey0  */
+  --color-text-inverse: #d3c6aa; /* dark fg  */
+
+  /* Borders & dividers */
+  --color-border-neutral-primary: #e0dcc7;
+  --color-border-neutral-secondary: #bdc3af;
+  --color-divider-main: #e0dcc7;
+
+  /* Neutral aliases */
+  --color-neutral-main: #bdc3af;
+  --color-neutral-strong: #829181;
+  --color-neutral-weak: #f4f0d9;
+
+  --tempo-colors-background-neutral-inverse-default: var(
+    --color-bg-inverse
+  ) !important;
+  --tempo-colors-background-neutral-inverse-disabled: var(
+    --color-bg-inverse
+  ) !important;
+  --tempo-colors-background-neutral-inverse-hovered: var(
+    --color-dark-grey-800
+  ) !important;
+  --tempo-colors-background-neutral-inverse-pressed: var(
+    --color-dark-grey-700
+  ) !important;
+  --tempo-colors-background-neutral-inverse-selected: var(
+    --color-dark-grey-800
+  ) !important;
+  --tempo-colors-background-neutral-primary-default: var(
+    --color-bg-main
+  ) !important;
+  --tempo-colors-background-neutral-primary-disabled: var(
+    --color-bg-secondary
+  ) !important;
+  --tempo-colors-background-neutral-primary-hovered: var(
+    --color-bg-tertiary
+  ) !important;
+  --tempo-colors-background-neutral-primary-pressed: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-background-neutral-primary-selected: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-background-neutral-secondary-default: var(
+    --color-bg-secondary
+  ) !important;
+  --tempo-colors-background-neutral-secondary-disabled: var(
+    --color-bg-secondary
+  ) !important;
+  --tempo-colors-background-neutral-secondary-hovered: var(
+    --color-bg-tertiary
+  ) !important;
+  --tempo-colors-background-neutral-secondary-pressed: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-background-neutral-secondary-selected: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-default: var(
+    --color-bg-tertiary
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-disabled: var(
+    --color-bg-tertiary
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-hovered: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-pressed: var(
+    --color-bg-tertiary-pressed
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-selected: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-border-neutral-primary-default: var(
+    --color-border-neutral-primary
+  ) !important;
+  --tempo-colors-border-neutral-primary-disabled: var(
+    --color-border-neutral-primary
+  ) !important;
+  --tempo-colors-border-neutral-primary-focused: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-border-neutral-primary-hovered: var(
+    --color-border-neutral-secondary
+  ) !important;
+  --tempo-colors-border-neutral-primary-pressed: var(
+    --color-border-neutral-secondary
+  ) !important;
+  --tempo-colors-divider-neutral-primary-default: var(
+    --color-divider-main
+  ) !important;
+  --tempo-colors-divider-neutral-primary-disabled: var(
+    --color-border-neutral-primary
+  ) !important;
+  --tempo-colors-divider-neutral-primary-hovered: var(
+    --color-divider-main
+  ) !important;
+  --tempo-colors-divider-neutral-primary-pressed: var(
+    --color-divider-main
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-default: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-disabled: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-hovered: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-pressed: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-selected: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-primary-default: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-icon-neutral-primary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-primary-hovered: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-icon-neutral-primary-pressed: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-icon-neutral-primary-selected: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-default: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-hovered: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-pressed: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-selected: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-default: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-hovered: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-pressed: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-selected: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-text-neutral-inverse-default: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-inverse-disabled: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-inverse-hovered: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-inverse-pressed: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-inverse-selected: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-primary-default: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-text-neutral-primary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-text-neutral-primary-hovered: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-text-neutral-primary-pressed: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-text-neutral-primary-selected: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-text-neutral-secondary-default: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-text-neutral-secondary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-text-neutral-secondary-hovered: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-text-neutral-secondary-pressed: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-text-neutral-secondary-selected: var(
+    --color-text-secondary
+  ) !important;
+}
+
+/* =========================================================================
+ * Everforest Dark  (dark bg background, cream/tan fg text)
+ * ========================================================================= */
+[data-theme="dark"] {
+  /* Backgrounds */
+  --color-bg-main: #2d353b; /* dark bg0  */
+  --color-bg-secondary: #343f44; /* dark bg1  */
+  --color-bg-tertiary: #3d484d; /* dark bg2  */
+  --color-bg-tertiary-hover: #475258; /* dark bg3  */
+  --color-bg-tertiary-pressed: #4f585e; /* dark bg4  */
+  --color-bg-contrast: #343f44;
+  --color-bg-inverse: #fdf6e3; /* light bg0  */
+  --transparent-bg: #232a2e4d;
+
+  /* Text */
+  --color-text-main: #d3c6aa; /* dark fg (bright body) */
+  --color-text-secondary: #9da9a0; /* dark grey2  */
+  --color-text-disabled: #7a8478; /* dark grey0  */
+  --color-text-inverse: #2d353b; /* dark bg0  */
+
+  /* Borders & dividers */
+  --color-border-neutral-primary: #475258;
+  --color-border-neutral-secondary: #56635f;
+  --color-divider-main: #475258;
+
+  /* Neutral aliases */
+  --color-neutral-main: #475258;
+  --color-neutral-strong: #9da9a0;
+  --color-neutral-weak: #343f44;
+
+  /* Brand accents retinted toward Everforest aqua */
+  --color-bg-brand-duo: #83c092; /* dark aqua */
+  --color-bg-brand-trio: #83c092;
+  --color-bg-brand-duo-selected: #3d484d;
+  --color-text-brand-duo: #2d353b;
+  --color-text-brand-trio: #2d353b;
+
+  --tempo-colors-background-neutral-inverse-default: var(
+    --color-bg-inverse
+  ) !important;
+  --tempo-colors-background-neutral-inverse-disabled: var(
+    --color-bg-inverse
+  ) !important;
+  --tempo-colors-background-neutral-inverse-hovered: var(
+    --color-light-grey-300
+  ) !important;
+  --tempo-colors-background-neutral-inverse-pressed: var(
+    --color-light-grey-300
+  ) !important;
+  --tempo-colors-background-neutral-inverse-selected: var(
+    --color-light-grey-300
+  ) !important;
+  --tempo-colors-background-neutral-primary-default: var(
+    --color-bg-main
+  ) !important;
+  --tempo-colors-background-neutral-primary-disabled: var(
+    --color-bg-secondary
+  ) !important;
+  --tempo-colors-background-neutral-primary-hovered: var(
+    --color-bg-tertiary
+  ) !important;
+  --tempo-colors-background-neutral-primary-pressed: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-background-neutral-primary-selected: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-background-neutral-secondary-default: var(
+    --color-bg-secondary
+  ) !important;
+  --tempo-colors-background-neutral-secondary-disabled: var(
+    --color-bg-secondary
+  ) !important;
+  --tempo-colors-background-neutral-secondary-hovered: var(
+    --color-bg-tertiary
+  ) !important;
+  --tempo-colors-background-neutral-secondary-pressed: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-background-neutral-secondary-selected: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-default: var(
+    --color-bg-tertiary
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-disabled: var(
+    --color-bg-tertiary
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-hovered: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-pressed: var(
+    --color-bg-tertiary-pressed
+  ) !important;
+  --tempo-colors-background-neutral-tertiary-selected: var(
+    --color-bg-tertiary-hover
+  ) !important;
+  --tempo-colors-border-neutral-primary-default: var(
+    --color-border-neutral-primary
+  ) !important;
+  --tempo-colors-border-neutral-primary-disabled: var(
+    --color-border-neutral-primary
+  ) !important;
+  --tempo-colors-border-neutral-primary-focused: var(
+    --color-accent-main
+  ) !important;
+  --tempo-colors-border-neutral-primary-hovered: var(
+    --color-border-neutral-secondary
+  ) !important;
+  --tempo-colors-border-neutral-primary-pressed: var(
+    --color-border-neutral-secondary
+  ) !important;
+  --tempo-colors-divider-neutral-primary-default: var(
+    --color-divider-main
+  ) !important;
+  --tempo-colors-divider-neutral-primary-disabled: var(
+    --color-border-neutral-primary
+  ) !important;
+  --tempo-colors-divider-neutral-primary-hovered: var(
+    --color-divider-main
+  ) !important;
+  --tempo-colors-divider-neutral-primary-pressed: var(
+    --color-divider-main
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-default: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-disabled: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-hovered: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-pressed: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-inverse-selected: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-icon-neutral-primary-default: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-icon-neutral-primary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-primary-hovered: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-icon-neutral-primary-pressed: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-icon-neutral-primary-selected: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-default: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-hovered: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-pressed: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-icon-neutral-secondary-selected: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-default: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-hovered: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-pressed: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-icon-neutral-tertiary-selected: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-text-neutral-inverse-default: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-inverse-disabled: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-inverse-hovered: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-inverse-pressed: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-inverse-selected: var(
+    --color-text-inverse
+  ) !important;
+  --tempo-colors-text-neutral-primary-default: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-text-neutral-primary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-text-neutral-primary-hovered: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-text-neutral-primary-pressed: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-text-neutral-primary-selected: var(
+    --color-text-main
+  ) !important;
+  --tempo-colors-text-neutral-secondary-default: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-text-neutral-secondary-disabled: var(
+    --color-text-disabled
+  ) !important;
+  --tempo-colors-text-neutral-secondary-hovered: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-text-neutral-secondary-pressed: var(
+    --color-text-secondary
+  ) !important;
+  --tempo-colors-text-neutral-secondary-selected: var(
+    --color-text-secondary
+  ) !important;
+}

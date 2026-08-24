@@ -148,10 +148,11 @@ Pair this with [`--sync-theme`](#usage) so the mode follows your OS setting auto
 
 The [`themes/`](./themes) folder contains drop-in themes you can use as-is or as a reference:
 
-| Theme                               | Modes        |
-| ----------------------------------- | ------------ |
-| [Solarized](./themes/solarized.css) | Light & dark |
-| [Nord](./themes/nord.css)           | Light & dark |
+| Theme                                 | Modes        |
+| ------------------------------------- | ------------ |
+| [Solarized](./themes/solarized.css)   | Light & dark |
+| [Nord](./themes/nord.css)             | Light & dark |
+| [Everforest](./themes/everforest.css) | Light & dark |
 
 For example:
 
