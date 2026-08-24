@@ -144,6 +144,20 @@ The full list of themeable variables, prefilled with their default values for bo
 
 Pair this with [`--sync-theme`](#usage) so the mode follows your OS setting automatically.
 
+### Ready-made themes
+
+The [`themes/`](./themes) folder contains drop-in themes you can use as-is or as a reference:
+
+| Theme                               | Modes        |
+| ----------------------------------- | ------------ |
+| [Solarized](./themes/solarized.css) | Light & dark |
+
+For example:
+
+```sh
+deezer-desktop --sync-theme --custom-theme=/path/to/themes/solarized.css
+```
+
 ### Debugging and inspecting the app
 
 To discover which selectors to target, launch the app with the developer tools enabled:
