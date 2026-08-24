@@ -29,7 +29,7 @@ Compiled JS: `/tmp/deezer-app/build/assets/cache/js/*.js`
 
 ## 3. Grep the CSS for a token, when template.css doesn't already cover it
 
-`themes/template.css` already documents the known token catalog — don't re-derive what's already listed there. Only grep when chasing something new/unlisted, or if a Deezer update may have changed the tokens (full method: `CONTRIBUTING.md` → "Creating a New Theme" → "How the token catalog was discovered").
+`themes/template.css` already documents the known token catalog — don't re-derive what's already listed there. Only grep when chasing something new/unlisted, or if a Deezer update may have changed the tokens.
 
 ```
 grep -o 'body{background-color:var([^)]*)[^}]*}' \
