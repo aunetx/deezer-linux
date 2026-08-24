@@ -24,7 +24,7 @@
   --color-accent-strong: #1a6ba8;
   --color-accent-weak: #6cb0e0;
   --color-accent-light: #9cccec;
-  --color-accent-stronger: #14547f; /* deeper "pressed" tier */
+  --color-accent-stronger: #14547f;
 
   /* Feedback (error / success / warning) — one default/disabled/hovered/
    * pressed variable per type, unlike template.css's single flat color */
@@ -41,37 +41,36 @@
   --color-feedback-warning-hovered: #8f6d00;
   --color-feedback-warning-pressed: #6b5200;
 
-  /* Neutral ramp mapped onto Solarized base tones (light -> dark) */
-  --color-grey-50: #fdf6e3; /* base3  */
-  --color-grey-100: #f5eeda; /* base3/base2 */
-  --color-grey-200: #eee8d5; /* base2  */
-  --color-grey-300: #ccc9b6; /* base2/base1 */
-  --color-grey-400: #93a1a1; /* base1  */
-  --color-grey-500: #586e75; /* base01 */
-  --color-grey-600: #113640; /* base02/base03 */
-  --color-grey-700: #0b333d; /* base02 */
-  --color-grey-800: #073642; /* base02 */
-  --color-grey-900: #002b36; /* base03 */
+  --color-grey-50: #fdf6e3;
+  --color-grey-100: #f5eeda;
+  --color-grey-200: #eee8d5;
+  --color-grey-300: #ccc9b6;
+  --color-grey-400: #93a1a1;
+  --color-grey-500: #586e75;
+  --color-grey-600: #113640;
+  --color-grey-700: #0b333d;
+  --color-grey-800: #073642;
+  --color-grey-900: #002b36;
 
   /* Fixed dark/light grey ramps — do NOT swap with the mode */
   --color-dark-grey-200: #748b91;
   --color-dark-grey-300: #64787e;
   --color-dark-grey-400: #5b7278;
-  --color-dark-grey-500: #586e75; /* base01 */
+  --color-dark-grey-500: #586e75;
   --color-dark-grey-600: #113640;
   --color-dark-grey-700: #0b333d;
-  --color-dark-grey-800: #073642; /* base02 */
-  --color-dark-grey-900: #002b36; /* base03 */
-  --color-light-grey-50: #fdf6e3; /* base3  */
+  --color-dark-grey-800: #073642;
+  --color-dark-grey-900: #002b36;
+  --color-light-grey-50: #fdf6e3;
   --color-light-grey-100: #f5eeda;
   --color-light-grey-200: #f2ecd9;
-  --color-light-grey-300: #eee8d5; /* base2  */
+  --color-light-grey-300: #eee8d5;
   --color-light-grey-400: #d9d3ba;
   --color-light-grey-500: #ccc9b6;
-  --color-light-grey-600: #93a1a1; /* base1  */
-  --color-light-grey-700: #839496; /* base0  */
+  --color-light-grey-600: #93a1a1;
+  --color-light-grey-700: #839496;
   --color-light-grey-800: #6e838b;
-  --color-light-grey-900: #586e75; /* base01 */
+  --color-light-grey-900: #586e75;
 }
 
 /* =========================================================================
@@ -378,28 +377,24 @@
  * ========================================================================= */
 :root,
 [data-theme="light"] {
-  /* Backgrounds */
-  --color-bg-main: #fdf6e3; /* base3  */
-  --color-bg-secondary: #eee8d5; /* base2  */
+  --color-bg-main: #fdf6e3;
+  --color-bg-secondary: #eee8d5;
   --color-bg-tertiary: #e6dfc7; /* base2, darker */
   --color-bg-tertiary-hover: #ddd4b8;
   --color-bg-tertiary-pressed: #d4c9a8;
   --color-bg-contrast: #eee8d5;
-  --color-bg-inverse: #002b36; /* base03 */
+  --color-bg-inverse: #002b36;
   --transparent-bg: #fdf6e380;
 
-  /* Text */
-  --color-text-main: #586e75; /* base01 (strong body) */
-  --color-text-secondary: #657b83; /* base00 */
-  --color-text-disabled: #93a1a1; /* base1  */
-  --color-text-inverse: #fdf6e3; /* base3  */
+  --color-text-main: #586e75;
+  --color-text-secondary: #657b83;
+  --color-text-disabled: #93a1a1;
+  --color-text-inverse: #fdf6e3;
 
-  /* Borders & dividers */
   --color-border-neutral-primary: #ddd6c1;
   --color-border-neutral-secondary: #93a1a1;
   --color-divider-main: #ddd6c1;
 
-  /* Neutral aliases */
   --color-neutral-main: #93a1a1;
   --color-neutral-strong: #586e75;
   --color-neutral-weak: #eee8d5;
@@ -602,28 +597,24 @@
  * Solarized Dark  (base03 background, base0 text)
  * ========================================================================= */
 [data-theme="dark"] {
-  /* Backgrounds */
-  --color-bg-main: #002b36; /* base03 */
-  --color-bg-secondary: #073642; /* base02 */
+  --color-bg-main: #002b36;
+  --color-bg-secondary: #073642;
   --color-bg-tertiary: #0d4250;
   --color-bg-tertiary-hover: #135263;
   --color-bg-tertiary-pressed: #1a5b6e;
   --color-bg-contrast: #073642;
-  --color-bg-inverse: #fdf6e3; /* base3  */
+  --color-bg-inverse: #fdf6e3;
   --transparent-bg: #002b364d;
 
-  /* Text */
-  --color-text-main: #93a1a1; /* base1 (bright body) */
-  --color-text-secondary: #839496; /* base0  */
-  --color-text-disabled: #586e75; /* base01 */
-  --color-text-inverse: #002b36; /* base03 */
+  --color-text-main: #93a1a1;
+  --color-text-secondary: #839496;
+  --color-text-disabled: #586e75;
+  --color-text-inverse: #002b36;
 
-  /* Borders & dividers */
   --color-border-neutral-primary: #0d4250;
   --color-border-neutral-secondary: #93a1a1;
   --color-divider-main: #0d4250;
 
-  /* Neutral aliases */
   --color-neutral-main: #586e75;
   --color-neutral-strong: #93a1a1;
   --color-neutral-weak: #073642;

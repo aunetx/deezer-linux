@@ -23,58 +23,57 @@
  * ========================================================================= */
 :root {
   /* Accent: Nord frost ramp instead of Deezer purple */
-  --color-accent-main: #81a1c1; /* nord9 */
-  --color-accent-strong: #5e81ac; /* nord10 */
-  --color-accent-weak: #88c0d0; /* nord8 */
+  --color-accent-main: #81a1c1;
+  --color-accent-strong: #5e81ac;
+  --color-accent-weak: #88c0d0;
   --color-accent-light: #a3d0dc;
-  --color-accent-stronger: #4c6a92; /* deeper "pressed" tier */
+  --color-accent-stronger: #4c6a92;
 
   /* Feedback (error / success / warning) — one default/disabled/hovered/
    * pressed variable per type, unlike template.css's single flat color */
-  --color-feedback-error: #bf616a; /* nord11 */
+  --color-feedback-error: #bf616a;
   --color-feedback-error-disabled: #d3939a;
   --color-feedback-error-hovered: #a94f58;
   --color-feedback-error-pressed: #8f424a;
-  --color-feedback-success: #a3be8c; /* nord14 */
+  --color-feedback-success: #a3be8c;
   --color-feedback-success-disabled: #c1d4b0;
   --color-feedback-success-hovered: #8cab72;
   --color-feedback-success-pressed: #75935c;
-  --color-feedback-warning: #ebcb8b; /* nord13 */
+  --color-feedback-warning: #ebcb8b;
   --color-feedback-warning-disabled: #f0d9a8;
   --color-feedback-warning-hovered: #d4af5e;
   --color-feedback-warning-pressed: #bc9645;
 
-  /* Neutral ramp mapped onto Nord Polar Night/Snow Storm tones (light -> dark) */
-  --color-grey-50: #eceff4; /* nord6  */
-  --color-grey-100: #e5e9f0; /* nord5  */
-  --color-grey-200: #d8dee9; /* nord4  */
+  --color-grey-50: #eceff4;
+  --color-grey-100: #e5e9f0;
+  --color-grey-200: #d8dee9;
   --color-grey-300: #b7c0d1;
   --color-grey-400: #949fb2;
   --color-grey-500: #6b7890;
-  --color-grey-600: #4c566a; /* nord3  */
-  --color-grey-700: #434c5e; /* nord2  */
-  --color-grey-800: #3b4252; /* nord1  */
-  --color-grey-900: #2e3440; /* nord0  */
+  --color-grey-600: #4c566a;
+  --color-grey-700: #434c5e;
+  --color-grey-800: #3b4252;
+  --color-grey-900: #2e3440;
 
   /* Fixed dark/light grey ramps — do NOT swap with the mode */
   --color-dark-grey-200: #7b88a1;
   --color-dark-grey-300: #6b7890;
   --color-dark-grey-400: #5b6b83;
-  --color-dark-grey-500: #4c566a; /* nord3  */
-  --color-dark-grey-600: #434c5e; /* nord2  */
-  --color-dark-grey-700: #3b4252; /* nord1  */
+  --color-dark-grey-500: #4c566a;
+  --color-dark-grey-600: #434c5e;
+  --color-dark-grey-700: #3b4252;
   --color-dark-grey-800: #333a48;
-  --color-dark-grey-900: #2e3440; /* nord0  */
-  --color-light-grey-50: #eceff4; /* nord6  */
-  --color-light-grey-100: #e5e9f0; /* nord5  */
+  --color-dark-grey-900: #2e3440;
+  --color-light-grey-50: #eceff4;
+  --color-light-grey-100: #e5e9f0;
   --color-light-grey-200: #dee3ec;
-  --color-light-grey-300: #d8dee9; /* nord4  */
+  --color-light-grey-300: #d8dee9;
   --color-light-grey-400: #c6cdda;
   --color-light-grey-500: #b7c0d1;
   --color-light-grey-600: #9aa5b1;
   --color-light-grey-700: #838fa1;
   --color-light-grey-800: #6b7890;
-  --color-light-grey-900: #4c566a; /* nord3  */
+  --color-light-grey-900: #4c566a;
 }
 
 /* =========================================================================
@@ -381,28 +380,24 @@
  * ========================================================================= */
 :root,
 [data-theme="light"] {
-  /* Backgrounds */
-  --color-bg-main: #eceff4; /* nord6  */
-  --color-bg-secondary: #e5e9f0; /* nord5  */
+  --color-bg-main: #eceff4;
+  --color-bg-secondary: #e5e9f0;
   --color-bg-tertiary: #dee3ec;
   --color-bg-tertiary-hover: #d3d9e6;
   --color-bg-tertiary-pressed: #c6cdda;
   --color-bg-contrast: #e5e9f0;
-  --color-bg-inverse: #2e3440; /* nord0  */
+  --color-bg-inverse: #2e3440;
   --transparent-bg: #eceff480;
 
-  /* Text */
-  --color-text-main: #2e3440; /* nord0 (strong body) */
-  --color-text-secondary: #4c566a; /* nord3  */
+  --color-text-main: #2e3440;
+  --color-text-secondary: #4c566a;
   --color-text-disabled: #9aa5b1;
-  --color-text-inverse: #eceff4; /* nord6  */
+  --color-text-inverse: #eceff4;
 
-  /* Borders & dividers */
   --color-border-neutral-primary: #ccd3e0;
   --color-border-neutral-secondary: #9aa5b1;
   --color-divider-main: #ccd3e0;
 
-  /* Neutral aliases */
   --color-neutral-main: #9aa5b1;
   --color-neutral-strong: #4c566a;
   --color-neutral-weak: #e5e9f0;
@@ -605,34 +600,30 @@
  * Nord Dark  (Polar Night background, Snow Storm text)
  * ========================================================================= */
 [data-theme="dark"] {
-  /* Backgrounds */
-  --color-bg-main: #2e3440; /* nord0  */
-  --color-bg-secondary: #3b4252; /* nord1  */
-  --color-bg-tertiary: #434c5e; /* nord2  */
-  --color-bg-tertiary-hover: #4c566a; /* nord3  */
+  --color-bg-main: #2e3440;
+  --color-bg-secondary: #3b4252;
+  --color-bg-tertiary: #434c5e;
+  --color-bg-tertiary-hover: #4c566a;
   --color-bg-tertiary-pressed: #566277;
   --color-bg-contrast: #3b4252;
-  --color-bg-inverse: #eceff4; /* nord6  */
+  --color-bg-inverse: #eceff4;
   --transparent-bg: #2e34404d;
 
-  /* Text */
-  --color-text-main: #e5e9f0; /* nord5 (bright body) */
-  --color-text-secondary: #d8dee9; /* nord4  */
+  --color-text-main: #e5e9f0;
+  --color-text-secondary: #d8dee9;
   --color-text-disabled: #6b7890;
-  --color-text-inverse: #2e3440; /* nord0  */
+  --color-text-inverse: #2e3440;
 
-  /* Borders & dividers */
   --color-border-neutral-primary: #434c5e;
   --color-border-neutral-secondary: #6b7890;
   --color-divider-main: #434c5e;
 
-  /* Neutral aliases */
   --color-neutral-main: #4c566a;
   --color-neutral-strong: #9aa5b1;
   --color-neutral-weak: #3b4252;
 
   /* Brand accents retinted toward Nord frost teal */
-  --color-bg-brand-duo: #8fbcbb; /* nord7 */
+  --color-bg-brand-duo: #8fbcbb;
   --color-bg-brand-trio: #8fbcbb;
   --color-bg-brand-duo-selected: #434c5e;
   --color-text-brand-duo: #2e3440;

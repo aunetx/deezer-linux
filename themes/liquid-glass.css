@@ -25,7 +25,7 @@
   --color-accent-strong: #0060df;
   --color-accent-weak: #5ac8fa;
   --color-accent-light: #9dd6ff;
-  --color-accent-stronger: #0048a8; /* deeper "pressed" tier */
+  --color-accent-stronger: #0048a8;
 
   /* Feedback (error / success / warning) — iOS system colors, one
    * default/disabled/hovered/pressed variable per type */
@@ -42,18 +42,16 @@
   --color-feedback-warning-hovered: #e08600;
   --color-feedback-warning-pressed: #c27200;
 
-  /* Neutral ramp mapped onto Apple's systemGray6 -> systemGray -> dark
-   * systemGray tiers (light -> dark) */
-  --color-grey-50: #f2f2f7; /* systemGray6 light */
-  --color-grey-100: #e5e5ea; /* systemGray5 light */
-  --color-grey-200: #d1d1d6; /* systemGray4 light */
-  --color-grey-300: #c7c7cc; /* systemGray3 light */
-  --color-grey-400: #aeaeb2; /* systemGray2 light */
-  --color-grey-500: #8e8e93; /* systemGray  light */
-  --color-grey-600: #636366; /* systemGray2 dark  */
-  --color-grey-700: #48484a; /* systemGray4 dark  */
-  --color-grey-800: #2c2c2e; /* systemGray5 dark  */
-  --color-grey-900: #1c1c1e; /* systemGray6 dark  */
+  --color-grey-50: #f2f2f7;
+  --color-grey-100: #e5e5ea;
+  --color-grey-200: #d1d1d6;
+  --color-grey-300: #c7c7cc;
+  --color-grey-400: #aeaeb2;
+  --color-grey-500: #8e8e93;
+  --color-grey-600: #636366;
+  --color-grey-700: #48484a;
+  --color-grey-800: #2c2c2e;
+  --color-grey-900: #1c1c1e;
 
   /* Fixed dark/light grey ramps — do NOT swap with the mode; always-dark
    * chrome (e.g. the player bar even in light mode) reads from these */
@@ -523,7 +521,6 @@
  * ========================================================================= */
 :root,
 [data-theme="light"] {
-  /* Backgrounds */
   --color-bg-main: #f2f2f7;
   --color-bg-secondary: #ffffff;
   --color-bg-tertiary: #e9e9ee;
@@ -535,18 +532,16 @@
    * section 5 below. Consumed as a flat fill anywhere blur can't apply. */
   --transparent-bg: rgba(255, 255, 255, 0.72);
 
-  /* Text */
   --color-text-main: #1c1c1e;
   --color-text-secondary: #6e6e73; /* Apple secondaryLabel */
   --color-text-disabled: #aeaeb2;
   --color-text-inverse: #fff;
 
-  /* Borders & dividers — soft hairlines, not heavy Deezer greys */
+  /* Soft hairlines, not heavy Deezer greys */
   --color-border-neutral-primary: #d8d8dd;
   --color-border-neutral-secondary: #c7c7cc;
   --color-divider-main: #d8d8dd;
 
-  /* Neutral aliases */
   --color-neutral-main: #c7c7cc;
   --color-neutral-strong: #6e6e73;
   --color-neutral-weak: #e5e5ea;
@@ -770,7 +765,6 @@
  * Dark mode  (near-black canvas, dark glass panels)
  * ========================================================================= */
 [data-theme="dark"] {
-  /* Backgrounds */
   --color-bg-main: #1c1c1e;
   --color-bg-secondary: #242426;
   --color-bg-tertiary: #2c2c2e;
@@ -780,18 +774,15 @@
   --color-bg-inverse: #f2f2f7;
   --transparent-bg: rgba(28, 28, 30, 0.72);
 
-  /* Text */
   --color-text-main: #f5f5f7;
   --color-text-secondary: #aeaeb2; /* Apple secondaryLabel, dark */
   --color-text-disabled: #636366;
   --color-text-inverse: #1c1c1e;
 
-  /* Borders & dividers */
   --color-border-neutral-primary: #3a3a3c;
   --color-border-neutral-secondary: #48484a;
   --color-divider-main: #3a3a3c;
 
-  /* Neutral aliases */
   --color-neutral-main: #48484a;
   --color-neutral-strong: #aeaeb2;
   --color-neutral-weak: #2c2c2e;

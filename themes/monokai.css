@@ -25,7 +25,7 @@
   --color-accent-strong: #d91f5c;
   --color-accent-weak: #ff6188;
   --color-accent-light: #ff9dbb;
-  --color-accent-stronger: #b8134a; /* deeper "pressed" tier */
+  --color-accent-stronger: #b8134a;
 
   /* Feedback (error / success / warning) — one default/disabled/hovered/
    * pressed variable per type, unlike template.css's single flat color */
@@ -42,17 +42,16 @@
   --color-feedback-warning-hovered: #dd7f0f;
   --color-feedback-warning-pressed: #bd6a09;
 
-  /* Neutral ramp mapped onto Monokai's warm cream/charcoal tones (light -> dark) */
   --color-grey-50: #f9f8f5;
   --color-grey-100: #f0efe9;
   --color-grey-200: #e2e0d5;
   --color-grey-300: #c4c2b3;
   --color-grey-400: #a6a394;
-  --color-grey-500: #75715e; /* comment grey */
+  --color-grey-500: #75715e;
   --color-grey-600: #57544a;
-  --color-grey-700: #49483e; /* selection */
-  --color-grey-800: #3e3d32; /* line highlight */
-  --color-grey-900: #272822; /* editor background */
+  --color-grey-700: #49483e;
+  --color-grey-800: #3e3d32;
+  --color-grey-900: #272822;
 
   /* Fixed dark/light grey ramps — do NOT swap with the mode */
   --color-dark-grey-200: #6e6b5c;
@@ -501,7 +500,6 @@
  * ========================================================================= */
 :root,
 [data-theme="light"] {
-  /* Backgrounds */
   --color-bg-main: #f9f8f2;
   --color-bg-secondary: #f0efe4;
   --color-bg-tertiary: #e6e4d5;
@@ -511,18 +509,15 @@
   --color-bg-inverse: #272822;
   --transparent-bg: #f9f8f280;
 
-  /* Text */
   --color-text-main: #272822;
-  --color-text-secondary: #75715e; /* comment grey */
+  --color-text-secondary: #75715e;
   --color-text-disabled: #a6a394;
   --color-text-inverse: #f8f8f2;
 
-  /* Borders & dividers */
   --color-border-neutral-primary: #d1cfc0;
   --color-border-neutral-secondary: #a6a394;
   --color-divider-main: #d1cfc0;
 
-  /* Neutral aliases */
   --color-neutral-main: #a6a394;
   --color-neutral-strong: #75715e;
   --color-neutral-weak: #e6e4d5;
@@ -725,7 +720,6 @@
  * Monokai Dark  (classic charcoal background, warm cream text)
  * ========================================================================= */
 [data-theme="dark"] {
-  /* Backgrounds */
   --color-bg-main: #272822;
   --color-bg-secondary: #1e1f1a;
   --color-bg-tertiary: #3e3d32;
@@ -735,18 +729,15 @@
   --color-bg-inverse: #f8f8f2;
   --transparent-bg: #2728224d;
 
-  /* Text */
   --color-text-main: #f8f8f2;
   --color-text-secondary: #a6a394;
   --color-text-disabled: #57544a;
   --color-text-inverse: #272822;
 
-  /* Borders & dividers */
   --color-border-neutral-primary: #49483e;
   --color-border-neutral-secondary: #75715e;
   --color-divider-main: #49483e;
 
-  /* Neutral aliases */
   --color-neutral-main: #57544a;
   --color-neutral-strong: #a6a394;
   --color-neutral-weak: #3e3d32;

@@ -25,10 +25,10 @@
 :root {
   /* ---- Accent: SynthWave neon pink instead of Deezer purple ---- */
   --color-accent-main: #ff7edb;
-  --color-accent-strong: #e455c0; /* darker neon pink — hover/pressed */
-  --color-accent-weak: #36f9f6; /* neon cyan — secondary accent, for the pink/cyan retrowave contrast */
-  --color-accent-light: #ffc2ef; /* pale pink tint — disabled/onDark */
-  --color-accent-stronger: #b83a9c; /* deeper "pressed" tier */
+  --color-accent-strong: #e455c0;
+  --color-accent-weak: #36f9f6;
+  --color-accent-light: #ffc2ef;
+  --color-accent-stronger: #b83a9c;
 
   /* ---- Feedback (error / success / warning) — SynthWave neon triad ---- */
   --color-feedback-error: #fe4450;
@@ -48,18 +48,16 @@
   /* --color-black: #000; */
   /* --color-white: #fff; */
 
-  /* ---- Neutral grey ramp (50 = lightest ... 900 = darkest), mapped onto
-   * SynthWave's dark purple chrome (light -> dark) ---- */
-  --color-grey-50: #ffffff; /* foreground */
+  --color-grey-50: #ffffff;
   --color-grey-100: #d3cdee;
   --color-grey-200: #a8a1d6;
-  --color-grey-300: #848bbd; /* comment / secondary text */
+  --color-grey-300: #848bbd;
   --color-grey-400: #6c6f9a;
-  --color-grey-500: #614d85; /* button.background */
-  --color-grey-600: #463465; /* menu.background */
-  --color-grey-700: #37294d; /* list.hoverBackground */
-  --color-grey-800: #2a2139; /* dropdown/input.background */
-  --color-grey-900: #171520; /* activityBar.background */
+  --color-grey-500: #614d85;
+  --color-grey-600: #463465;
+  --color-grey-700: #37294d;
+  --color-grey-800: #2a2139;
+  --color-grey-900: #171520;
 
   /* ---- Fixed dark/light grey ramps (do NOT swap with the mode; used by
    * always-dark chrome like the player bar even in light mode). This
@@ -93,38 +91,6 @@
  * ========================================================================= */
 :root,
 [data-theme="light"] {
-  /* ---- Backgrounds ---- */
-  --color-bg-main: #262335; /* editor.background */
-  --color-bg-secondary: #241b2f; /* sideBar/statusBar/titleBar.background */
-  --color-bg-tertiary: #2a2139; /* dropdown/input/badge.background */
-  --color-bg-tertiary-hover: #37294d; /* list.hoverBackground */
-  --color-bg-tertiary-pressed: #463465; /* menu.background */
-  --color-bg-contrast: #171520; /* activityBar.background */
-  --color-bg-inverse: #ffffff;
-  --transparent-bg: #26233580;
-
-  /* ---- Text ---- */
-  --color-text-main: #ffffff;
-  --color-text-secondary: #848bbd; /* comment / lavender-grey */
-  --color-text-disabled: #6c6f8f;
-  --color-text-inverse: #262335;
-
-  /* ---- Borders & dividers ---- */
-  --color-border-neutral-primary: #495495; /* editorGroup.border */
-  --color-border-neutral-secondary: #6c6f9a;
-  --color-divider-main: #37294d;
-
-  /* ---- Neutral aliases ---- */
-  --color-neutral-main: var(--color-grey-700);
-  --color-neutral-strong: var(--color-grey-500);
-  --color-neutral-weak: var(--color-grey-800);
-}
-
-/* =========================================================================
- * 3. DARK MODE
- * ========================================================================= */
-[data-theme="dark"] {
-  /* ---- Backgrounds ---- */
   --color-bg-main: #262335;
   --color-bg-secondary: #241b2f;
   --color-bg-tertiary: #2a2139;
@@ -134,18 +100,42 @@
   --color-bg-inverse: #ffffff;
   --transparent-bg: #26233580;
 
-  /* ---- Text ---- */
   --color-text-main: #ffffff;
   --color-text-secondary: #848bbd;
   --color-text-disabled: #6c6f8f;
   --color-text-inverse: #262335;
 
-  /* ---- Borders & dividers ---- */
   --color-border-neutral-primary: #495495;
   --color-border-neutral-secondary: #6c6f9a;
   --color-divider-main: #37294d;
 
-  /* ---- Neutral aliases ---- */
+  --color-neutral-main: var(--color-grey-700);
+  --color-neutral-strong: var(--color-grey-500);
+  --color-neutral-weak: var(--color-grey-800);
+}
+
+/* =========================================================================
+ * 3. DARK MODE
+ * ========================================================================= */
+[data-theme="dark"] {
+  --color-bg-main: #262335;
+  --color-bg-secondary: #241b2f;
+  --color-bg-tertiary: #2a2139;
+  --color-bg-tertiary-hover: #37294d;
+  --color-bg-tertiary-pressed: #463465;
+  --color-bg-contrast: #171520;
+  --color-bg-inverse: #ffffff;
+  --transparent-bg: #26233580;
+
+  --color-text-main: #ffffff;
+  --color-text-secondary: #848bbd;
+  --color-text-disabled: #6c6f8f;
+  --color-text-inverse: #262335;
+
+  --color-border-neutral-primary: #495495;
+  --color-border-neutral-secondary: #6c6f9a;
+  --color-divider-main: #37294d;
+
   --color-neutral-main: var(--color-grey-700);
   --color-neutral-strong: var(--color-grey-500);
   --color-neutral-weak: var(--color-grey-800);

@@ -32,60 +32,59 @@
   /* Accent: Primer blue instead of Deezer purple. The light-scale blue
    * (#0969da) is used as "main" so it stays legible as text/icon color on
    * a white background as well as a filled button on a dark one. */
-  --color-accent-main: #0969da; /* blue.5 (light) */
-  --color-accent-strong: #0550ae; /* blue.6 (light) */
-  --color-accent-weak: #218bff; /* blue.4 (light) */
-  --color-accent-light: #54aeff; /* blue.3 (light) */
-  --color-accent-stronger: #033d8b; /* blue.7 (light), deeper "pressed" tier */
+  --color-accent-main: #0969da;
+  --color-accent-strong: #0550ae;
+  --color-accent-weak: #218bff;
+  --color-accent-light: #54aeff;
+  --color-accent-stronger: #033d8b;
 
   /* Feedback (error / success / warning) — one default/disabled/hovered/
    * pressed variable per type, unlike template.css's single flat color.
    * Uses the light-scale hues for the same both-backgrounds-legible
    * reason as the main accent above. */
-  --color-feedback-error: #cf222e; /* red.5 */
-  --color-feedback-error-disabled: #ff8182; /* red.3 */
-  --color-feedback-error-hovered: #a40e26; /* red.6 */
-  --color-feedback-error-pressed: #82071e; /* red.7 */
-  --color-feedback-success: #1a7f37; /* green.5 */
-  --color-feedback-success-disabled: #4ac26b; /* green.3 */
-  --color-feedback-success-hovered: #116329; /* green.6 */
-  --color-feedback-success-pressed: #044f1e; /* green.7 */
-  --color-feedback-warning: #9a6700; /* yellow.5 */
-  --color-feedback-warning-disabled: #d4a72c; /* yellow.3 */
-  --color-feedback-warning-hovered: #7d4e00; /* yellow.6 */
-  --color-feedback-warning-pressed: #633c01; /* yellow.7 */
+  --color-feedback-error: #cf222e;
+  --color-feedback-error-disabled: #ff8182;
+  --color-feedback-error-hovered: #a40e26;
+  --color-feedback-error-pressed: #82071e;
+  --color-feedback-success: #1a7f37;
+  --color-feedback-success-disabled: #4ac26b;
+  --color-feedback-success-hovered: #116329;
+  --color-feedback-success-pressed: #044f1e;
+  --color-feedback-warning: #9a6700;
+  --color-feedback-warning-disabled: #d4a72c;
+  --color-feedback-warning-hovered: #7d4e00;
+  --color-feedback-warning-pressed: #633c01;
 
-  /* Neutral ramp mapped onto Primer's light-mode neutral scale (light -> dark) */
-  --color-grey-50: #f6f8fa; /* light n1  */
-  --color-grey-100: #eff2f5; /* light n2  */
-  --color-grey-200: #e6eaef; /* light n3  */
-  --color-grey-300: #dae0e7; /* light n5  */
-  --color-grey-400: #c8d1da; /* light n7  */
-  --color-grey-500: #818b98; /* light n8  */
-  --color-grey-600: #59636e; /* light n9  */
-  --color-grey-700: #454c54; /* light n10 */
-  --color-grey-800: #393f46; /* light n11 */
-  --color-grey-900: #25292e; /* light n12 */
+  --color-grey-50: #f6f8fa;
+  --color-grey-100: #eff2f5;
+  --color-grey-200: #e6eaef;
+  --color-grey-300: #dae0e7;
+  --color-grey-400: #c8d1da;
+  --color-grey-500: #818b98;
+  --color-grey-600: #59636e;
+  --color-grey-700: #454c54;
+  --color-grey-800: #393f46;
+  --color-grey-900: #25292e;
 
   /* Fixed dark/light grey ramps — do NOT swap with the mode */
-  --color-dark-grey-200: #3d444d; /* dark n7  */
-  --color-dark-grey-300: #2f3742; /* dark n6  */
-  --color-dark-grey-400: #2a313c; /* dark n5  */
-  --color-dark-grey-500: #262c36; /* dark n4  */
-  --color-dark-grey-600: #212830; /* dark n3  */
-  --color-dark-grey-700: #151b23; /* dark n2  */
-  --color-dark-grey-800: #0d1117; /* dark n1  */
-  --color-dark-grey-900: #010409; /* dark black */
-  --color-light-grey-50: #f6f8fa; /* light n1  */
-  --color-light-grey-100: #eff2f5; /* light n2  */
-  --color-light-grey-200: #e6eaef; /* light n3  */
-  --color-light-grey-300: #e0e6eb; /* light n4  */
-  --color-light-grey-400: #dae0e7; /* light n5  */
-  --color-light-grey-500: #d1d9e0; /* light n6  */
-  --color-light-grey-600: #c8d1da; /* light n7  */
-  --color-light-grey-700: #818b98; /* light n8  */
-  --color-light-grey-800: #59636e; /* light n9  */
-  --color-light-grey-900: #454c54; /* light n10 */
+  --color-dark-grey-200: #3d444d;
+  --color-dark-grey-300: #2f3742;
+  --color-dark-grey-400: #2a313c;
+  --color-dark-grey-500: #262c36;
+  --color-dark-grey-600: #212830;
+  --color-dark-grey-700: #151b23;
+  --color-dark-grey-800: #0d1117;
+  --color-dark-grey-900: #010409;
+  --color-light-grey-50: #f6f8fa;
+  --color-light-grey-100: #eff2f5;
+  --color-light-grey-200: #e6eaef;
+  --color-light-grey-300: #e0e6eb;
+  --color-light-grey-400: #dae0e7;
+  --color-light-grey-500: #d1d9e0;
+  --color-light-grey-600: #c8d1da;
+  --color-light-grey-700: #818b98;
+  --color-light-grey-800: #59636e;
+  --color-light-grey-900: #454c54;
 
   /* Typography — Primer/GitHub's system font stack (base/typography/
    * fontStack/normal in primer/primitives), used for both body and
@@ -540,31 +539,27 @@
  * ========================================================================= */
 :root,
 [data-theme="light"] {
-  /* Backgrounds */
-  --color-bg-main: #ffffff; /* canvas.default */
-  --color-bg-secondary: #f6f8fa; /* canvas.subtle, light n1 */
-  --color-bg-tertiary: #eff2f5; /* light n2 */
-  --color-bg-tertiary-hover: #e6eaef; /* light n3 */
-  --color-bg-tertiary-pressed: #e0e6eb; /* light n4 */
-  --color-bg-contrast: #dae0e7; /* light n5 */
-  --color-bg-inverse: #25292e; /* light n12 */
+  --color-bg-main: #ffffff;
+  --color-bg-secondary: #f6f8fa;
+  --color-bg-tertiary: #eff2f5;
+  --color-bg-tertiary-hover: #e6eaef;
+  --color-bg-tertiary-pressed: #e0e6eb;
+  --color-bg-contrast: #dae0e7;
+  --color-bg-inverse: #25292e;
   --transparent-bg: #ffffff80;
 
-  /* Text */
-  --color-text-main: #1f2328; /* fg.default (base black) */
-  --color-text-secondary: #59636e; /* fg.muted, light n9 */
-  --color-text-disabled: #818b98; /* fg.subtle, light n8 */
+  --color-text-main: #1f2328;
+  --color-text-secondary: #59636e;
+  --color-text-disabled: #818b98;
   --color-text-inverse: #ffffff;
 
-  /* Borders & dividers */
-  --color-border-neutral-primary: #d1d9e0; /* border.default, light n6 */
-  --color-border-neutral-secondary: #c8d1da; /* light n7 */
+  --color-border-neutral-primary: #d1d9e0;
+  --color-border-neutral-secondary: #c8d1da;
   --color-divider-main: #d1d9e0;
 
-  /* Neutral aliases */
-  --color-neutral-main: #e6eaef; /* light n3 */
-  --color-neutral-strong: #e0e6eb; /* light n4 */
-  --color-neutral-weak: #eff2f5; /* light n2 */
+  --color-neutral-main: #e6eaef;
+  --color-neutral-strong: #e0e6eb;
+  --color-neutral-weak: #eff2f5;
 
   --tempo-colors-background-neutral-inverse-default: var(
     --color-bg-inverse
@@ -764,37 +759,33 @@
  * Primer Dark  (GitHub's default dark canvas/fg colors)
  * ========================================================================= */
 [data-theme="dark"] {
-  /* Backgrounds */
-  --color-bg-main: #0d1117; /* canvas.default, dark n1 */
-  --color-bg-secondary: #151b23; /* canvas.subtle, dark n2 */
-  --color-bg-tertiary: #212830; /* dark n3 */
-  --color-bg-tertiary-hover: #262c36; /* dark n4 */
-  --color-bg-tertiary-pressed: #2a313c; /* dark n5 */
-  --color-bg-contrast: #2f3742; /* dark n6 */
-  --color-bg-inverse: #f6f8fa; /* light n1 */
+  --color-bg-main: #0d1117;
+  --color-bg-secondary: #151b23;
+  --color-bg-tertiary: #212830;
+  --color-bg-tertiary-hover: #262c36;
+  --color-bg-tertiary-pressed: #2a313c;
+  --color-bg-contrast: #2f3742;
+  --color-bg-inverse: #f6f8fa;
   --transparent-bg: #0104094d;
 
-  /* Text */
-  --color-text-main: #f0f6fc; /* fg.default, dark n12 */
-  --color-text-secondary: #9198a1; /* fg.muted, dark n9 */
-  --color-text-disabled: #656c76; /* fg.subtle, dark n8 */
-  --color-text-inverse: #010409; /* base black (dark) */
+  --color-text-main: #f0f6fc;
+  --color-text-secondary: #9198a1;
+  --color-text-disabled: #656c76;
+  --color-text-inverse: #010409;
 
-  /* Borders & dividers */
-  --color-border-neutral-primary: #3d444d; /* border.default, dark n7 */
-  --color-border-neutral-secondary: #f0f6fc; /* dark n12 */
+  --color-border-neutral-primary: #3d444d;
+  --color-border-neutral-secondary: #f0f6fc;
   --color-divider-main: #3d444d;
 
-  /* Neutral aliases */
-  --color-neutral-main: #2f3742; /* dark n6 */
-  --color-neutral-strong: #3d444d; /* dark n7 */
-  --color-neutral-weak: #212830; /* dark n3 */
+  --color-neutral-main: #2f3742;
+  --color-neutral-strong: #3d444d;
+  --color-neutral-weak: #212830;
 
   /* Brand accents retinted toward Primer green */
-  --color-bg-brand-duo: #56d364; /* green.2 (dark) */
+  --color-bg-brand-duo: #56d364;
   --color-bg-brand-trio: #56d364;
   --color-bg-brand-duo-selected: #212830;
-  --color-text-brand-duo: #04260f; /* green.9 (dark) */
+  --color-text-brand-duo: #04260f;
   --color-text-brand-trio: #04260f;
 
   --tempo-colors-background-neutral-inverse-default: var(

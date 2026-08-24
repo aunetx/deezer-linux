@@ -23,7 +23,7 @@
   --color-accent-strong: #00cc34;
   --color-accent-weak: #33ff66;
   --color-accent-light: #99ffb3;
-  --color-accent-stronger: #00991f; /* deeper "pressed" tier */
+  --color-accent-stronger: #00991f;
 
   /* Feedback (error / success / warning) — one default/disabled/hovered/
    * pressed variable per type, unlike template.css's single flat color */
@@ -40,8 +40,6 @@
   --color-feedback-warning-hovered: #b8e000;
   --color-feedback-warning-pressed: #93b400;
 
-  /* Neutral ramp — near-black to pale green (light -> dark aliasing kept
-   * for template compatibility, but this theme only ever renders dark) */
   --color-grey-50: #e8ffe8;
   --color-grey-100: #c8ffd2;
   --color-grey-200: #a0e6ab;
@@ -502,7 +500,6 @@
  * ========================================================================= */
 :root,
 [data-theme="light"] {
-  /* Backgrounds — near-black with a faint green cast */
   --color-bg-main: #010401;
   --color-bg-secondary: #030a05;
   --color-bg-tertiary: #071206;
@@ -512,18 +509,15 @@
   --color-bg-inverse: #d9ffd9;
   --transparent-bg: #00000080;
 
-  /* Text */
   --color-text-main: #c8ffc8;
   --color-text-secondary: #5fbf6f;
   --color-text-disabled: #2c5230;
   --color-text-inverse: #010401;
 
-  /* Borders & dividers */
   --color-border-neutral-primary: #164a22;
   --color-border-neutral-secondary: #2f7a3d;
   --color-divider-main: #164a22;
 
-  /* Neutral aliases */
   --color-neutral-main: #276b34;
   --color-neutral-strong: #3f9450;
   --color-neutral-weak: #164a22;
@@ -735,7 +729,6 @@
  * Dark mode — the only mode. Near-black background, matrix-green text.
  * ========================================================================= */
 [data-theme="dark"] {
-  /* Backgrounds — near-black with a faint green cast */
   --color-bg-main: #010401;
   --color-bg-secondary: #030a05;
   --color-bg-tertiary: #071206;
@@ -745,18 +738,15 @@
   --color-bg-inverse: #d9ffd9;
   --transparent-bg: #00000080;
 
-  /* Text */
   --color-text-main: #c8ffc8;
   --color-text-secondary: #5fbf6f;
   --color-text-disabled: #2c5230;
   --color-text-inverse: #010401;
 
-  /* Borders & dividers */
   --color-border-neutral-primary: #164a22;
   --color-border-neutral-secondary: #2f7a3d;
   --color-divider-main: #164a22;
 
-  /* Neutral aliases */
   --color-neutral-main: #276b34;
   --color-neutral-strong: #3f9450;
   --color-neutral-weak: #164a22;

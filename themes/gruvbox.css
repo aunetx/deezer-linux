@@ -32,7 +32,7 @@
   --color-accent-strong: #d65d0e;
   --color-accent-weak: #fe9d54;
   --color-accent-light: #ffc38a;
-  --color-accent-stronger: #af3a03; /* deeper "pressed" tier */
+  --color-accent-stronger: #af3a03;
 
   /* Feedback (error / success / warning) — one default/disabled/hovered/
    * pressed variable per type, unlike template.css's single flat color */
@@ -49,37 +49,36 @@
   --color-feedback-warning-hovered: #b57614;
   --color-feedback-warning-pressed: #8f5c0f;
 
-  /* Neutral ramp mapped onto Gruvbox bg/fg tones (light -> dark) */
-  --color-grey-50: #fbf1c7; /* fg0/bg0 light */
-  --color-grey-100: #ebdbb2; /* fg1 */
-  --color-grey-200: #d5c4a1; /* fg2 */
-  --color-grey-300: #bdae93; /* fg3 */
-  --color-grey-400: #a89984; /* fg4/gray */
-  --color-grey-500: #7c6f64; /* bg4 */
-  --color-grey-600: #665c54; /* bg3 */
-  --color-grey-700: #504945; /* bg2 */
-  --color-grey-800: #3c3836; /* bg1 */
-  --color-grey-900: #282828; /* bg0 */
+  --color-grey-50: #fbf1c7;
+  --color-grey-100: #ebdbb2;
+  --color-grey-200: #d5c4a1;
+  --color-grey-300: #bdae93;
+  --color-grey-400: #a89984;
+  --color-grey-500: #7c6f64;
+  --color-grey-600: #665c54;
+  --color-grey-700: #504945;
+  --color-grey-800: #3c3836;
+  --color-grey-900: #282828;
 
   /* Fixed dark/light grey ramps — do NOT swap with the mode */
-  --color-dark-grey-200: #7c6f64; /* bg4 */
-  --color-dark-grey-300: #665c54; /* bg3 */
+  --color-dark-grey-200: #7c6f64;
+  --color-dark-grey-300: #665c54;
   --color-dark-grey-400: #584d43;
-  --color-dark-grey-500: #504945; /* bg2 */
-  --color-dark-grey-600: #3c3836; /* bg1 */
-  --color-dark-grey-700: #32302f; /* bg0_s */
-  --color-dark-grey-800: #282828; /* bg0 */
-  --color-dark-grey-900: #1d2021; /* bg0_h */
-  --color-light-grey-50: #fbf1c7; /* bg0 light */
-  --color-light-grey-100: #f2e5bc; /* bg0_s light */
-  --color-light-grey-200: #ebdbb2; /* bg1 light */
+  --color-dark-grey-500: #504945;
+  --color-dark-grey-600: #3c3836;
+  --color-dark-grey-700: #32302f;
+  --color-dark-grey-800: #282828;
+  --color-dark-grey-900: #1d2021;
+  --color-light-grey-50: #fbf1c7;
+  --color-light-grey-100: #f2e5bc;
+  --color-light-grey-200: #ebdbb2;
   --color-light-grey-300: #e3d3a4;
-  --color-light-grey-400: #d5c4a1; /* bg2 light */
+  --color-light-grey-400: #d5c4a1;
   --color-light-grey-500: #c7b592;
-  --color-light-grey-600: #bdae93; /* bg3 light */
-  --color-light-grey-700: #a89984; /* bg4 light / fg4 */
+  --color-light-grey-600: #bdae93;
+  --color-light-grey-700: #a89984;
   --color-light-grey-800: #927f68;
-  --color-light-grey-900: #7c6f64; /* bg4 */
+  --color-light-grey-900: #7c6f64;
 }
 
 /* =========================================================================
@@ -508,28 +507,24 @@
  * ========================================================================= */
 :root,
 [data-theme="light"] {
-  /* Backgrounds */
-  --color-bg-main: #fbf1c7; /* bg0 light */
-  --color-bg-secondary: #f2e5bc; /* bg0_s light */
-  --color-bg-tertiary: #ebdbb2; /* bg1 light */
+  --color-bg-main: #fbf1c7;
+  --color-bg-secondary: #f2e5bc;
+  --color-bg-tertiary: #ebdbb2;
   --color-bg-tertiary-hover: #e3d3a4;
-  --color-bg-tertiary-pressed: #d5c4a1; /* bg2 light */
+  --color-bg-tertiary-pressed: #d5c4a1;
   --color-bg-contrast: #f2e5bc;
-  --color-bg-inverse: #282828; /* bg0 dark */
+  --color-bg-inverse: #282828;
   --transparent-bg: #fbf1c780;
 
-  /* Text */
-  --color-text-main: #3c3836; /* fg1 (strong body) */
-  --color-text-secondary: #504945; /* fg2 */
-  --color-text-disabled: #a89984; /* fg4/gray */
-  --color-text-inverse: #fbf1c7; /* bg0 light */
+  --color-text-main: #3c3836;
+  --color-text-secondary: #504945;
+  --color-text-disabled: #a89984;
+  --color-text-inverse: #fbf1c7;
 
-  /* Borders & dividers */
   --color-border-neutral-primary: #d5c4a1;
   --color-border-neutral-secondary: #a89984;
   --color-divider-main: #d5c4a1;
 
-  /* Neutral aliases */
   --color-neutral-main: #bdae93;
   --color-neutral-strong: #665c54;
   --color-neutral-weak: #ebdbb2;
@@ -732,28 +727,24 @@
  * Gruvbox Dark  (bg0 background, fg1 text)
  * ========================================================================= */
 [data-theme="dark"] {
-  /* Backgrounds */
-  --color-bg-main: #282828; /* bg0 */
-  --color-bg-secondary: #32302f; /* bg0_s */
-  --color-bg-tertiary: #3c3836; /* bg1 */
-  --color-bg-tertiary-hover: #504945; /* bg2 */
-  --color-bg-tertiary-pressed: #665c54; /* bg3 */
+  --color-bg-main: #282828;
+  --color-bg-secondary: #32302f;
+  --color-bg-tertiary: #3c3836;
+  --color-bg-tertiary-hover: #504945;
+  --color-bg-tertiary-pressed: #665c54;
   --color-bg-contrast: #32302f;
-  --color-bg-inverse: #fbf1c7; /* bg0 light */
+  --color-bg-inverse: #fbf1c7;
   --transparent-bg: #2828284d;
 
-  /* Text */
-  --color-text-main: #ebdbb2; /* fg1 (bright body) */
-  --color-text-secondary: #d5c4a1; /* fg2 */
-  --color-text-disabled: #7c6f64; /* bg4 */
-  --color-text-inverse: #282828; /* bg0 */
+  --color-text-main: #ebdbb2;
+  --color-text-secondary: #d5c4a1;
+  --color-text-disabled: #7c6f64;
+  --color-text-inverse: #282828;
 
-  /* Borders & dividers */
   --color-border-neutral-primary: #3c3836;
   --color-border-neutral-secondary: #7c6f64;
   --color-divider-main: #3c3836;
 
-  /* Neutral aliases */
   --color-neutral-main: #504945;
   --color-neutral-strong: #a89984;
   --color-neutral-weak: #32302f;
