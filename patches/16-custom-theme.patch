@@ -1,0 +1,79 @@
+From 73f248b3710a2eada877999df5fa9bb9bbb1a28e Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Mon, 24 Aug 2026 12:00:00 +0200
+Subject: [PATCH] feat: custom theme via user-provided CSS file
+
+---
+ build/main.js    | 11 +++++++++++
+ build/preload.js | 35 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 46 insertions(+)
+
+diff --git a/build/main.js b/build/main.js
+index d01b1dc..5d3c1c1 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -3127,6 +3127,17 @@
+             (process.argv.some((arg) => arg === "--sync-theme") ||
+               "yes" === process.env.DZ_SYNC_THEME) &&
+               "--sync-theme",
++            (() => {
++              const arg = process.argv.find((arg) =>
++                arg.startsWith("--custom-theme=")
++              );
++              const rawPath = arg
++                ? arg.slice("--custom-theme=".length)
++                : process.env.DZ_CUSTOM_THEME;
++              return rawPath
++                ? "--custom-theme=" + external_path_default().resolve(rawPath)
++                : false;
++            })(),
+           ].filter(Boolean),
+         },
+         windowOptions = {
+diff --git a/build/preload.js b/build/preload.js
+index 7d834ad..eba8bbb 100644
+--- a/build/preload.js
++++ b/build/preload.js
+@@ -571,6 +571,39 @@
+           attributeFilter: ["data-theme"],
+         });
+       }
++      const customThemeArg = process.argv.find((arg) =>
++        arg.startsWith("--custom-theme=")
++      );
++      if (customThemeArg) {
++        const fs = require("fs");
++        const themePath = customThemeArg.slice("--custom-theme=".length);
++        const STYLE_ID = "dz-custom-theme";
++        const applyCustomTheme = () => {
++          let css;
++          try {
++            css = fs.readFileSync(themePath, "utf8");
++          } catch (err) {
++            console.error(
++              "[custom-theme] Could not read theme file: " + themePath,
++              err
++            );
++            return;
++          }
++          let style = document.getElementById(STYLE_ID);
++          if (!style) {
++            style = document.createElement("style");
++            style.id = STYLE_ID;
++          }
++          style.textContent = css;
++          document.head.appendChild(style);
++        };
++        applyCustomTheme();
++        try {
++          fs.watchFile(themePath, { interval: 500 }, applyCustomTheme);
++        } catch (err) {
++          console.error("[custom-theme] Could not watch theme file", err);
++        }
++      }
+     }),
+     (module.exports = {});
+ })();
+-- 
+2.53.0
+

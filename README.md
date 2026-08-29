@@ -75,34 +75,109 @@ You can tweak how the app behaves with the [launch options](#usage) below (start
 
 ## Usage
 
-| Option                                                                               | Description                                                                                                                                 |
-| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--start-in-tray`                                                                    | Start the app in the tray (see [patch](./patches/01-start-in-tray.patch))                                                                   |
-| `--disable-systray`                                                                  | Quit the app when the window is closed (see [patch](./patches/02-start-without-tray.patch))                                                 |
-| `--keep-kernel`                                                                      | Use the exact kernel version (see [patch](./patches/04-remove-os-information.patch)) <br/> _This feature impacts privacy._                  |
-| `--hide-offline-banner`                                                              | Hide the "Application is offline" banner that appears when using a VPN or DNS blocker (see [patch](./patches/08-hide-offline-banner.patch)) |
-| `--disable-animations`                                                               | Disable animations (see [patch](./patches/09-disable-animations.patch))                                                                     |
-| `--disable-notifications`                                                            | Disable notifications (see [patch](./patches/10-disable-notifications.patch))                                                               |
-| `--sync-theme` _\*_                                                                  | Sync the app's theme (dark/light) to the OS theme (see [patch](./patches/15-sync-theme.systempatch))                                        |
-| `--disable-hardware-acceleration`                                                    | Disable hardware acceleration (useful for systems with GPU issues) (see [patch](./patches/13-disable-hardware-acceleration.patch))          |
-| `--log-level`                                                                        | Set the log level (`silly`,`debug`,`verbose`,`info`,`warn`,`error`) (see [patch](./patches/06-control-log-level.patch))                     |
-| `--enable-wayland-ime` `--ozone-platform-hint=auto` `--wayland-text-input-version=3` | Enable IME keyboard support on Wayland                                                                                                      |
+| Option                                                                               | Description                                                                                                                                                   |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--start-in-tray`                                                                    | Start the app in the tray (see [patch](./patches/01-start-in-tray.patch))                                                                                     |
+| `--disable-systray`                                                                  | Quit the app when the window is closed (see [patch](./patches/02-start-without-tray.patch))                                                                   |
+| `--keep-kernel`                                                                      | Use the exact kernel version (see [patch](./patches/04-remove-os-information.patch)) <br/> _This feature impacts privacy._                                    |
+| `--hide-offline-banner`                                                              | Hide the "Application is offline" banner that appears when using a VPN or DNS blocker (see [patch](./patches/08-hide-offline-banner.patch))                   |
+| `--disable-animations`                                                               | Disable animations (see [patch](./patches/09-disable-animations.patch))                                                                                       |
+| `--disable-notifications`                                                            | Disable notifications (see [patch](./patches/10-disable-notifications.patch))                                                                                 |
+| `--sync-theme` _\*_                                                                  | Sync the app's theme (dark/light) to the OS theme (see [patch](./patches/15-sync-theme.systempatch))                                                          |
+| `--custom-theme=<path>`                                                              | Load a custom CSS theme from `<path>`, applied and hot-reloaded at runtime (see [Custom themes](#custom-themes) and [patch](./patches/16-custom-theme.patch)) |
+| `--disable-hardware-acceleration`                                                    | Disable hardware acceleration (useful for systems with GPU issues) (see [patch](./patches/13-disable-hardware-acceleration.patch))                            |
+| `--log-level`                                                                        | Set the log level (`silly`,`debug`,`verbose`,`info`,`warn`,`error`) (see [patch](./patches/06-control-log-level.patch))                                       |
+| `--enable-wayland-ime` `--ozone-platform-hint=auto` `--wayland-text-input-version=3` | Enable IME keyboard support on Wayland                                                                                                                        |
 
-| Environment variable               | Options                                         | Description                                                                                    |
-| ---------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `DZ_START_IN_TRAY`                 | `yes`,`no`                                      | Start the app in the tray (see [patch](./patches/01-start-in-tray.patch))                      |
-| `DZ_DISABLE_SYSTRAY`               | `yes`,`no`                                      | Quit the app when the window is closed (see [patch](./patches/02-start-without-tray.patch))    |
-| `DZ_KEEP_KERNEL`                   | `yes`,`no`                                      | Use the exact kernel version (see [patch](./patches/04-remove-os-information.patch))           |
-| `DZ_LOG_LEVEL`                     | `silly`,`debug`,`verbose`,`info`,`warn`,`error` | Set the log level (see [patch](./patches/06-control-log-level.patch))                          |
-| `DZ_HIDE_OFFLINE_BANNER`           | `yes`,`no`                                      | Hide the "Application is offline" banner (see [patch](./patches/08-hide-offline-banner.patch)) |
-| `DZ_DISABLE_ANIMATIONS`            | `yes`,`no`                                      | Disable animations (see [patch](./patches/09-disable-animations.patch))                        |
-| `DZ_DISABLE_NOTIFICATIONS`         | `yes`,`no`                                      | Disable notifications (see [patch](./patches/10-disable-notifications.patch))                  |
-| `DZ_SYNC_THEME` _\*_               | `yes`,`no`                                      | Sync the app's theme to the OS theme (see [patch](./patches/15-sync-theme.patch))              |
-| `DZ_DISABLE_HARDWARE_ACCELERATION` | `yes`,`no`                                      | Disable hardware acceleration (see [patch](./patches/13-disable-hardware-acceleration.patch))  |
-| `DZ_RESOURCES_PATH`                | _path_                                          | Override the default resources path (see [patch](./patches/14-override-resources-path.patch))  |
-| `DZ_DEVTOOLS`                      | `yes`,`no`                                      | Enable the developer console (ctrl+shift+i)                                                    |
+| Environment variable               | Options                                         | Description                                                                                                            |
+| ---------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `DZ_START_IN_TRAY`                 | `yes`,`no`                                      | Start the app in the tray (see [patch](./patches/01-start-in-tray.patch))                                              |
+| `DZ_DISABLE_SYSTRAY`               | `yes`,`no`                                      | Quit the app when the window is closed (see [patch](./patches/02-start-without-tray.patch))                            |
+| `DZ_KEEP_KERNEL`                   | `yes`,`no`                                      | Use the exact kernel version (see [patch](./patches/04-remove-os-information.patch))                                   |
+| `DZ_LOG_LEVEL`                     | `silly`,`debug`,`verbose`,`info`,`warn`,`error` | Set the log level (see [patch](./patches/06-control-log-level.patch))                                                  |
+| `DZ_HIDE_OFFLINE_BANNER`           | `yes`,`no`                                      | Hide the "Application is offline" banner (see [patch](./patches/08-hide-offline-banner.patch))                         |
+| `DZ_DISABLE_ANIMATIONS`            | `yes`,`no`                                      | Disable animations (see [patch](./patches/09-disable-animations.patch))                                                |
+| `DZ_DISABLE_NOTIFICATIONS`         | `yes`,`no`                                      | Disable notifications (see [patch](./patches/10-disable-notifications.patch))                                          |
+| `DZ_SYNC_THEME` _\*_               | `yes`,`no`                                      | Sync the app's theme to the OS theme (see [patch](./patches/15-sync-theme.patch))                                      |
+| `DZ_DISABLE_HARDWARE_ACCELERATION` | `yes`,`no`                                      | Disable hardware acceleration (see [patch](./patches/13-disable-hardware-acceleration.patch))                          |
+| `DZ_RESOURCES_PATH`                | _path_                                          | Override the default resources path (see [patch](./patches/14-override-resources-path.patch))                          |
+| `DZ_CUSTOM_THEME`                  | _path_                                          | Load a custom CSS theme from _path_ (see [Custom themes](#custom-themes) and [patch](./patches/16-custom-theme.patch)) |
+| `DZ_DEVTOOLS`                      | `yes`,`no`                                      | Enable the developer console (ctrl+shift+i)                                                                            |
 
 _\*_ This feature does not work on Flatpak because of strict sandboxing.
+
+## Custom themes
+
+You can restyle the whole app with your own CSS file, for both light and dark modes. The file is read and injected **at runtime** (not at build time), and it is **re-applied automatically every time you save it** — keep the app open, edit your CSS, and watch the changes apply live.
+
+### Quick start
+
+1. Copy the template [`themes/template.css`](./themes/template.css) somewhere in your home directory, e.g. `~/.config/deezer/my-theme.css`.
+2. Launch the app pointing at it, using either the flag or the environment variable:
+
+   ```sh
+   deezer-desktop --custom-theme=$HOME/.config/deezer/my-theme.css
+   # or
+   DZ_CUSTOM_THEME=$HOME/.config/deezer/my-theme.css deezer-desktop
+   ```
+
+   Relative paths are resolved from the current working directory. If the flag and the environment variable are both set, the flag wins.
+
+3. Edit your CSS file and save — the app reloads the theme on the fly.
+
+### Writing your theme
+
+Your rules are injected last into the page, so they take precedence over the app's own styles.
+
+The current mode is exposed on the root element and on `<body>`, which lets you scope rules to light or dark:
+
+```css
+[data-theme="dark"] body {
+  /* dark-mode rules */
+}
+[data-theme="light"] body {
+  /* light-mode rules */
+}
+```
+
+The full list of themeable variables, prefilled with their default values for both modes, is in the template file — uncomment what you want to change.
+
+Pair this with [`--sync-theme`](#usage) so the mode follows your OS setting automatically.
+
+### Ready-made themes
+
+The [`themes/`](./themes) folder contains drop-in themes you can use as-is or as a reference:
+
+| Theme                                     | Modes        |
+| ----------------------------------------- | ------------ |
+| [Solarized](./themes/solarized.css)       | Light & dark |
+| [Nord](./themes/nord.css)                 | Light & dark |
+| [Everforest](./themes/everforest.css)     | Light & dark |
+| [Monokai](./themes/monokai.css)           | Light & dark |
+| [SynthWave '84](./themes/synthwave.css)   | Dark only    |
+| [Primer](./themes/primer.css)             | Light & dark |
+| [Gruvbox](./themes/gruvbox.css)           | Light & dark |
+| [Matrix](./themes/matrix.css)             | Dark only    |
+| [Liquid Glass](./themes/liquid-glass.css) | Light & dark |
+
+For example:
+
+```sh
+deezer-desktop --sync-theme --custom-theme=/path/to/themes/solarized.css
+```
+
+### Debugging and inspecting the app
+
+To discover which selectors to target, launch the app with the developer tools enabled:
+
+```sh
+DZ_DEVTOOLS=yes deezer-desktop
+```
+
+Then press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd> to open the DevTools and use the element picker to inspect elements and read their classes and CSS custom properties (found on the `:root` element). If your theme does not seem to load, check the DevTools **Console** — the app logs a `[custom-theme]` error if the file cannot be read.
+
+> [!NOTE]
+> Deezer's generated class names can change between app versions. Prefer overriding CSS custom properties on `:root` and using stable, structural selectors so your theme keeps working across updates.
 
 ## Building from source
 
@@ -273,7 +348,7 @@ This is usually caused by stale site data from a previous session. Clear the app
 DZ_DEVTOOLS=yes ./deezer-desktop # or any other way to launch the app
 ```
 
-2. Open the devtools (ctrl+shift+i) and go to the Application tab.
+2. Open the devtools (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>i</kbd>) and go to the Application tab.
 
 3. In the left sidebar, under Storage, click on Clear storage.
 
