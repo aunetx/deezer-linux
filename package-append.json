@@ -3,6 +3,7 @@
     "copy-resources": "mkdir -p resources/linux && cp ../extra/linux/* ./resources/linux",
     "start": "yarn run copy-resources && electron .",
     "prepare-flatpak": "electron-builder --linux --dir",
+    "prepare-nix": "electron-builder --linux --dir",
 
     "build-flatpak-x64": "env DEBUG='@malept/flatpak-bundler' electron-builder --x64 --linux flatpak",
     "build-flatpak-arm64": "env DEBUG='@malept/flatpak-bundler' electron-builder --arm64 --linux flatpak",
