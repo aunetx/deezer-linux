@@ -24,7 +24,7 @@
     "@jellybrick/mpris-service": "2.1.5"
   },
   "devDependencies": {
-    "electron": "43.2.0",
+    "electron": "^43.5.0",
     "electron-builder": "^26.0.0"
   },
   "desktopName": "dev.aunetx.deezer.desktop",
