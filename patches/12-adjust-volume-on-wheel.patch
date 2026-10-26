@@ -4,35 +4,52 @@ Date: Mon, 8 Dec 2025 16:15:32 -0500
 Subject: [PATCH] feat: adjust volume on mouse wheel
 
 ---
- build/renderer.js | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ build/main.js | 32 ++++++++++++++++++++++++++++++++
+ 1 file changed, 32 insertions(+)
 
-diff --git a/build/renderer.js b/build/renderer.js
-index d0f0f4d..559cd1a 100644
---- a/build/renderer.js
-+++ b/build/renderer.js
-@@ -340,6 +340,21 @@
-     document.addEventListener("DOMContentLoaded", () => {
-       window.Events &&
-         window.Events.ready(window.Events.player.playerReady, () => {
-+          const changeVolumeOnWheel = (e) => {
-+            e.preventDefault();
-+            const direction = Math.sign(e.deltaY) * -1;
-+            const dzPlayer = window.dzPlayer;
-+            dzPlayer &&
-+              dzPlayer.control.setVolume(
-+                Math.max(0, Math.min(1, dzPlayer.volume + 0.05 * direction))
-+              );
-+          };
-+          document
-+            .querySelector("#page_player [aria-label='volume button']")
-+            .addEventListener("wheel", changeVolumeOnWheel);
-+          document
-+            .querySelector("#page_player [data-testid='volume_menu']")
-+            .addEventListener("wheel", changeVolumeOnWheel);
-           window.electron.triggerAll();
+diff --git a/build/main.js b/build/main.js
+index fe3df20..b1f2432 100644
+--- a/build/main.js
++++ b/build/main.js
+@@ -3564,6 +3564,38 @@
+             .executeJavaScript("delete window.Notification;")
+             .catch(() => {});
          });
-     }),
++      this.appService.getWebContents().on("dom-ready", () => {
++        this.appService
++          .getWebContents()
++          .executeJavaScript(
++            `(() => {
++              if (window.__dzVolumeWheel) return;
++              window.__dzVolumeWheel = !0;
++              document.addEventListener(
++                "wheel",
++                (e) => {
++                  if (
++                    !e.target.closest(
++                      "#page_player [aria-label='volume button'], #page_player [data-testid='volume_menu']"
++                    )
++                  )
++                    return;
++                  e.preventDefault();
++                  const dzPlayer = window.dzPlayer;
++                  dzPlayer &&
++                    dzPlayer.control.setVolume(
++                      Math.max(
++                        0,
++                        Math.min(1, dzPlayer.volume + 0.05 * Math.sign(e.deltaY) * -1)
++                      )
++                    );
++                },
++                { passive: !1 }
++              );
++            })();`
++          )
++          .catch(() => {});
++      });
+       const showTimeout = setTimeout(() => {
+         !this.window ||
+           this.window.isDestroyed() ||
 -- 
-2.34.1
+2.53.0
 
