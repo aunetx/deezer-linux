@@ -4,52 +4,36 @@ Date: Mon, 8 Dec 2025 16:15:32 -0500
 Subject: [PATCH] feat: adjust volume on mouse wheel
 
 ---
- build/main.js | 32 ++++++++++++++++++++++++++++++++
- 1 file changed, 32 insertions(+)
+ build/main.js | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
 diff --git a/build/main.js b/build/main.js
-index fe3df20..b1f2432 100644
+index 5a6fb0c..cee786e 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3564,6 +3564,38 @@
-             .executeJavaScript("delete window.Notification;")
-             .catch(() => {});
-         });
-+      this.appService.getWebContents().on("dom-ready", () => {
-+        this.appService
-+          .getWebContents()
-+          .executeJavaScript(
-+            `(() => {
-+              if (window.__dzVolumeWheel) return;
-+              window.__dzVolumeWheel = !0;
-+              document.addEventListener(
-+                "wheel",
-+                (e) => {
-+                  if (
-+                    !e.target.closest(
-+                      "#page_player [aria-label='volume button'], #page_player [data-testid='volume_menu']"
-+                    )
-+                  )
-+                    return;
-+                  e.preventDefault();
-+                  const dzPlayer = window.dzPlayer;
-+                  dzPlayer &&
-+                    dzPlayer.control.setVolume(
-+                      Math.max(
-+                        0,
-+                        Math.min(1, dzPlayer.volume + 0.05 * Math.sign(e.deltaY) * -1)
-+                      )
-+                    );
-+                },
-+                { passive: !1 }
-+              );
-+            })();`
-+          )
-+          .catch(() => {});
+@@ -3878,6 +3878,22 @@
+             external_electron_namespaceObject.shell.openExternal(targetUrl);
+         }
+       };
++      this.appService.getWebContents().on("did-finish-load", () => {
++        const contents = this.appService.getWebContents();
++        if (!contents.getURL().startsWith(`https://${this.domain}/`)) return;
++        contents.executeJavaScript(`
++        document.addEventListener("wheel", (event) => {
++          if (!event.deltaY || !event.target.closest(
++            '#page_player [data-testid^="volume_button_"], #page_player [data-testid="volume_menu"]'
++          )) return;
++          event.preventDefault();
++          const player = window.dzPlayer;
++          player.control.setVolume(
++            Math.max(0, Math.min(1, player.volume - 0.05 * Math.sign(event.deltaY)))
++          );
++        }, { passive: false });
++        `).catch(console.warn);
 +      });
-       const showTimeout = setTimeout(() => {
-         !this.window ||
-           this.window.isDestroyed() ||
+       this.appService
+         .getWebContents()
+         .setWindowOpenHandler(
 -- 
 2.53.0
 

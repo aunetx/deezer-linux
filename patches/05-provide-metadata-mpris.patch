@@ -4,138 +4,260 @@ Date: Sun, 25 Jan 2026 03:14:31 +0100
 Subject: [PATCH] feat: Provide metadata and MPRIS compatiblity
 
 ---
- build/main.js | 71 +++++++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 66 insertions(+), 5 deletions(-)
+ build/main.js    | 202 ++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ build/preload.js |   5 ++
+ 2 files changed, 206 insertions(+), 1 deletion(-)
 
 diff --git a/build/main.js b/build/main.js
-index 76a2b25..aa80c33 100644
+index 648d55d..cbfa0c5 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -102,7 +102,8 @@
-   );
-   const external_inversify_namespaceObject = require("inversify"),
-     external_events_namespaceObject = require("events"),
--    legacy_api_namespaceObject = require("@deezer/legacy-api");
-+    legacy_api_namespaceObject = require("@deezer/legacy-api"),
-+    external_electron_mpris_namespaceObject = require("@jellybrick/mpris-service");
-   var legacy_api_default = __webpack_require__.n(legacy_api_namespaceObject);
-   const external_semver_namespaceObject = require("semver");
-   var PLATFORM,
-@@ -1455,8 +1456,9 @@
-       };
-     };
-   let MediaService = class extends external_events_namespaceObject.EventEmitter {
--    constructor(ipc, user) {
-+    constructor(ipc, user, app) {
-       super(),
-+        (this.app = app),
-         (this.smtc = null),
-         (this.track = {}),
-         (this.player = {}),
-@@ -1464,6 +1466,11 @@
-         (this.debounceOptions = { leading: !0, maxWait: 500 }),
-         (this.ipc = ipc),
-         (this.user = user),
-+        (this.mprisPlayer = new external_electron_mpris_namespaceObject({
-+          name: "deezer",
-+          identity: "Deezer",
-+          supportedInterfaces: ["player"],
-+        })),
-         isPlatform(PLATFORM.LINUX) &&
-           (this.user.addListener(UserEvents.LoggedIn, () => {
-             this.start();
-@@ -1471,6 +1478,32 @@
-           this.user.addListener(UserEvents.LoggedOut, () => {
-             this.stop();
-           }));
-+      this.initMprisPlayerControls();
-+    }
-+    initMprisPlayerControls() {
-+      this.mprisPlayer.on("play", this.play.bind(this));
-+      this.mprisPlayer.on("pause", this.pause.bind(this));
-+      this.mprisPlayer.on("playpause", () =>
-+        this.player.state === MediaPlayerState.Playing
-+          ? this.pause()
-+          : this.play()
-+      );
-+      this.mprisPlayer.on("stop", () =>
-+        this.handleMediaControl(MediaPlayerControl.Stop)
-+      );
-+      this.mprisPlayer.on("next", this.next.bind(this));
-+      this.mprisPlayer.on("previous", this.prev.bind(this));
-+      this.mprisPlayer.on("shuffle", this.setSuffle.bind(this));
-+      this.mprisPlayer.on("loopStatus", (loopStatus) =>
-+        this.setRepeatMode(
-+          loopStatus === "Playlist"
-+            ? MediaPlayerRepeatMode.All
-+            : loopStatus === "Track"
-+              ? MediaPlayerRepeatMode.Once
-+              : MediaPlayerRepeatMode.None
-+        )
-+      );
-+      this.mprisPlayer.on("raise", () => this.app.getWindow().show());
+@@ -1547,7 +1547,11 @@
+       external_electron_namespaceObject.globalShortcut.unregisterAll();
      }
-     play() {
-       this.ipc.send("channel-player-media-control", MediaPlayerControl.Play);
-@@ -1497,12 +1530,32 @@
-       this.ipc.send("channel-player-repeat-mode-update", repeatMode);
+     handleMediaControl(control) {
+-      this.ipc.send("channel-player-media-control", control);
++      if (control === MediaPlayerControl.Stop) {
++        this.ipc.send("channel-mpris-control", "stop");
++      } else {
++        this.ipc.send("channel-player-media-control", control);
++      }
      }
-     setTrackInfo(track) {
-+      if (!track || (!track.title && !track.artist)) return;
-       (this.track = Object.assign(this.track, track)),
--        this.emit(MediaEvents.TrackUpdated, this.track);
-+        this.emit(MediaEvents.TrackUpdated, this.track),
-+        (this.mprisPlayer.metadata = {
-+          "mpris:trackid": this.mprisPlayer.objectPath("track/0"),
-+          "mpris:artUrl": track.coverUrl,
-+          "xesam:title": track.title,
-+          "xesam:album": track.album,
-+          "xesam:artist": [track.artist],
-+        });
-     }
-     setPlayerInfo(player) {
-+      if (!player || Object.keys(player).length === 0) return;
-       (this.player = Object.assign(this.player, player)),
--        this.emit(MediaEvents.PlayerUpdated, this.player);
-+        this.emit(MediaEvents.PlayerUpdated, this.player),
-+        (this.mprisPlayer.playbackStatus =
-+          this.player.state === MediaPlayerState.Playing
-+            ? external_electron_mpris_namespaceObject.PLAYBACK_STATUS_PLAYING
-+            : external_electron_mpris_namespaceObject.PLAYBACK_STATUS_PAUSED),
-+        (this.mprisPlayer.loopStatus =
-+          this.player.repeatMode === MediaPlayerRepeatMode.All
-+            ? "Playlist"
-+            : this.player.repeatMode === MediaPlayerRepeatMode.Once
-+              ? "Track"
-+              : "None"),
-+        (this.mprisPlayer.shuffle = this.player.shuffle === !0);
-     }
-     getTrackInfo() {
-       return this.track;
-@@ -1562,7 +1615,11 @@
-         1,
-         (0, external_inversify_namespaceObject.inject)(SERVICE_USER)
-       ),
--      MediaService_metadata("design:paramtypes", [Object, Object]),
-+      MediaService_param(
-+        2,
-+        (0, external_inversify_namespaceObject.inject)(SERVICE_APPLICATION)
-+      ),
-+      MediaService_metadata("design:paramtypes", [Object, Object, Object]),
+   };
+   MediaService = MediaService_decorate(
+@@ -1565,6 +1569,201 @@
      ],
      MediaService
    );
-@@ -3266,6 +3323,10 @@
-           "autoplay-policy",
-           "no-user-gesture-required"
-         ),
-+        external_electron_namespaceObject.app.commandLine.appendSwitch(
-+          "disable-features",
-+          "HardwareMediaKeyHandling"
-+        ),
-         external_electron_log_default().debug("Init App second instance"),
-         external_electron_namespaceObject.app.on(
-           "second-instance",
++  function initMpris(media, appService, domain) {
++    const MprisPlayer = require("@jellybrick/mpris-service");
++    const repeatModes = ["None", "Playlist", "Track"];
++    const player = new MprisPlayer({
++      name: "deezer",
++      identity: "Deezer",
++      desktopEntry: "deezer-desktop",
++      supportedInterfaces: ["player"],
++    });
++    let position = 0;
++    player.getPosition = getPosition;
++    resetMpris();
++    player.on("error", reportMprisError);
++    player.on("play", media.play.bind(media));
++    player.on("pause", media.pause.bind(media));
++    player.on(
++      "playpause",
++      media.handleMediaControl.bind(media, MediaPlayerControl.PlayPause)
++    );
++    player.on(
++      "stop",
++      media.handleMediaControl.bind(media, MediaPlayerControl.Stop)
++    );
++    player.on("next", media.next.bind(media));
++    player.on("previous", media.prev.bind(media));
++    player.on("shuffle", setShuffle);
++    player.on("loopStatus", setRepeat);
++    player.on("volume", setVolume);
++    player.on("seek", seek);
++    player.on("position", setPosition);
++    player.on("raise", raise);
++    player.on("quit", quit);
++    external_electron_namespaceObject.ipcMain.on("shell-mpris", updateMpris);
++    appService.getWebContents().on("did-finish-load", loadMpris);
++
++    function send(action, value) {
++      media.ipc.send("channel-mpris-control", action, value);
++    }
++    function getPosition() {
++      return position;
++    }
++    function resetMpris() {
++      position = 0;
++      player.metadata = {};
++      player.playbackStatus = "Stopped";
++      player.canPlay = player.canPause = player.canSeek = false;
++      player.canGoNext = player.canGoPrevious = false;
++    }
++    function setShuffle(value) {
++      if (media.player.canShuffle) media.setSuffle(value);
++    }
++    function setRepeat(value) {
++      if (media.player.canRepeat)
++        media.setRepeatMode(repeatModes.indexOf(value));
++    }
++    function setVolume(value) {
++      send("volume", Math.max(0, Math.min(1, value)));
++    }
++    function seek(offset) {
++      if (player.canSeek) send("seek", offset / 1e6);
++    }
++    function setPosition(event) {
++      if (
++        player.canSeek &&
++        event.trackId === player.metadata["mpris:trackid"] &&
++        event.position >= 0 &&
++        event.position <= player.metadata["mpris:length"]
++      ) {
++        send("position", event.position / 1e6);
++      }
++    }
++    function raise() {
++      const window = appService.getWindow();
++      if (window.isMinimized()) window.restore();
++      window.show();
++      window.focus();
++    }
++    function quit() {
++      external_electron_namespaceObject.app.quit();
++    }
++    function updateMpris(event, data) {
++      if (event.sender !== appService.getWebContents()) return;
++      position = data.position;
++      player.playbackStatus = data.status;
++      player.volume = data.volume;
++      player.shuffle = data.shuffle;
++      player.loopStatus = repeatModes[data.repeat];
++      player.canPlay = player.canPause = !!data.id;
++      player.canSeek = data.duration > 0;
++      player.canGoNext = !!data.id && media.player.canNext === true;
++      player.canGoPrevious = !!data.id && media.player.canPrev === true;
++      player.metadata = data.id
++        ? {
++            "mpris:trackid": player.objectPath(
++              "track/t" + data.id.replace(/\W/g, "_")
++            ),
++            "mpris:length": data.duration,
++            "mpris:artUrl": data.cover,
++            "xesam:title": data.title,
++            "xesam:album": data.album,
++            "xesam:artist": data.artists,
++            "xesam:url": "https://www.deezer.com/track/" + data.id,
++          }
++        : {};
++      if (data.seeked) player.seeked(position);
++    }
++    function loadMpris() {
++      resetMpris();
++      const contents = appService.getWebContents();
++      if (!contents.getURL().startsWith(`https://${domain}/`)) return;
++      contents
++        .executeJavaScript(`(${connectMpris.toString()})()`)
++        .catch(reportMprisError);
++    }
++  }
++  function reportMprisError(error) {
++    console.warn("Deezer MPRIS:", error);
++  }
++  function connectMpris() {
++    if (!window.dzPlayer) {
++      setTimeout(connectMpris, 250);
++      return;
++    }
++    let stopped = false,
++      wasPlaying = false,
++      lastId;
++    window.electronShell.onMprisControl(handleControl);
++    window.Events.subscribe(window.Events.player.seekCompleted, seekCompleted);
++    setInterval(update, 250);
++    update();
++
++    function update(seeked = false) {
++      const p = window.dzPlayer;
++      if (!p) return;
++      const song = p.getCurrentSong();
++      const id = song ? String(song.SNG_ID) : "";
++      const playing = p.isPlaying();
++      if (id !== lastId || (playing && !wasPlaying)) stopped = false;
++      wasPlaying = playing;
++      lastId = id;
++      const metadata = navigator.mediaSession.metadata;
++      window.electronShell.notifyMpris({
++        id,
++        title: metadata?.title || song?.SNG_TITLE || "",
++        album: metadata?.album || song?.ALB_TITLE || "",
++        artists: song?.ARTISTS?.map(artistName) || [song?.ART_NAME || ""],
++        cover: metadata?.artwork[0]?.src || "",
++        duration: Math.round((p.duration || 0) * 1e6),
++        position: Math.round((p.getPosition() || 0) * 1e6),
++        volume: p.getVolume(),
++        repeat: p.getRepeat(),
++        shuffle: p.isShuffle(),
++        status:
++          !id || stopped ? "Stopped" : playing ? "Playing" : "Paused",
++        seeked,
++      });
++    }
++    function artistName(artist) {
++      return artist.ART_NAME;
++    }
++    function seek(seconds) {
++      const p = window.dzPlayer;
++      if (!p.duration) return;
++      const fraction = Math.max(0, seconds) / p.duration;
++      if (fraction > 1) p.control.nextSong();
++      else if (p.control.canSeek()) p.control.seek(fraction);
++      else p.trigger("audioPlayer_seek", [fraction]);
++    }
++    function handleControl(action, value) {
++      const p = window.dzPlayer;
++      switch (action) {
++        case "volume":
++          p.control.setVolume(value);
++          break;
++        case "seek":
++          seek(p.getPosition() + value);
++          break;
++        case "position":
++          seek(value);
++          break;
++        case "stop":
++          p.control.pause();
++          seek(0);
++          stopped = true;
++          break;
++      }
++    }
++    function seekCompleted() {
++      update(true);
++    }
++  }
++  external_electron_namespaceObject.app.commandLine.appendSwitch(
++    "disable-features",
++    "HardwareMediaKeyHandling"
++  );
+   const services_MediaService = MediaService;
+   var MenuService_decorate = function (decorators, target, key, desc) {
+       var d,
+@@ -3303,6 +3502,7 @@
+               }),
+               external_electron_log_default().debug("Creating Window"),
+               this.createWindow(),
++              initMpris(media, this.appService, this.domain),
+               this.loadWindow();
+             const firstTimeFilePath = external_path_default().resolve(
+               external_electron_namespaceObject.app.getPath("userData"),
+diff --git a/build/preload.js b/build/preload.js
+index 6d9e4e6..3820b4d 100644
+--- a/build/preload.js
++++ b/build/preload.js
+@@ -19,6 +19,9 @@
+       (cb) => (listeners.add(cb), () => listeners.delete(cb))
+     );
+   }
++  function notifyMpris(data) {
++    external_electron_namespaceObject.ipcRenderer.send("shell-mpris", data);
++  }
+   const electronShell = {
+     getEnvironmentInfo: () =>
+       external_electron_namespaceObject.ipcRenderer.sendSync("shell-get-env"),
+@@ -51,6 +54,8 @@
+         "shell-player-info",
+         player
+       ),
++    notifyMpris,
++    onMprisControl: makeChannel("channel-mpris-control"),
+     notifyUser: (user) =>
+       external_electron_namespaceObject.ipcRenderer.send(
+         "shell-user-updated",
 -- 
 2.53.0
 

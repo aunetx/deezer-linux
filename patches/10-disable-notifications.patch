@@ -4,30 +4,23 @@ Date: Mon, 1 Dec 2025 15:04:30 +0100
 Subject: [PATCH] feat(patch): disable notifications
 
 ---
- build/main.js | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ build/main.js | 3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/build/main.js b/build/main.js
-index a2e131a..fe3df20 100644
+index a178ef3..ed18877 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3554,6 +3554,16 @@
-               `* { animation: none !important; transition: none !important; }`
-             );
-         });
-+      if (
-+        process.argv.some((arg) => arg === "--disable-notifications") ||
-+        "yes" === process.env.DZ_DISABLE_NOTIFICATIONS
-+      )
-+        this.appService.getWebContents().on("dom-ready", () => {
-+          this.appService
-+            .getWebContents()
-+            .executeJavaScript("delete window.Notification;")
-+            .catch(() => {});
-+        });
-       const showTimeout = setTimeout(() => {
-         !this.window ||
-           this.window.isDestroyed() ||
+@@ -3446,6 +3446,9 @@
+         this.init();
+     }
+     init() {
++      if (process.argv.includes("--disable-notifications") || process.env.DZ_DISABLE_NOTIFICATIONS === "yes") {
++        external_electron_namespaceObject.app.commandLine.appendSwitch("disable-notifications");
++      }
+       external_electron_log_default().debug("Init App"),
+         external_electron_namespaceObject.app.commandLine.appendSwitch(
+           "autoplay-policy",
 -- 
 2.53.0
 

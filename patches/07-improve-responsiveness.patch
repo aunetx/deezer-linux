@@ -8,14 +8,14 @@ Makes it possible to use the application for with a width as low as 550 pixels
 without problems, and is usable even below. Should not change anything for
 devices larger than 950 pixels, and nearly nothing above 800 pixels wide.
 ---
- build/main.js | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ build/main.js | 67 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 65 insertions(+), 2 deletions(-)
 
 diff --git a/build/main.js b/build/main.js
-index aa80c33..c0af7d5 100644
+index cbfa0c5..d801768 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3452,8 +3452,8 @@
+@@ -3572,8 +3572,8 @@
          },
          windowOptions = {
            title: "Deezer Desktop",
@@ -26,6 +26,76 @@ index aa80c33..c0af7d5 100644
            icon: external_electron_namespaceObject.nativeImage.createFromPath(
              getAppIcon(external_electron_namespaceObject.app)
            ),
+@@ -3710,6 +3710,69 @@
+         });
+     }
+     loadWindow() {
++      this.appService.getWebContents().on("did-finish-load", () => {
++        const contents = this.appService.getWebContents();
++        if (!contents.getURL().startsWith(`https://${this.domain}/`)) return;
++        contents.insertCSS(`
++        #page_topbar, .page-alerts, .ads-top { min-width: 0 !important; }
++        .naboo, .page-main { min-width: auto !important; }
++
++        @media screen and (max-width: 850px) {
++          .carousel { margin-right: -24px !important; }
++        }
++        @media screen and (max-width: 808px) {
++          .container > .carousel-wrapper {
++            width: 100% !important;
++            margin: 0;
++            padding: 0;
++          }
++        }
++        @media screen and (max-width: 784px) {
++          .container { width: 100% !important; }
++        }
++        @media screen and (max-width: 950px) {
++          .page-player .player-full { min-width: auto !important; }
++          .page-player .player-queuelist .player-container {
++            margin: 32px 2% 0 !important;
++          }
++          .page-player .queuelist-cover {
++            width: 180px !important;
++            margin-right: 2% !important;
++          }
++        }
++        @media screen and (max-width: 750px) {
++          .page-player .queuelist-cover { display: none !important; }
++        }
++        @media screen and (max-width: 800px) {
++          #page_player > div:first-child { min-width: auto !important; }
++          #page_player > div:first-child > div:first-child {
++            width: calc(49% - 52px) !important;
++          }
++          #page_player > div:first-child > div:nth-child(2) {
++            padding-inline-start: unset !important;
++            padding-inline-end: unset !important;
++            width: calc(49% - 52px) !important;
++          }
++          #page_player > div:first-child > div:last-child {
++            width: auto !important;
++          }
++        }
++        @media screen and (max-width: 550px) {
++          #page_topbar .topbar-action {
++            margin-inline-start: 8px !important;
++          }
++          .channel-section > section > div:has(> .chakra-button__group) {
++            flex-wrap: wrap !important;
++          }
++          #page_player > div:first-child > div:first-child {
++            min-width: 0 !important;
++          }
++          #page_player > div:first-child > div:nth-child(2) {
++            min-width: max-content !important;
++          }
++        }
++        `, { cssOrigin: "user" }).catch(console.warn);
++      });
+       const report = () => {
+         const canGoBack = this.appService
+             .getWebContents()
 -- 
 2.53.0
 

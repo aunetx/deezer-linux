@@ -4,31 +4,32 @@ Date: Mon, 1 Dec 2025 14:15:09 +0100
 Subject: [PATCH] feat: disable animations
 
 ---
- build/main.js | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ build/main.js | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
 diff --git a/build/main.js b/build/main.js
-index cf4b722..a2e131a 100644
+index 2362cc8..a178ef3 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3543,6 +3543,17 @@
-               `.alert-wrapper:has(> div[data-testid="alert-AppOffline"]) { display: none !important; }`
-             );
-         });
-+      if (
-+        process.argv.some((arg) => arg === "--disable-animations") ||
-+        "yes" === process.env.DZ_DISABLE_ANIMATIONS
-+      )
-+        this.appService.getWebContents().on("dom-ready", () => {
-+          this.appService
-+            .getWebContents()
-+            .insertCSS(
-+              `* { animation: none !important; transition: none !important; }`
-+            );
+@@ -3819,6 +3819,18 @@
+           }),
+         isPlatform(PLATFORM.WINDOWS) && this.loadMenu(),
+         this.appService.loadPage(this.deepLink.getPathFromArgv(process.argv));
++      if (process.argv.includes("--disable-animations") || process.env.DZ_DISABLE_ANIMATIONS === "yes") {
++        this.appService.getWebContents().on("did-finish-load", () => {
++          const contents = this.appService.getWebContents();
++          if (!contents.getURL().startsWith(`https://${this.domain}/`)) return;
++          contents.insertCSS(`
++          *, *::before, *::after {
++            animation: none !important;
++            transition: none !important;
++          }
++          `, { cssOrigin: "user" }).catch(console.warn);
 +        });
-       const showTimeout = setTimeout(() => {
-         !this.window ||
-           this.window.isDestroyed() ||
++      }
+       const handleRedirect = (targetUrl) => {
+         if (
+           (external_electron_log_default().debug(
 -- 
 2.53.0
 

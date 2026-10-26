@@ -21,7 +21,7 @@
     "build-appimage-arm64": "electron-builder --arm64 --linux AppImage"
   },
   "dependencies": {
-    "@jellybrick/mpris-service": "2.1.5"
+    "@jellybrick/mpris-service": "2.2.3"
   },
   "devDependencies": {
     "electron": "^43.5.0",

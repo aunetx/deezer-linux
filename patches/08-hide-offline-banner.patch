@@ -15,27 +15,27 @@ using a VPN or DNS level blocker.
  1 file changed, 11 insertions(+)
 
 diff --git a/build/main.js b/build/main.js
-index c0af7d5..cf4b722 100644
+index d801768..2362cc8 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3532,6 +3532,17 @@
-           this.window.on("unmaximize", () => {
-             this.window.webContents.send("window-maximize-changed", !1);
-           }));
-+      if (
-+        process.argv.some((arg) => arg === "--hide-offline-banner") ||
-+        "yes" === process.env.DZ_HIDE_OFFLINE_BANNER
-+      )
-+        this.appService.getWebContents().on("dom-ready", () => {
-+          this.appService
-+            .getWebContents()
-+            .insertCSS(
-+              `.alert-wrapper:has(> div[data-testid="alert-AppOffline"]) { display: none !important; }`
-+            );
+@@ -3783,6 +3783,17 @@
+         this.ipc.send("update-data", { canGoBack, canGoForward }),
+           this.history.setHistoryInfo({ canGoBack, canGoForward });
+       };
++      if (process.argv.includes("--hide-offline-banner") || process.env.DZ_HIDE_OFFLINE_BANNER === "yes") {
++        this.appService.getWebContents().on("did-finish-load", () => {
++          const contents = this.appService.getWebContents();
++          if (!contents.getURL().startsWith(`https://${this.domain}/`)) return;
++          contents.insertCSS(`
++          .alert-wrapper:has(> div[data-testid="alert-AppOffline"]) {
++            display: none !important;
++          }
++          `, { cssOrigin: "user" }).catch(console.warn);
 +        });
-       const showTimeout = setTimeout(() => {
-         !this.window ||
-           this.window.isDestroyed() ||
++      }
+       this.appService.getWebContents().on("did-navigate-in-page", report),
+         this.appService.getWebContents().on("did-navigate", report),
+         this.appService
 -- 
 2.53.0
 

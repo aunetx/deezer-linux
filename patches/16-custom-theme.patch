@@ -4,64 +4,58 @@ Date: Mon, 24 Aug 2026 12:00:00 +0200
 Subject: [PATCH] feat: custom theme via user-provided CSS file
 
 ---
- build/main.js | 44 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
+ build/main.js | 31 +++++++++++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
 
 diff --git a/build/main.js b/build/main.js
-index 3f03fd7..f4ae807 100644
+index 7f265b9..dacf629 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3628,6 +3628,50 @@
-             )
-             .catch(() => {});
-         });
-+      const customThemeArg = process.argv.find((arg) =>
-+          arg.startsWith("--custom-theme=")
-+        ),
-+        customThemeRaw = customThemeArg
-+          ? customThemeArg.slice("--custom-theme=".length)
-+          : process.env.DZ_CUSTOM_THEME;
-+      if (customThemeRaw) {
-+        const themePath = external_path_default().resolve(customThemeRaw);
-+        let themeKey = null;
-+        const applyCustomTheme = () => {
-+          const webContents = this.appService.getWebContents();
-+          let css;
-+          try {
-+            css = external_fs_default().readFileSync(themePath, "utf8");
-+          } catch (err) {
-+            external_electron_log_default().error(
-+              "[custom-theme] Could not read theme file: " + themePath,
-+              err
-+            );
-+            return;
-+          }
-+          const previousKey = themeKey;
-+          webContents.insertCSS(css).then((key) => {
-+            themeKey = key;
-+            previousKey && webContents.removeInsertedCSS(previousKey).catch(() => {});
-+          });
-+        };
-+        this.appService.getWebContents().on("dom-ready", () => {
-+          themeKey = null;
-+          applyCustomTheme();
-+        });
-+        try {
-+          external_fs_default().watchFile(
-+            themePath,
-+            { interval: 500 },
-+            applyCustomTheme
-+          );
-+        } catch (err) {
-+          external_electron_log_default().error(
-+            "[custom-theme] Could not watch theme file",
-+            err
-+          );
-+        }
+@@ -3432,6 +3432,36 @@
+       step((generator = generator.apply(thisArg, _arguments || [])).next());
+     });
+   };
++  function initCustomTheme(contents, domain) {
++    const rawPath = process.argv.find((arg) => arg.startsWith("--custom-theme="))
++      ?.slice("--custom-theme=".length) ?? process.env.DZ_CUSTOM_THEME;
++    if (!rawPath) return;
++    const fs = external_fs_namespaceObject;
++    let themePath = external_path_default().resolve(rawPath);
++    if (!rawPath.includes("/") && !fs.existsSync(themePath)) {
++      const packagedPath = external_path_default().join("/usr/share/deezer/themes", rawPath);
++      if (fs.existsSync(packagedPath)) themePath = packagedPath;
++    }
++    const warn = (error) => external_electron_log_default().error("[custom-theme]", error);
++    const apply = () => {
++      if (contents.isDestroyed() || !contents.getURL().startsWith(`https://${domain}/`)) return;
++      try {
++        const css = fs.readFileSync(themePath, "utf8");
++        contents.executeJavaScriptInIsolatedWorld(1001, [{ code: `(() => {
++          if (location.origin !== ${JSON.stringify(`https://${domain}`)}) return;
++          const style = document.getElementById("dz-custom-theme") || document.createElement("style");
++          style.id = "dz-custom-theme";
++          style.textContent = ${JSON.stringify(css)};
++          document.head.appendChild(style);
++        })()` }]).catch(warn);
++      } catch (error) {
++        warn(error);
 +      }
-       const showTimeout = setTimeout(() => {
-         !this.window ||
-           this.window.isDestroyed() ||
++    };
++    contents.on("did-finish-load", apply);
++    fs.watchFile(themePath, { interval: 500, persistent: false }, apply);
++    contents.once("destroyed", () => fs.unwatchFile(themePath, apply));
++  }
+   const application = new (class {
+     constructor() {
+       (this.originalUserAgent = ""),
+@@ -3718,6 +3748,7 @@
+         else this.window.hide();
+       }),
+         this.appService.enableDevMode();
++      initCustomTheme(this.appService.getWebContents(), this.domain);
+     }
+     _adjustViewToContentSize() {
+       if (!this.isFrameless) return;
 -- 
 2.53.0
 
