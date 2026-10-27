@@ -15,7 +15,7 @@ description: |
     Access all of your favorite music, and save them offline for later!
 grade: stable
 confinement: strict
-license: proprietary
+license: Proprietary
 contact: https://github.com/aunetx/deezer-linux/issues
 issues: https://github.com/aunetx/deezer-linux/issues
 source-code: https://github.com/aunetx/deezer-linux
