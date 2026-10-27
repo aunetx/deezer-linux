@@ -4,18 +4,41 @@ Date: Mon, 1 Jun 2026 16:55:10 +0200
 Subject: [PATCH] feat: sync app theme to system theme
 
 ---
- build/main.js | 23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
+ build/main.js | 46 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 46 insertions(+)
 
 diff --git a/build/main.js b/build/main.js
 index d848a8d..7f265b9 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3918,6 +3918,29 @@
+@@ -3918,6 +3918,52 @@
          this.window.on("unresponsive", () => {
            external_electron_log_default().warn("Window is not responsive");
          });
 +      if (process.argv.includes("--sync-theme") || process.env.DZ_SYNC_THEME === "yes") {
++        // Chromium does not pick up the portal color-scheme inside Flatpak, so follow it ourselves
++        (async () => {
++          try {
++            const { sessionBus } = require("@jellybrick/dbus-next");
++            const proxy = await sessionBus().getProxyObject(
++              "org.freedesktop.portal.Desktop",
++              "/org/freedesktop/portal/desktop"
++            );
++            const settings = proxy.getInterface("org.freedesktop.portal.Settings");
++            const apply = (scheme) => {
++              external_electron_namespaceObject.nativeTheme.themeSource =
++                scheme === 1 ? "dark" : scheme === 2 ? "light" : "system";
++            };
++            let current = await settings.Read("org.freedesktop.appearance", "color-scheme");
++            while (current && current.signature === "v") current = current.value;
++            apply(current && current.value);
++            settings.on("SettingChanged", (namespace, key, value) => {
++              if (namespace === "org.freedesktop.appearance" && key === "color-scheme") apply(value.value);
++            });
++          } catch (err) {
++            external_electron_log_default().warn("Unable to follow the portal color scheme:", err);
++          }
++        })();
 +        this.appService.getWebContents().on("did-finish-load", () => {
 +          const contents = this.appService.getWebContents();
 +          if (!contents.getURL().startsWith(`https://${this.domain}/`)) return;
