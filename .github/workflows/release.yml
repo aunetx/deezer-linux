@@ -20,7 +20,7 @@ jobs:
       - name: prepare runner
         run: |
           sudo apt-get update
-          sudo apt-get install -y flatpak-builder qemu-user-static binfmt-support
+          sudo apt-get install -y flatpak-builder qemu-user-binfmt binfmt-support
           flatpak remote-add --if-not-exists --user flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           sudo snap install snapcraft --classic
           sudo snap install lxd
