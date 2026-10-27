@@ -11,59 +11,31 @@ This solves #123 by adding the `--hide-offline-banner` command-line argument
 to hide the annoying "Application is offline" banner, that sometimes appears when
 using a VPN or DNS level blocker.
 ---
- build/index.html | 6 ++++++
- build/main.js    | 5 +++++
- build/preload.js | 4 ++++
- 3 files changed, 15 insertions(+)
+ build/main.js | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/build/index.html b/build/index.html
-index 4efcd23..4695231 100644
---- a/build/index.html
-+++ b/build/index.html
-@@ -86,6 +86,12 @@
-           width: auto !important;
-         }
-       }
-+
-+      /* hide the offline alert when needed */
-+      .hide-offline-banner
-+        .alert-wrapper:has(> div[data-testid="alert-AppOffline"]) {
-+        display: none !important;
-+      }
-     </style>
-   </head>
-   <body class="electron">
 diff --git a/build/main.js b/build/main.js
-index e5bc640..8953617 100644
+index d801768..2362cc8 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3095,6 +3095,11 @@
-             getRealPath(external_electron_namespaceObject.app, __dirname),
-             "preload.js"
-           ),
-+          additionalArguments: [
-+            (process.argv.some((arg) => arg === "--hide-offline-banner") ||
-+              "yes" === process.env.DZ_HIDE_OFFLINE_BANNER) &&
-+              "--hide-offline-banner",
-+          ].filter(Boolean),
-         },
-         windowOptions = {
-           title: "Deezer Desktop",
-diff --git a/build/preload.js b/build/preload.js
-index 9a90de9..80dced7 100644
---- a/build/preload.js
-+++ b/build/preload.js
-@@ -540,6 +540,10 @@
-           external_i18next_default().dir(external_i18next_default().language)
-             ? "rtl"
-             : "ltr");
-+      if (process.argv.some((arg) => arg === "--hide-offline-banner"))
-+        document
-+          .getElementsByTagName("body")[0]
-+          .classList.add("hide-offline-banner");
-     }),
-     (module.exports = {});
- })();
+@@ -3783,6 +3783,17 @@
+         this.ipc.send("update-data", { canGoBack, canGoForward }),
+           this.history.setHistoryInfo({ canGoBack, canGoForward });
+       };
++      if (process.argv.includes("--hide-offline-banner") || process.env.DZ_HIDE_OFFLINE_BANNER === "yes") {
++        this.appService.getWebContents().on("did-finish-load", () => {
++          const contents = this.appService.getWebContents();
++          if (!contents.getURL().startsWith(`https://${this.domain}/`)) return;
++          contents.insertCSS(`
++          .alert-wrapper:has(> div[data-testid="alert-AppOffline"]) {
++            display: none !important;
++          }
++          `, { cssOrigin: "user" }).catch(console.warn);
++        });
++      }
+       this.appService.getWebContents().on("did-navigate-in-page", report),
+         this.appService.getWebContents().on("did-navigate", report),
+         this.appService
 -- 
-2.48.1
+2.53.0
 

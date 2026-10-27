@@ -4,56 +4,43 @@ Date: Mon, 1 Jun 2026 16:55:10 +0200
 Subject: [PATCH] feat: sync app theme to system theme
 
 ---
- build/main.js    |  3 +++
- build/preload.js | 21 +++++++++++++++++++++
- 2 files changed, 24 insertions(+)
+ build/main.js | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
 diff --git a/build/main.js b/build/main.js
-index 054a558..6ca1492 100644
+index d848a8d..7f265b9 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3124,6 +3124,9 @@
-             (process.argv.some((arg) => arg === "--disable-notifications") ||
-               "yes" === process.env.DZ_DISABLE_NOTIFICATIONS) &&
-               "--disable-notifications",
-+            (process.argv.some((arg) => arg === "--sync-theme") ||
-+              "yes" === process.env.DZ_SYNC_THEME) &&
-+              "--sync-theme",
-           ].filter(Boolean),
-         },
-         windowOptions = {
-diff --git a/build/preload.js b/build/preload.js
-index 0cffa6c..ad468eb 100644
---- a/build/preload.js
-+++ b/build/preload.js
-@@ -550,6 +550,27 @@
-           .classList.add("disable-animations");
-       if (process.argv.some((arg) => arg === "--disable-notifications"))
-         delete window.Notification;
-+      if (process.argv.some((arg) => arg === "--sync-theme")) {
-+        const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
-+        const applyTheme = () => {
-+          const theme = darkQuery.matches ? "dark" : "light";
-+          const opposite = "dark" === theme ? "light" : "dark";
-+          const html = document.documentElement;
-+          if (html.dataset.theme === theme) return;
-+          html.dataset.theme = theme;
-+          html.style.colorScheme = theme;
-+          if (document.body) {
-+            document.body.classList.add("chakra-ui-" + theme);
-+            document.body.classList.remove("chakra-ui-" + opposite);
+@@ -3918,6 +3918,29 @@
+         this.window.on("unresponsive", () => {
+           external_electron_log_default().warn("Window is not responsive");
+         });
++      if (process.argv.includes("--sync-theme") || process.env.DZ_SYNC_THEME === "yes") {
++        this.appService.getWebContents().on("did-finish-load", () => {
++          const contents = this.appService.getWebContents();
++          if (!contents.getURL().startsWith(`https://${this.domain}/`)) return;
++          contents.executeJavaScriptInIsolatedWorld(1001, [{ code: `
++          const preference = matchMedia("(prefers-color-scheme: dark)");
++          const root = document.documentElement;
++          const body = document.body;
++          function applyTheme() {
++            const theme = preference.matches ? "dark" : "light";
++            if (root.dataset.theme !== theme) root.dataset.theme = theme;
++            if (root.style.colorScheme !== theme) root.style.colorScheme = theme;
++            body.classList.toggle("chakra-ui-dark", preference.matches);
++            body.classList.toggle("chakra-ui-light", !preference.matches);
 +          }
-+        };
-+        applyTheme();
-+        darkQuery.addEventListener("change", applyTheme);
-+        new MutationObserver(applyTheme).observe(document.documentElement, {
-+          attributes: true,
-+          attributeFilter: ["data-theme"],
++          applyTheme();
++          preference.addEventListener("change", applyTheme);
++          const observer = new MutationObserver(applyTheme);
++          observer.observe(root, { attributes: true, attributeFilter: ["data-theme", "style"] });
++          observer.observe(body, { attributes: true, attributeFilter: ["class"] });
++          ` }]).catch(console.warn);
 +        });
 +      }
-     }),
-     (module.exports = {});
- })();
+     }
+     loadMenu() {
+       this.window.webContents.navigationHistory.clear(),
 -- 
 2.53.0
 

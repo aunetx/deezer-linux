@@ -4,76 +4,58 @@ Date: Mon, 24 Aug 2026 12:00:00 +0200
 Subject: [PATCH] feat: custom theme via user-provided CSS file
 
 ---
- build/main.js    | 11 +++++++++++
- build/preload.js | 35 +++++++++++++++++++++++++++++++++++
- 2 files changed, 46 insertions(+)
+ build/main.js | 31 +++++++++++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
 
 diff --git a/build/main.js b/build/main.js
-index d01b1dc..5d3c1c1 100644
+index 7f265b9..dacf629 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3127,6 +3127,17 @@
-             (process.argv.some((arg) => arg === "--sync-theme") ||
-               "yes" === process.env.DZ_SYNC_THEME) &&
-               "--sync-theme",
-+            (() => {
-+              const arg = process.argv.find((arg) =>
-+                arg.startsWith("--custom-theme=")
-+              );
-+              const rawPath = arg
-+                ? arg.slice("--custom-theme=".length)
-+                : process.env.DZ_CUSTOM_THEME;
-+              return rawPath
-+                ? "--custom-theme=" + external_path_default().resolve(rawPath)
-+                : false;
-+            })(),
-           ].filter(Boolean),
-         },
-         windowOptions = {
-diff --git a/build/preload.js b/build/preload.js
-index 7d834ad..eba8bbb 100644
---- a/build/preload.js
-+++ b/build/preload.js
-@@ -571,6 +571,39 @@
-           attributeFilter: ["data-theme"],
-         });
-       }
-+      const customThemeArg = process.argv.find((arg) =>
-+        arg.startsWith("--custom-theme=")
-+      );
-+      if (customThemeArg) {
-+        const fs = require("fs");
-+        const themePath = customThemeArg.slice("--custom-theme=".length);
-+        const STYLE_ID = "dz-custom-theme";
-+        const applyCustomTheme = () => {
-+          let css;
-+          try {
-+            css = fs.readFileSync(themePath, "utf8");
-+          } catch (err) {
-+            console.error(
-+              "[custom-theme] Could not read theme file: " + themePath,
-+              err
-+            );
-+            return;
-+          }
-+          let style = document.getElementById(STYLE_ID);
-+          if (!style) {
-+            style = document.createElement("style");
-+            style.id = STYLE_ID;
-+          }
-+          style.textContent = css;
+@@ -3432,6 +3432,36 @@
+       step((generator = generator.apply(thisArg, _arguments || [])).next());
+     });
+   };
++  function initCustomTheme(contents, domain) {
++    const rawPath = process.argv.find((arg) => arg.startsWith("--custom-theme="))
++      ?.slice("--custom-theme=".length) ?? process.env.DZ_CUSTOM_THEME;
++    if (!rawPath) return;
++    const fs = external_fs_namespaceObject;
++    let themePath = external_path_default().resolve(rawPath);
++    if (!rawPath.includes("/") && !fs.existsSync(themePath)) {
++      const packagedPath = external_path_default().join("/usr/share/deezer/themes", rawPath);
++      if (fs.existsSync(packagedPath)) themePath = packagedPath;
++    }
++    const warn = (error) => external_electron_log_default().error("[custom-theme]", error);
++    const apply = () => {
++      if (contents.isDestroyed() || !contents.getURL().startsWith(`https://${domain}/`)) return;
++      try {
++        const css = fs.readFileSync(themePath, "utf8");
++        contents.executeJavaScriptInIsolatedWorld(1001, [{ code: `(() => {
++          if (location.origin !== ${JSON.stringify(`https://${domain}`)}) return;
++          const style = document.getElementById("dz-custom-theme") || document.createElement("style");
++          style.id = "dz-custom-theme";
++          style.textContent = ${JSON.stringify(css)};
 +          document.head.appendChild(style);
-+        };
-+        applyCustomTheme();
-+        try {
-+          fs.watchFile(themePath, { interval: 500 }, applyCustomTheme);
-+        } catch (err) {
-+          console.error("[custom-theme] Could not watch theme file", err);
-+        }
++        })()` }]).catch(warn);
++      } catch (error) {
++        warn(error);
 +      }
-     }),
-     (module.exports = {});
- })();
++    };
++    contents.on("did-finish-load", apply);
++    fs.watchFile(themePath, { interval: 500, persistent: false }, apply);
++    contents.once("destroyed", () => fs.unwatchFile(themePath, apply));
++  }
+   const application = new (class {
+     constructor() {
+       (this.originalUserAgent = ""),
+@@ -3718,6 +3748,7 @@
+         else this.window.hide();
+       }),
+         this.appService.enableDevMode();
++      initCustomTheme(this.appService.getWebContents(), this.domain);
+     }
+     _adjustViewToContentSize() {
+       if (!this.isFrameless) return;
 -- 
 2.53.0
 

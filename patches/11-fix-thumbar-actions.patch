@@ -8,10 +8,10 @@ Subject: [PATCH] feat: make thumbar actions actually work
  1 file changed, 19 insertions(+), 5 deletions(-)
 
 diff --git a/build/main.js b/build/main.js
-index edacdde..ba3d65e 100644
+index 648d55d..124baf2 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -584,6 +584,7 @@
+@@ -887,6 +887,7 @@
          (MenuItemType.Open = "open"),
          (MenuItemType.Paste = "paste"),
          (MenuItemType.PlayerPlay = "player-play"),
@@ -19,7 +19,7 @@ index edacdde..ba3d65e 100644
          (MenuItemType.PlayerNext = "player-next"),
          (MenuItemType.PlayerPrev = "player-prev"),
          (MenuItemType.PlayerShuffle = "player-shuffle"),
-@@ -1462,6 +1463,8 @@
+@@ -1845,6 +1846,8 @@
            return this.getPasteOptions();
          case MenuItemType.PlayerPlay:
            return this.getPlayerPlayOptions();
@@ -28,7 +28,7 @@ index edacdde..ba3d65e 100644
          case MenuItemType.PlayerNext:
            return this.getPlayerNextOptions();
          case MenuItemType.PlayerPrev:
-@@ -1603,15 +1606,26 @@
+@@ -1986,15 +1989,26 @@
          }),
        };
      }
@@ -57,7 +57,7 @@ index edacdde..ba3d65e 100644
        };
      }
      getPlayerPrevOptions() {
-@@ -1620,9 +1634,9 @@
+@@ -2003,9 +2017,9 @@
          label: i18n_t("menu_previous_label"),
          enabled: this.user.isLoggedIn() && canPrev,
          accelerator: "Shift+Left",
@@ -69,15 +69,15 @@ index edacdde..ba3d65e 100644
        };
      }
      getPlayerShuffleOptions() {
-@@ -2265,7 +2279,7 @@
-           external_electron_namespaceObject.Menu.buildFromTemplate([
+@@ -2652,7 +2666,7 @@
              this.menu.getItem(MenuItemType.Open),
              this.menu.getItem(MenuItemType.Separator),
--            this.menu.getItem(MenuItemType.PlayerPlay),
-+            this.menu.getItem(MenuItemType.PlayerPlayThumbar),
-             this.menu.getItem(MenuItemType.PlayerNext),
-             this.menu.getItem(MenuItemType.PlayerPrev),
-             this.menu.getItem(MenuItemType.Separator),
+             Object.assign(
+-              Object.assign({}, this.menu.getItem(MenuItemType.PlayerPlay)),
++              Object.assign({}, this.menu.getItem(MenuItemType.PlayerPlayThumbar)),
+               isPlatform(PLATFORM.LINUX) && { accelerator: void 0 }
+             ),
+             Object.assign(
 -- 
-2.48.1
+2.53.0
 

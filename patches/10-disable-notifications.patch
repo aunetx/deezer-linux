@@ -4,37 +4,23 @@ Date: Mon, 1 Dec 2025 15:04:30 +0100
 Subject: [PATCH] feat(patch): disable notifications
 
 ---
- build/main.js    | 3 +++
- build/preload.js | 2 ++
- 2 files changed, 5 insertions(+)
+ build/main.js | 3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/build/main.js b/build/main.js
-index 69a734d..edacdde 100644
+index a178ef3..ed18877 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3102,6 +3102,9 @@
-             (process.argv.some((arg) => arg === "--disable-animations") ||
-               "yes" === process.env.DZ_DISABLE_ANIMATIONS) &&
-               "--disable-animations",
-+            (process.argv.some((arg) => arg === "--disable-notifications") ||
-+              "yes" === process.env.DZ_DISABLE_NOTIFICATIONS) &&
-+              "--disable-notifications",
-           ].filter(Boolean),
-         },
-         windowOptions = {
-diff --git a/build/preload.js b/build/preload.js
-index 4f72387..ae2be23 100644
---- a/build/preload.js
-+++ b/build/preload.js
-@@ -548,6 +548,8 @@
-         document
-           .getElementsByTagName("body")[0]
-           .classList.add("disable-animations");
-+      if (process.argv.some((arg) => arg === "--disable-notifications"))
-+        delete window.Notification;
-     }),
-     (module.exports = {});
- })();
+@@ -3446,6 +3446,9 @@
+         this.init();
+     }
+     init() {
++      if (process.argv.includes("--disable-notifications") || process.env.DZ_DISABLE_NOTIFICATIONS === "yes") {
++        external_electron_namespaceObject.app.commandLine.appendSwitch("disable-notifications");
++      }
+       external_electron_log_default().debug("Init App"),
+         external_electron_namespaceObject.app.commandLine.appendSwitch(
+           "autoplay-policy",
 -- 
-2.48.1
+2.53.0
 

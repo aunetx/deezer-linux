@@ -21,10 +21,10 @@
     "build-appimage-arm64": "electron-builder --arm64 --linux AppImage"
   },
   "dependencies": {
-    "@jellybrick/mpris-service": "2.1.5"
+    "@jellybrick/mpris-service": "2.2.3"
   },
   "devDependencies": {
-    "electron": "^43.5.0",
+    "electron": "^44.3.0",
     "electron-builder": "^26.0.0"
   },
   "desktopName": "dev.aunetx.deezer.desktop",
