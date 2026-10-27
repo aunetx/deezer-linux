@@ -29,8 +29,6 @@ apps:
     common-id: dev.aunetx.deezer
     extensions: [gnome]
     environment:
-      # GNOME loads the tray icon from a file Chromium writes to the temp dir;
-      # the snap's private /tmp is invisible to the shell, so use a shared path.
       TMPDIR: $XDG_RUNTIME_DIR
     plugs:
       - audio-playback
