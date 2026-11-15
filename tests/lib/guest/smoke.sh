@@ -211,6 +211,9 @@ host)
 	elif have python3 && python3 -c 'import gi; gi.require_version("Atspi", "2.0")' 2>/dev/null; then
 		WINDOW_BACKEND=atspi
 		APP_FLAGS+=(--force-renderer-accessibility)
+		# Chromium only registers with AT-SPI when the a11y bus says it is enabled. GNOME turns that on
+		# (toolkit-accessibility); KDE does not, so the app never shows up there.
+		have busctl && busctl --user set-property org.a11y.Bus /org/a11y/bus org.a11y.Status IsEnabled b true >/dev/null 2>&1
 		# AT-SPI has no app_id: read it from the Wayland protocol log (xdg_toplevel.set_app_id).
 		[ "${XDG_SESSION_TYPE:-}" = wayland ] && ! has_arg --ozone-platform=x11 && export WAYLAND_DEBUG=client
 	elif [ -n "${DISPLAY:-}" ] && have xdotool; then
