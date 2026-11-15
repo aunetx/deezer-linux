@@ -1,0 +1,36 @@
+# Default matrix for `tests/run.sh matrix`. One `tests/run.sh` argument list per line.
+# Missing packages fail fast: run `tests/run.sh fetch` (or build) first.
+
+# --- native packages, X11 / Wayland / Xwayland (containers, headless) ---
+container -d ubuntu-24.04 -p deb -s x11
+container -d ubuntu-24.04 -p deb -s wayland
+container -d ubuntu-26.04 -p deb -s xwayland
+container -d debian-12    -p deb -s x11
+container -d debian-13    -p deb -s wayland
+container -d fedora       -p rpm -s x11
+container -d fedora       -p rpm -s wayland
+container -d opensuse     -p rpm -s xwayland
+
+# --- portable formats on other distros ---
+container -d debian-13    -p appimage -s x11
+container -d arch         -p tar.xz   -s wayland
+container -d fedora       -p appimage -s xwayland
+container -d nix          -p nix      -s x11
+
+# --- patched features (see README.md "Flags") ---
+container -d ubuntu-24.04 -p deb -s x11 --close
+container -d ubuntu-24.04 -p deb -s x11 --args "--disable-systray"
+container -d ubuntu-24.04 -p deb -s x11 --args "--start-in-tray"
+container -d fedora       -p rpm -s wayland --portal --args "--sync-theme"
+
+# --- sandboxed formats and real desktops (QEMU VMs, slower) ---
+vm -P ubuntu-headless -p snap
+vm -P ubuntu-headless -p flatpak
+vm -P ubuntu-gnome -s wayland --close
+vm -P ubuntu-gnome -s x11
+vm -P fedora-kde   -s wayland
+vm -P debian-xfce  -s x11
+
+# --- arm64 (emulated unless the host is arm64: slow) ---
+# container -a arm64 -d ubuntu-24.04 -p deb -s wayland
+# vm -a arm64 -P ubuntu-headless
