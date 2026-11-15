@@ -3,20 +3,19 @@
 and notifications to one launcher (taskbar / dock grouping, media controls and
 notification icons).
 
-usage: desktop_probe.py [--class C] [--mpris-entry D] [--notify-entry N] [--app-id dev.aunetx.deezer]
+usage: desktop_probe.py [--class C] [--mpris-entry D] [--notify-entry N] [--app-id ID]
 
-Shells map a window to a launcher when the desktop file id is "<class>.desktop"
-or when the entry's StartupWMClass equals the class (X11 WM_CLASS or Wayland
-app_id). MPRIS DesktopEntry and the notification "desktop-entry" hint must name
-an installed desktop file id, without ".desktop".
+One id must name everything: the launcher's desktop file is "<id>.desktop", and
+the window class (X11 WM_CLASS, Wayland app_id), the entry's StartupWMClass, the
+MPRIS DesktopEntry and the notification "desktop-entry" hint are all "<id>".
+The id is the launcher's file name (dev.aunetx.deezer; deezer-desktop_deezer-desktop
+in a snap, where snapd names the file), unless --app-id gives it.
 
-A StartupWMClass match only works on shells that read StartupWMClass. Shells
-that look the app_id up as a desktop file id (COSMIC, KDE Plasma on Wayland,
-portals, notification and MPRIS lookups) need "<app_id>.desktop", so a link
-through StartupWMClass alone fails with the "desktop-id" tag.
+Some shells match a window through StartupWMClass (GNOME, KDE task manager), but
+others look the id up as a desktop file id (KWin icons, COSMIC, waybar, portals,
+notification and MPRIS lookups): a window linked through StartupWMClass alone fails.
 
-Prints KEY=VALUE lines, then "FAIL <reason>" / "WARN <reason>" lines. A reason
-starting with "[<id>]" names a known issue (known-issues.txt).
+Prints KEY=VALUE lines, then "FAIL <reason>" / "WARN <reason>" lines.
 Background: #156 (COSMIC dock icon), #189 (GNOME media controls icon), #229 (KDE duplicate entry).
 """
 import argparse
@@ -94,7 +93,7 @@ def main():
     p.add_argument("--class", dest="wm_class", default="")
     p.add_argument("--mpris-entry", default="")
     p.add_argument("--notify-entry", default="")
-    p.add_argument("--app-id", default="dev.aunetx.deezer")
+    p.add_argument("--app-id", default="", help="expected id (default: the launcher's file name)")
     a = p.parse_args()
 
     entries = installed_entries()
@@ -107,6 +106,7 @@ def main():
     # The launcher users click: the one that handles deezer:// links, else the first.
     did = next((d for d, (_, e) in mine.items() if "x-scheme-handler/deezer" in e.get("MimeType", "")), sorted(mine)[0])
     path, entry = mine[did]
+    app_id = a.app_id or did.removesuffix(".desktop")
     print(f"DESKTOP_ID={did}")
     print(f"DESKTOP_WMCLASS={entry.get('StartupWMClass', '')}")
     print(f"DESKTOP_ICON={entry.get('Icon', '')}")
@@ -114,8 +114,8 @@ def main():
     print(f"DESKTOP_ICON_FILE={icon_file or 'none'}")
     if not icon_file:
         fails.append(f"desktop entry icon '{entry.get('Icon', '')}' is not installed in any icon theme")
-    if entry.get("StartupWMClass") != a.app_id:
-        fails.append(f"StartupWMClass '{entry.get('StartupWMClass', '')}' != app id '{a.app_id}'")
+    if entry.get("StartupWMClass") != app_id:
+        fails.append(f"StartupWMClass '{entry.get('StartupWMClass', '')}' != app id '{app_id}'")
     if "x-scheme-handler/deezer" not in entry.get("MimeType", ""):
         fails.append("desktop entry does not declare x-scheme-handler/deezer (deep links, browser login)")
     elif shutil.which("xdg-mime"):
@@ -133,7 +133,7 @@ def main():
         if not linked:
             fails.append(f"window class '{a.wm_class}' matches no desktop entry (no taskbar icon / grouping)")
         elif "file-name" not in links.values():
-            fails.append(f"[desktop-id] window '{a.wm_class}' links to {', '.join(linked)} through StartupWMClass only:"
+            fails.append(f"window '{a.wm_class}' links to {', '.join(linked)} through StartupWMClass only:"
                          f" shells that look up '{a.wm_class}.desktop' show a generic icon (#156, #229)")
     # GNOME's media controls (#189) and notification icons resolve the app through these ids.
     for label, value, what in (("MPRIS_LINK", a.mpris_entry, "MPRIS DesktopEntry"),
@@ -145,8 +145,10 @@ def main():
         if linked and label == "NOTIFY_LINK":
             print(f"NOTIFY_ICON_FILE={resolve_icon(linked[1].get('Icon', '')) or 'none'}")
         if not linked:
-            fails.append(f"[desktop-id] {what} '{value}' names no installed desktop file (installed: {', '.join(sorted(mine))}):"
+            fails.append(f"{what} '{value}' names no installed desktop file (installed: {', '.join(sorted(mine))}):"
                          " shells show a generic icon (#189)")
+        elif value != app_id:
+            fails.append(f"{what} '{value}' names {value}.desktop, not the launcher {did}")
     for f in fails:
         print(f"FAIL {f}")
     for w in warns:

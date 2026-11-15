@@ -168,6 +168,11 @@ if [ "${CDP:-1}" = 1 ]; then
 fi
 # A portable cookie store, so the cached session works in every guest.
 [ -n "${SESSION_FILE:-}" ] && APP_FLAGS+=(--password-store=basic)
+# Login sessions list snapd's desktop files (its profile.d and systemd generator):
+# libnotify only keeps a snap's desktop-entry hint when it finds the file there.
+if [ -d /var/lib/snapd/desktop ] && [[ ":${XDG_DATA_DIRS:-}:" != *:/var/lib/snapd/desktop:* ]]; then
+	export XDG_DATA_DIRS=${XDG_DATA_DIRS:-/usr/local/share:/usr/share}:/var/lib/snapd/desktop
+fi
 case $DISPLAY_MODE in
 x11)
 	export DISPLAY=:99
@@ -386,8 +391,10 @@ elif [ "$EXPECT_WINDOW" = yes ]; then
 	[ -n "$TWIN" ] && awk -v t="$TWIN" -v m="$SLOW_WINDOW_SECONDS" 'BEGIN { exit !(t > m) }' &&
 		warn "window took ${TWIN}s to show (> ${SLOW_WINDOW_SECONDS}s)"
 	# The class (X11) / app_id (Wayland) is what links the window to its launcher (#c093311).
-	[ -n "$WIN" ] && [ "$(cut -f2 <<<"$WIN")" != dev.aunetx.deezer ] && { [ "$WINDOW_BACKEND" != atspi ] || [ -n "${WAYLAND_DEBUG:-}" ]; } &&
-		fail "window class '$(cut -f2 <<<"$WIN")' != StartupWMClass 'dev.aunetx.deezer'"
+	# A snap names it after the desktop file snapd installs (patch 17).
+	case $APP in *"snap run"*) WANT_CLASS=deezer-desktop_deezer-desktop ;; *) WANT_CLASS=dev.aunetx.deezer ;; esac
+	[ -n "$WIN" ] && [ "$(cut -f2 <<<"$WIN")" != "$WANT_CLASS" ] && { [ "$WINDOW_BACKEND" != atspi ] || [ -n "${WAYLAND_DEBUG:-}" ]; } &&
+		fail "window class '$(cut -f2 <<<"$WIN")' != '$WANT_CLASS'"
 else
 	[ -n "$WIN" ] && fail "window is visible although EXPECT_WINDOW=no"
 fi

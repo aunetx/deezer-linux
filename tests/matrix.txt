@@ -43,6 +43,8 @@ vm -P ubuntu-headless -p flatpak
 vm -P ubuntu-gnome -s wayland --close
 vm -P ubuntu-gnome -s xwayland
 vm -P ubuntu-gnome -s x11
+vm -P ubuntu-gnome -s wayland -p snap  # patch 17: the window, MPRIS and notifications follow the snap's desktop file
+vm -P ubuntu-gnome -s wayland -p flatpak
 vm -P ubuntu26-headless -p deb
 vm -P ubuntu26-headless -p snap
 vm -P ubuntu26-headless -p flatpak

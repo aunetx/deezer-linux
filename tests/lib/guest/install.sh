@@ -14,6 +14,19 @@ find_bin() {
 	ls /opt/*/deezer-desktop 2>/dev/null | head -1
 }
 
+# Installs a desktop file the way users integrate portable formats (README "AppImage"):
+# same file name, Exec pointing at the app, its icon in hicolor.
+integrate() { # $1 = desktop file, $2 = Exec command, $3 = icon file (optional)
+	local apps=/usr/local/share/applications icon
+	$SUDO mkdir -p "$apps"
+	sed -e "s|^Exec=.*|Exec=$2 %U|" -e '/^TryExec=/d' "$1" | $SUDO tee "$apps/$(basename "$1")" >/dev/null
+	if [ -n "${3:-}" ]; then
+		icon=$(sed -n 's/^Icon=//p' "$1")
+		$SUDO install -D -m 644 "$3" "/usr/local/share/icons/hicolor/scalable/apps/$icon.${3##*.}"
+	fi
+	if command -v update-desktop-database >/dev/null; then $SUDO update-desktop-database "$apps" >&2 || true; fi
+}
+
 case $TYPE in
 deb)
 	$SUDO apt-get update -q >&2
@@ -30,6 +43,12 @@ rpm)
 	;;
 appimage)
 	$SUDO install -m 755 "$PKG" /opt/deezer-desktop.AppImage
+	# The embedded desktop file and icon, as AppImage integration tools and the README do.
+	x=$(mktemp -d) && (cd "$x" && /opt/deezer-desktop.AppImage --appimage-extract '*.desktop' >/dev/null &&
+		/opt/deezer-desktop.AppImage --appimage-extract 'usr/share/icons/hicolor/256x256/apps/*' >/dev/null)
+	integrate "$(ls "$x"/squashfs-root/*.desktop)" /opt/deezer-desktop.AppImage \
+		"$(ls "$x"/squashfs-root/usr/share/icons/hicolor/256x256/apps/*.png | head -1)"
+	rm -rf "$x"
 	if [ "${APPIMAGE_EXTRACT:-0}" = 1 ]; then
 		echo "/opt/deezer-desktop.AppImage --appimage-extract-and-run --no-sandbox"
 	else
@@ -39,6 +58,9 @@ appimage)
 tar.xz)
 	$SUDO mkdir -p /opt/deezer-desktop
 	$SUDO tar -xJf "$PKG" -C /opt/deezer-desktop --strip-components=1
+	# The desktop file and icon the archive ships for Flathub and Nix, as they install them.
+	integrate /opt/deezer-desktop/resources/dev.aunetx.deezer.desktop /opt/deezer-desktop/deezer-desktop \
+		/opt/deezer-desktop/resources/dev.aunetx.deezer.svg
 	echo "/opt/deezer-desktop/deezer-desktop --no-sandbox"
 	;;
 unpacked)
@@ -57,6 +79,11 @@ nix)
 	# $PKG is a checkout containing default.nix and artifacts/<arch>/linux*-unpacked
 	ARCH=$([ "$(uname -m)" = aarch64 ] && echo arm64 || echo x64)
 	nix-build "$PKG/default.nix" -A deezer-desktop --argstr arch "$ARCH" --out-link /tmp/deezer-nix >&2
+	# A Nix profile puts the package's share/ in XDG_DATA_DIRS: link its desktop file and icon likewise.
+	for f in applications/dev.aunetx.deezer.desktop icons/hicolor/scalable/apps/dev.aunetx.deezer.svg; do
+		$SUDO install -d "/usr/local/share/$(dirname "$f")"
+		$SUDO ln -sf "/tmp/deezer-nix/share/$f" "/usr/local/share/$f"
+	done
 	echo "/tmp/deezer-nix/bin/deezer-desktop --no-sandbox"
 	;;
 installed)

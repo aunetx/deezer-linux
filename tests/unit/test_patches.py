@@ -8,7 +8,7 @@ import tempfile
 import textwrap
 import unittest
 
-from helpers import added_lines, patch_markers, patch_names
+from helpers import added_lines, patch_markers, patch_names, read
 
 
 class Markers(unittest.TestCase):
@@ -30,6 +30,20 @@ class DocumentedFixes(unittest.TestCase):
         self.assertIn("getCurrentSong()", code)
         self.assertRegex(code, r"setInterval\(update, \d+\)")
         self.assertIn('identity: "Deezer"', code)
+
+    def test_mpris_desktop_entry_is_the_desktop_name(self):
+        # #189: media controls look DesktopEntry up as a desktop file id: the one the windows use.
+        code = added_lines("05-provide-metadata-mpris")
+        self.assertIn("process.env.CHROME_DESKTOP", code)
+        self.assertIn('desktopEntry: require("path").basename(desktopFile, ".desktop")', code)
+        self.assertNotRegex(code, r'desktopEntry: "')
+
+    def test_snap_names_the_app_after_its_desktop_file(self):
+        # snapd installs <snap instance>_<app>.desktop (snapd 2.78 exports no BAMF_DESKTOP_FILE_HINT).
+        code = added_lines("17-snap-desktop-name")
+        app = re.search(r"(?m)^apps:\n  ([\w-]+):", read("snapcraft.yaml")).group(1)
+        self.assertIn("app.setDesktopName(", code)
+        self.assertIn(f"${{process.env.SNAP_INSTANCE_NAME}}_{app}.desktop", code)
 
     def test_sync_theme_reads_the_portal(self):
         # #238: Chromium ignores the portal color-scheme in Flatpak; the main process reads it.

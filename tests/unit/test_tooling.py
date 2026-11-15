@@ -91,41 +91,62 @@ class DesktopLinking(unittest.TestCase):
                 MimeType=x-scheme-handler/deezer;
                 """))
 
+    def install_icon(self, name="deezer-desktop"):
+        icon_dir = os.path.join(self.tmp.name, "icons", "hicolor", "256x256", "apps")
+        os.makedirs(icon_dir, exist_ok=True)
+        open(os.path.join(icon_dir, f"{name}.png"), "wb").close()
+        return icon_dir
+
     def run_probe(self, *args):
         env = dict(os.environ, XDG_DATA_HOME=self.tmp.name, XDG_DATA_DIRS="/nonexistent", HOME=self.tmp.name)
         out = subprocess.run(["python3", os.path.join(GUEST, "desktop_probe.py"), *args], env=env,
                              capture_output=True, text=True, check=True).stdout
         return out
 
-    def test_startup_wm_class_only_is_a_known_issue(self):
-        # What the .deb installs: GNOME links it, shells that look up "<app_id>.desktop" do not (#156).
+    def test_startup_wm_class_only_fails(self):
+        # What the .deb installed before syncDesktopName: GNOME links it, shells that look up
+        # "<app_id>.desktop" do not (#156, #229).
         self.install("deezer-desktop.desktop", "dev.aunetx.deezer")
         out = self.run_probe("--class", "dev.aunetx.deezer")
         self.assertIn("TASKBAR_LINK=deezer-desktop.desktop", out)
         self.assertIn("TASKBAR_LINK_BY=StartupWMClass", out)
-        self.assertIn("FAIL [desktop-id] window 'dev.aunetx.deezer'", out)
+        self.assertIn("FAIL window 'dev.aunetx.deezer' links to deezer-desktop.desktop through StartupWMClass only", out)
         self.assertNotIn("matches no desktop entry", out)
 
     def test_window_links_through_desktop_id(self):
-        self.install("dev.aunetx.deezer.desktop", "dev.aunetx.deezer")  # what the Flatpak exports
-        out = self.run_probe("--class", "dev.aunetx.deezer")
+        self.install("dev.aunetx.deezer.desktop", "dev.aunetx.deezer")  # deb, rpm, AppImage, Flatpak, Nix
+        self.install_icon()
+        out = self.run_probe("--class", "dev.aunetx.deezer", "--mpris-entry", "dev.aunetx.deezer",
+                             "--notify-entry", "dev.aunetx.deezer")
         self.assertIn("TASKBAR_LINK=dev.aunetx.deezer.desktop", out)
         self.assertIn("TASKBAR_LINK_BY=file-name", out)
-        self.assertNotIn("[desktop-id]", out)
+        self.assertNotIn("FAIL", out)
+
+    def test_snap_names_everything_after_its_desktop_file(self):
+        # snapd installs <snap>_<app>.desktop; patch 17 and snapcraft.yaml follow it.
+        snap_id = "deezer-desktop_deezer-desktop"
+        self.install(f"{snap_id}.desktop", snap_id)
+        self.install_icon()
+        out = self.run_probe("--class", snap_id, "--mpris-entry", snap_id, "--notify-entry", snap_id)
+        self.assertIn("TASKBAR_LINK_BY=file-name", out)
+        self.assertNotIn("FAIL", out)
+        out = self.run_probe("--class", "dev.aunetx.deezer", "--notify-entry", "dev.aunetx.deezer")
+        self.assertIn("FAIL StartupWMClass", self.run_probe("--app-id", "dev.aunetx.deezer"))
+        self.assertIn("FAIL window class 'dev.aunetx.deezer' matches no desktop entry", out)
+        self.assertIn("FAIL notification desktop-entry hint 'dev.aunetx.deezer' names no installed desktop file", out)
 
     def test_old_class_does_not_link(self):
         # Before c093311, StartupWMClass=deezer-desktop never matched the dev.aunetx.deezer window.
         self.install("deezer-desktop.desktop", "deezer-desktop")
         out = self.run_probe("--class", "dev.aunetx.deezer")
         self.assertIn("TASKBAR_LINK=none", out)
-        self.assertIn("FAIL window class", out)
-        self.assertIn("FAIL StartupWMClass", out)
+        self.assertIn("FAIL window class 'dev.aunetx.deezer' matches no desktop entry", out)
 
     def test_mpris_entry_must_name_an_installed_file(self):
         self.install("dev.aunetx.deezer.desktop", "dev.aunetx.deezer")
         out = self.run_probe("--mpris-entry", "deezer-desktop")
         self.assertIn("MPRIS_LINK=none", out)
-        self.assertIn("FAIL [desktop-id] MPRIS DesktopEntry 'deezer-desktop'", out)
+        self.assertIn("FAIL MPRIS DesktopEntry 'deezer-desktop' names no installed desktop file", out)
         self.assertIn("MPRIS_LINK=dev.aunetx.deezer.desktop", self.run_probe("--mpris-entry", "dev.aunetx.deezer"))
 
     def test_notification_icon_comes_from_the_linked_entry(self):
@@ -140,9 +161,7 @@ class DesktopLinking(unittest.TestCase):
 
     def test_icon_in_hicolor(self):
         self.install("deezer-desktop.desktop", "dev.aunetx.deezer")
-        icon_dir = os.path.join(self.tmp.name, "icons", "hicolor", "256x256", "apps")
-        os.makedirs(icon_dir)
-        open(os.path.join(icon_dir, "deezer-desktop.png"), "wb").close()
+        icon_dir = self.install_icon()
         self.assertIn("DESKTOP_ICON_FILE=" + icon_dir, self.run_probe())
 
 
@@ -267,7 +286,7 @@ class Determinism(unittest.TestCase):
     def test_verdict_known(self):
         # Under run.sh's strict mode, with and without known issues or warnings to print.
         with tempfile.TemporaryDirectory() as d:
-            for result, code, known in (("pass", 0, ""), ("known", 0, "[desktop-id] x"), ("fail", 1, "")):
+            for result, code, known in (("pass", 0, ""), ("known", 0, "[some-issue] x"), ("fail", 1, "")):
                 with self.subTest(result=result):
                     with open(os.path.join(d, "result.env"), "w") as f:
                         f.write(f"RESULT={result}\nKNOWN_ISSUES={known}\nFAILURES=\n")
@@ -278,7 +297,6 @@ class Determinism(unittest.TestCase):
     def test_known_issue_ids_are_used(self):
         with open(os.path.join(GUEST, "known-issues.txt"), encoding="utf-8") as f:
             ids = [line.split()[0] for line in f if line.strip() and not line.startswith("#")]
-        self.assertTrue(ids)
         sources = ""
         for path in glob.glob(os.path.join(GUEST, "*.py")) + glob.glob(os.path.join(GUEST, "*.sh")):
             with open(path, encoding="utf-8") as f:

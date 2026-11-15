@@ -28,6 +28,12 @@ class DesktopIdentity(unittest.TestCase):
         self.assertEqual(entry["Icon"], self.app_id)
         self.assertIn("x-scheme-handler/deezer", entry["MimeType"])  # deep links / browser login
 
+    def test_installed_desktop_file_is_named_after_the_app_id(self):
+        # #156, #189, #229: deb, rpm and AppImage install "<desktopName>", not "<executableName>.desktop".
+        self.assertIs(self.pkg["build"]["linux"].get("syncDesktopName"), True)
+        # Pins and handlers that named the old file: KDE maps them to the renamed one.
+        self.assertIn("deezer-desktop.desktop;", self.pkg["build"]["linux"]["desktop"]["entry"]["X-Flatpak-RenamedFrom"])
+
     def test_builder_entry_handles_deep_links(self):
         self.assertIn("x-scheme-handler/deezer", self.pkg["build"]["linux"]["desktop"]["entry"]["MimeType"])
 
@@ -62,6 +68,19 @@ class Snap(unittest.TestCase):
         # a9aad21: GNOME showed "..." because the icon was written to the snap's private /tmp.
         yaml = read("snapcraft.yaml")
         self.assertRegex(yaml, r"(?m)^\s+TMPDIR:\s*\$XDG_RUNTIME_DIR\s*$")
+
+
+    def test_desktop_file_from_the_deb(self):
+        # The deb installs "<desktopName>" (syncDesktopName); snapd renames it to <snap>_<app>.desktop.
+        yaml = read("snapcraft.yaml")
+        name = package_append()["desktopName"]
+        self.assertRegex(yaml, rf"(?m)^\s+desktop: usr/share/applications/{re.escape(name)}$")
+
+    def test_startup_wm_class_follows_the_snap_desktop_file(self):
+        # Patch 17 names the window after the snap's desktop file: StartupWMClass must follow.
+        yaml = read("snapcraft.yaml")
+        app = re.search(r"(?m)^apps:\n  ([\w-]+):", yaml).group(1)
+        self.assertIn(f"s/^StartupWMClass=.*/StartupWMClass=${{CRAFT_PROJECT_NAME}}_{app}/", yaml)
 
 
 class Electron(unittest.TestCase):

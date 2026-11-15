@@ -4,4 +4,3 @@
 # its checks fail again from then on.
 #
 # <id>        <what is wrong>
-desktop-id    packages install deezer-desktop.desktop (deb, rpm, AppImage...) or dev.aunetx.deezer.desktop (Flatpak), while the window app_id, the notification desktop-entry hint and the MPRIS DesktopEntry do not all name it (#156, #189, #229)
