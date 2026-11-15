@@ -265,12 +265,13 @@ class Determinism(unittest.TestCase):
             self.assertIn(line, out)
 
     def test_verdict_known(self):
+        # Under run.sh's strict mode, with and without known issues or warnings to print.
         with tempfile.TemporaryDirectory() as d:
-            for result, code in (("pass", 0), ("known", 0), ("fail", 1)):
+            for result, code, known in (("pass", 0, ""), ("known", 0, "[desktop-id] x"), ("fail", 1, "")):
                 with self.subTest(result=result):
                     with open(os.path.join(d, "result.env"), "w") as f:
-                        f.write(f"RESULT={result}\nKNOWN_ISSUES=[desktop-id] x\nFAILURES=\n")
-                    r = self.bash(f'verdict "{d}"')
+                        f.write(f"RESULT={result}\nKNOWN_ISSUES={known}\nFAILURES=\n")
+                    r = self.bash(f'set -euo pipefail; verdict "{d}"')
                     self.assertEqual(r.returncode, code)
                     self.assertIn({"pass": "PASS", "known": "KNOWN", "fail": "FAIL"}[result], r.stdout)
 

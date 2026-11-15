@@ -127,8 +127,8 @@ verdict() { # $1 = out dir
 	known) printf '%sKNOWN%s %s\n' "$C_Y" "$C_0" "$1" ;;
 	*) printf '%sFAIL%s %s: %s\n' "$C_R" "$C_0" "$1" "$(grep -m1 '^FAILURES=' "$env" | cut -d= -f2-)" ;;
 	esac
-	grep -m1 '^KNOWN_ISSUES=.' "$env" | cut -d= -f2- | tr ';' '\n' | sed "s/^/  ${C_Y}known${C_0} /"
-	grep -m1 '^WARNINGS=.' "$env" | cut -d= -f2- | tr ';' '\n' | sed "s/^/  ${C_Y}warn${C_0} /"
+	grep -m1 '^KNOWN_ISSUES=.' "$env" | cut -d= -f2- | tr ';' '\n' | sed "s/^/  ${C_Y}known${C_0} /" || true
+	grep -m1 '^WARNINGS=.' "$env" | cut -d= -f2- | tr ';' '\n' | sed "s/^/  ${C_Y}warn${C_0} /" || true
 	[ "$r" = pass ] || [ "$r" = known ]
 }
 
