@@ -1,10 +1,17 @@
 # Default matrix for `tests/run.sh matrix`. One `tests/run.sh` argument list per line.
 # Missing packages fail fast: run `tests/run.sh fetch` (or build) first.
+# Lines with --login reuse the cached logged-in profile (see README.md "Logged-in tests"):
+# only the first one logs in through the deep link.
 
-# --- native packages, X11 / Wayland / Xwayland (containers, headless) ---
+# --- Ubuntu 24.04 / 26.04, every display mode (containers, headless) ---
 container -d ubuntu-24.04 -p deb -s x11
 container -d ubuntu-24.04 -p deb -s wayland
+container -d ubuntu-24.04 -p deb -s xwayland
+container -d ubuntu-26.04 -p deb -s x11
+container -d ubuntu-26.04 -p deb -s wayland
 container -d ubuntu-26.04 -p deb -s xwayland
+
+# --- other native packages ---
 container -d debian-12    -p deb -s x11
 container -d debian-13    -p deb -s wayland
 container -d fedora       -p rpm -s x11
@@ -21,13 +28,27 @@ container -d nix          -p nix      -s x11
 container -d ubuntu-24.04 -p deb -s x11 --close
 container -d ubuntu-24.04 -p deb -s x11 --args "--disable-systray"
 container -d ubuntu-24.04 -p deb -s x11 --args "--start-in-tray"
+container -d ubuntu-24.04 -p deb -s x11 --args "--disable-notifications"
+container -d ubuntu-24.04 -p deb -s x11 --args "--keep-kernel"
 container -d fedora       -p rpm -s wayland --portal --args "--sync-theme"
+
+# --- logged in: MPRIS/page sync (#250), CSS patches, custom theme ---
+container -d ubuntu-24.04 -p deb -s x11 --login --play
+container -d ubuntu-24.04 -p deb -s x11 --login --args "--hide-offline-banner --disable-animations --custom-theme=@TESTS@/test-theme.css"
 
 # --- sandboxed formats and real desktops (QEMU VMs, slower) ---
 vm -P ubuntu-headless -p snap
 vm -P ubuntu-headless -p flatpak
 vm -P ubuntu-gnome -s wayland --close
+vm -P ubuntu-gnome -s xwayland
 vm -P ubuntu-gnome -s x11
+vm -P ubuntu26-headless -p deb
+vm -P ubuntu26-headless -p snap
+vm -P ubuntu26-headless -p flatpak
+vm -P ubuntu26-gnome -s wayland
+vm -P ubuntu26-gnome -s xwayland
+vm -P popos-cosmic -s wayland
+vm -P popos-cosmic -s xwayland
 vm -P fedora-kde   -s wayland
 vm -P debian-xfce  -s x11
 

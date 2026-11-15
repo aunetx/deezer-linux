@@ -1,0 +1,27 @@
+# Pop!_OS 24.04 COSMIC desktop: Pop's release repository on an Ubuntu 24.04
+# cloud image (Pop!_OS ships no cloud image), autologin on tty1 into COSMIC.
+# Wayland only, with Xwayland for X11 apps.
+apt:
+  sources:
+    pop-os-release:
+      source: "deb [signed-by=$KEY_FILE] http://apt.pop-os.org/release noble main"
+      keyid: 63C46DF0140D738961429F4E204DD8AEC33A7AFF # Pop OS (ISO Signing Key)
+      keyserver: keyserver.ubuntu.com
+package_update: true
+packages: [cosmic-session, xdg-desktop-portal-cosmic, xwayland, at-spi2-core, python3-gi, gir1.2-atspi-2.0,
+           x11-utils, dbus-x11, flatpak, libfuse2t64, fonts-dejavu-core]
+write_files:
+  - path: /etc/systemd/system/getty@tty1.service.d/autologin.conf
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=-/sbin/agetty --autologin tester --noclear %I $TERM
+  - path: /etc/profile.d/zz-cosmic.sh
+    content: |
+      if [ "$(tty)" = /dev/tty1 ] && [ -z "$WAYLAND_DISPLAY" ]; then
+        exec start-cosmic >/tmp/cosmic.log 2>&1
+      fi
+runcmd:
+  - [sh, -c, "systemctl disable cosmic-greeter.service || true"]
+  - [systemctl, daemon-reload]
+  - [sh, -c, "sudo -u tester dbus-run-session -- gsettings set org.gnome.desktop.interface toolkit-accessibility true || true"]

@@ -1,0 +1,3 @@
+/* Used by the --custom-theme check (patch 16): any rule will do, the test looks
+   for the <style id="dz-custom-theme"> element the patch injects. */
+:root { --deezer-linux-test-theme: 1; }

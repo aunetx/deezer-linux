@@ -20,6 +20,9 @@
 #   LAUNCHER       direct | systemd   (systemd-run --user, for real desktop sessions over ssh)
 #   HOLD           0 | 1 | shell      keep everything running after the checks (debug)
 #   VNC            1 = serve the display over VNC on port 5900 (x11/wayland/xwayland modes)
+#   PROFILE_IN     tar of a logged-in app profile to start from (skips the deep-link login)
+#   PROFILE_OUT    where to save the app profile after a successful login (session cache)
+#   CDP            0 = do not open the DevTools port (skips the in-page checks)
 set -u
 
 HERE=$(cd "$(dirname "$0")" && pwd)
@@ -107,7 +110,15 @@ discover_host_session() { # fill in what ssh / su sessions do not inherit
 	return 0
 }
 
+APP_ARGS=${APP_ARGS//@TESTS@/$HERE} # lets matrix lines point at files shipped with the tests
+has_arg() { [[ " $APP_ARGS " == *" $1 "* || " $APP_ARGS " == *" $1="* ]]; }
 APP_FLAGS=(--log-level=debug)
+if [ "${CDP:-1}" = 1 ]; then
+	CDP_PORT=$(python3 -c 'import socket; s = socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])')
+	APP_FLAGS+=(--remote-debugging-port="$CDP_PORT")
+fi
+# A portable cookie store, so the cached session works in every guest.
+[ -n "${SESSION_FILE:-}" ] && APP_FLAGS+=(--password-store=basic)
 case $DISPLAY_MODE in
 x11)
 	export DISPLAY=:99
@@ -131,11 +142,13 @@ host)
 	discover_host_session
 	if [ -n "${SWAYSOCK:-}" ] && have swaymsg; then
 		WINDOW_BACKEND=sway
-	elif [ "${XDG_SESSION_TYPE:-}" = x11 ] && [ -n "${DISPLAY:-}" ] && have xdotool; then
-		WINDOW_BACKEND=xdotool # exact WM_CLASS and can close windows, unlike AT-SPI
+	elif { [ "${XDG_SESSION_TYPE:-}" = x11 ] || has_arg --ozone-platform=x11; } && [ -n "${DISPLAY:-}" ] && have xdotool; then
+		WINDOW_BACKEND=xdotool # exact WM_CLASS and can close windows, unlike AT-SPI (also Xwayland clients)
 	elif have python3 && python3 -c 'import gi; gi.require_version("Atspi", "2.0")' 2>/dev/null; then
 		WINDOW_BACKEND=atspi
 		APP_FLAGS+=(--force-renderer-accessibility)
+		# AT-SPI has no app_id: read it from the Wayland protocol log (xdg_toplevel.set_app_id).
+		[ "${XDG_SESSION_TYPE:-}" = wayland ] && ! has_arg --ozone-platform=x11 && export WAYLAND_DEBUG=client
 	elif [ -n "${DISPLAY:-}" ] && have xdotool; then
 		WINDOW_BACKEND=xdotool
 	else
@@ -166,6 +179,7 @@ R DISPLAY_MODE "$DISPLAY_MODE"
 R DESKTOP "${XDG_CURRENT_DESKTOP:-none}"
 R WINDOW_BACKEND "$WINDOW_BACKEND"
 R APP "$APP $APP_ARGS"
+[ -n "$APP_ARGS" ] && R APP_ARGS "${APP_ARGS//$HERE/@TESTS@}"
 
 # ----------------------------------------------------------- integration ---
 bus_names() {
@@ -180,6 +194,7 @@ if [ "$SNI_STUB" = yes ]; then
 	SNI_LOG="$OUT/sni.log" bg python3 "$HERE/sni_watcher.py" >/dev/null 2>&1
 	sleep 0.5
 fi
+NOTIFY_LOG="$OUT/notify.log" bg python3 "$HERE/notify_probe.py" >/dev/null 2>"$OUT/notify-probe.log"
 if [ "${FAKE_PORTAL:-0}" = 1 ]; then
 	PORTAL_LOG="$OUT/portal.log" bg python3 "$HERE/fake_portal.py" >/dev/null 2>&1
 	sleep 0.5
@@ -188,6 +203,21 @@ fi
 if [ "$DISPLAY_MODE" != host ] && have pulseaudio && ! pactl info >/dev/null 2>&1; then
 	pulseaudio --daemonize=yes --exit-idle-time=-1 --log-target=file:/tmp/pulse.log \
 		-n -L module-null-sink -L module-native-protocol-unix -L module-always-sink >/dev/null 2>&1
+fi
+
+# --------------------------------------------------------- session cache ---
+# A profile saved by an earlier logged-in run: the app starts logged in, as it
+# does for a real user, instead of logging in again through the deep link.
+profile_base() {
+	case $APP in
+	*"flatpak run"*) echo "$HOME/.var/app/dev.aunetx.deezer/config" ;;
+	*"snap run"*) ;; # ~/snap/<name>/<revision> only exists after the first start
+	*) echo "${XDG_CONFIG_HOME:-$HOME/.config}" ;;
+	esac
+}
+PROFILE_BASE=$(profile_base)
+if [ -n "${PROFILE_IN:-}" ] && [ -s "$PROFILE_IN" ] && [ -n "${SESSION_FILE:-}" ] && [ -n "$PROFILE_BASE" ]; then
+	mkdir -p "$PROFILE_BASE" && tar -xf "$PROFILE_IN" -C "$PROFILE_BASE" && PROFILE_RESTORED=yes
 fi
 
 # ---------------------------------------------------------------- launch ---
@@ -200,6 +230,7 @@ if [ "$LAUNCHER" = systemd ]; then
 		-p StandardOutput=file:"$OUT/app.log" -p StandardError=file:"$OUT/app.log" \
 		--setenv=DISPLAY="${DISPLAY:-}" --setenv=WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-}" \
 		--setenv=DBUS_SESSION_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS" --setenv=XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
+		${WAYLAND_DEBUG:+--setenv=WAYLAND_DEBUG="$WAYLAND_DEBUG"} \
 		"${CMD[@]}"
 	alive() { systemctl --user is-active --quiet deezer-smoke.service; }
 	stop_app() { systemctl --user stop deezer-smoke.service >/dev/null 2>&1; }
@@ -207,7 +238,11 @@ else
 	"${CMD[@]}" >"$OUT/app.log" 2>&1 &
 	APP_PID=$!
 	alive() { kill -0 "$APP_PID" 2>/dev/null; }
-	stop_app() { kill "$APP_PID" 2>/dev/null; sleep 1; kill -9 "$APP_PID" 2>/dev/null; pkill -f deezer-desktop 2>/dev/null; }
+	stop_app() { # SIGTERM first: Chromium then shuts down cleanly and flushes its cookie store
+		kill "$APP_PID" 2>/dev/null
+		for _ in $(seq 20); do alive || break; sleep 0.25; done
+		kill -9 "$APP_PID" 2>/dev/null; pkill -f deezer-desktop 2>/dev/null
+	}
 fi
 
 # Prints "<id>\t<class or app_id>\t<title>\t<shell>" for each visible app window.
@@ -245,6 +280,11 @@ done
 alive && R ALIVE yes || { R ALIVE no; fail "process exited"; }
 R TIME_TO_WINDOW "${TWIN:-none}"
 WIN=$(windows | head -1)
+if [ -n "${WAYLAND_DEBUG:-}" ] && [ -n "$WIN" ]; then
+	APP_ID=$(grep -m1 -oE 'set_app_id\("[^"]*"\)' "$OUT/app.log" | cut -d'"' -f2)
+	R WAYLAND_APP_ID "${APP_ID:-none}"
+	WIN=$(awk -F'\t' -v id="${APP_ID:-?}" 'BEGIN { OFS = FS } { $2 = id; print }' <<<"$WIN")
+fi
 R WINDOW_CLASS "$(cut -f2 <<<"$WIN")"
 R WINDOW_TITLE "$(cut -f3 <<<"$WIN")"
 R WINDOW_SHELL "$(cut -f4 <<<"$WIN")"
@@ -254,27 +294,39 @@ elif [ "$EXPECT_WINDOW" = yes ]; then
 	[ -z "$TWIN" ] && fail "no visible window after ${WAIT}s"
 	[ -n "$TWIN" ] && awk -v t="$TWIN" -v m="$SLOW_WINDOW_SECONDS" 'BEGIN { exit !(t > m) }' &&
 		warn "window took ${TWIN}s to show (> ${SLOW_WINDOW_SECONDS}s)"
-	[ -n "$WIN" ] && [ "$(cut -f2 <<<"$WIN")" != dev.aunetx.deezer ] && [ "$WINDOW_BACKEND" != atspi ] &&
-		warn "window class '$(cut -f2 <<<"$WIN")' != StartupWMClass 'dev.aunetx.deezer'"
+	# The class (X11) / app_id (Wayland) is what links the window to its launcher (#c093311).
+	[ -n "$WIN" ] && [ "$(cut -f2 <<<"$WIN")" != dev.aunetx.deezer ] && { [ "$WINDOW_BACKEND" != atspi ] || [ -n "${WAYLAND_DEBUG:-}" ]; } &&
+		fail "window class '$(cut -f2 <<<"$WIN")' != StartupWMClass 'dev.aunetx.deezer'"
 else
 	[ -n "$WIN" ] && fail "window is visible although EXPECT_WINDOW=no"
 fi
 
+# The MPRIS service drops calls flagged NO_REPLY_EXPECTED (plain dbus-send): always wait for the reply.
+mpris_call() { dbus-send --session --print-reply --dest="$MPRIS_NAME" /org/mpris/MediaPlayer2 "org.mpris.MediaPlayer2.Player.$1" >/dev/null 2>&1; }
 mpris_get() { # $1 = interface, $2 = property
 	dbus-send --session --print-reply --dest="$MPRIS_NAME" /org/mpris/MediaPlayer2 \
 		org.freedesktop.DBus.Properties.Get string:"$1" string:"$2" 2>/dev/null |
 		tail -n +2 | grep -o '"[^"]*"' | head -1 | tr -d '"'
 }
+mpris_title() {
+	dbus-send --session --print-reply --dest="$MPRIS_NAME" /org/mpris/MediaPlayer2 \
+		org.freedesktop.DBus.Properties.Get string:org.mpris.MediaPlayer2.Player string:Metadata 2>/dev/null |
+		grep -A1 '"xesam:title"' | tail -1 | grep -o '"[^"]*"' | tr -d '"'
+}
 MPRIS_NAME=$(bus_names | grep -m1 '^org.mpris.MediaPlayer2\.')
 R MPRIS "${MPRIS_NAME:-none}"
 if [ -n "$MPRIS_NAME" ]; then
 	R MPRIS_IDENTITY "$(mpris_get org.mpris.MediaPlayer2 Identity)"
-	R MPRIS_DESKTOP_ENTRY "$(mpris_get org.mpris.MediaPlayer2 DesktopEntry)"
+	MPRIS_DESKTOP_ENTRY=$(mpris_get org.mpris.MediaPlayer2 DesktopEntry)
+	R MPRIS_DESKTOP_ENTRY "$MPRIS_DESKTOP_ENTRY"
 	R MPRIS_STATUS "$(mpris_get org.mpris.MediaPlayer2.Player PlaybackStatus)"
+	# The Flatpak only owns org.mpris.MediaPlayer2.deezer (--own-name in package-append.json).
+	[ "$MPRIS_NAME" = org.mpris.MediaPlayer2.deezer ] || fail "MPRIS bus name '$MPRIS_NAME' != org.mpris.MediaPlayer2.deezer"
 else
 	fail "no MPRIS service on the session bus"
 fi
 
+# Tray: registration, then whether a host outside the sandbox can draw the icon.
 if [ "$SNI_STUB" = yes ]; then
 	SNI=$(grep -c SNI_REGISTERED "$OUT/sni.log" 2>/dev/null)
 	R TRAY_ITEMS "${SNI:-0}"
@@ -283,12 +335,98 @@ if [ "$SNI_STUB" = yes ]; then
 else
 	R TRAY_ITEMS "host-watcher"
 fi
+python3 "$HERE/tray_probe.py" >"$OUT/tray.json" 2>>"$OUT/tray.json"
+# Chromium's items are "chrome_status_icon_N"; a host watcher also lists other apps.
+TRAY=$(grep -m1 -iE '"(id|title)": "(chrome_status_icon|deezer)' "$OUT/tray.json")
+if [ -n "$TRAY" ]; then
+	TRAY_ICON=$(python3 -c 'import json, sys; print(json.loads(sys.argv[1])["icon"])' "$TRAY")
+	R TRAY_ICON "${TRAY_ICON:-unresolved}"
+	# The snap fix (a9aad21): the icon file must be readable outside the app's private /tmp.
+	[ -z "$TRAY_ICON" ] && fail "tray icon cannot be resolved by the tray host (placeholder icon), see tray.json"
+elif [ "$SNI_STUB" = yes ] || [ "${SNI:-0}" != 0 ]; then
+	R TRAY_ICON none
+fi
+
+# Patches: the running app.asar must contain every patch (catches a dropped port).
+python3 "$HERE/asar_probe.py" "$HERE/patch-markers.txt" >"$OUT/patches.txt" 2>&1
+R PATCHES "$(sed -n 's/^PATCHES=//p' "$OUT/patches.txt")"
+while read -r reason; do fail "$reason"; done < <(sed -n 's/^FAIL //p' "$OUT/patches.txt")
+
+# ----------------------------------------------------------- in-page checks ---
+cdp() { [ -n "${CDP_PORT:-}" ] && timeout 30 python3 "$HERE/cdp.py" "$CDP_PORT" "$@" 2>>"$OUT/cdp.log"; }
+CDP_OK=no
+cdp url >/dev/null && CDP_OK=yes
+R CDP "$CDP_OK"
+[ -n "${CDP_PORT:-}" ] && [ "$CDP_OK" = no ] && warn "DevTools port unreachable: in-page checks skipped (see cdp.log)"
+page_is_deezer() { [[ $(cdp url) == https://www.deezer.com/* ]]; }
+
+if [ "$CDP_OK" = yes ]; then
+	UA=$(cdp eval 'navigator.userAgent' | tr -d '"')
+	R USER_AGENT "$UA"
+	R ELECTRON "$(grep -oE 'Electron/[0-9.]+' <<<"$UA" | cut -d/ -f2)"
+	# Patch 04: the API rejects non-semver kernels (e.g. 6.8.0-45-generic) unless --keep-kernel.
+	if ! has_arg --keep-kernel && [[ $UA == *"; linux/"* ]] && ! grep -q '; linux/6\.4\.0;' <<<"$UA"; then
+		fail "user agent leaks the kernel version (patch 04): $UA"
+	fi
+
+	# Notifications: the app's own path is the page's Notification API -> libnotify.
+	: >>"$OUT/notify.log"
+	before=$(wc -l <"$OUT/notify.log")
+	cdp eval '(async () => {
+		const icon = (() => { const c = document.createElement("canvas"); c.width = c.height = 64;
+			const g = c.getContext("2d"); g.fillStyle = "#a238ff"; g.fillRect(0, 0, 64, 64); return c.toDataURL(); })();
+		new Notification("deezer-linux smoke test", { body: "notification check", icon, silent: true });
+		await new Promise((r) => setTimeout(r, 2000));
+		return Notification.permission; })()' >"$OUT/notify-permission.txt"
+	sleep 1
+	NOTIFS=$(tail -n +"$((before + 1))" "$OUT/notify.log")
+	R NOTIFY_COUNT "$(grep -c . <<<"$NOTIFS")"
+	if has_arg --disable-notifications; then
+		[ -n "$NOTIFS" ] && fail "a notification was sent although --disable-notifications is set (patch 10)"
+	elif [ -z "$NOTIFS" ]; then
+		fail "no notification reached org.freedesktop.Notifications (permission: $(cat "$OUT/notify-permission.txt"))"
+	else
+		N=$(head -1 <<<"$NOTIFS")
+		nget() { python3 -c 'import json, sys; print(json.loads(sys.argv[1])[sys.argv[2]])' "$N" "$1"; }
+		R NOTIFY_APP_NAME "$(nget app_name)"
+		NOTIFY_DESKTOP_ENTRY=$(nget desktop_entry)
+		R NOTIFY_DESKTOP_ENTRY "$NOTIFY_DESKTOP_ENTRY"
+		R NOTIFY_IMAGE "$(nget image)"
+		NOTIFY_OWN_ICON="$(nget image)$(nget app_icon)"
+		[ -z "$NOTIFY_DESKTOP_ENTRY" ] && warn "notifications carry no desktop-entry hint: shells cannot show the app icon"
+	fi
+
+	if [ "${FAKE_PORTAL:-0}" = 1 ] && has_arg --sync-theme; then
+		# #238: the main process follows the portal color-scheme (dark at start, then light).
+		dark() { cdp eval 'matchMedia("(prefers-color-scheme: dark)").matches'; }
+		R THEME_DARK_AT_START "$(dark)"
+		[ "$(dark)" = true ] || fail "--sync-theme: the page is not dark although the portal says dark"
+	fi
+fi
 
 if [ "${FAKE_PORTAL:-0}" = 1 ]; then
 	pkill -USR1 -f fake_portal.py
 	sleep 2
 	R PORTAL_READS "$(grep -c 'PORTAL_Read' "$OUT/portal.log" 2>/dev/null)"
+	if [ "$CDP_OK" = yes ] && has_arg --sync-theme; then
+		R THEME_DARK_AFTER_FLIP "$(dark)"
+		[ "$(dark)" = false ] || fail "--sync-theme: the page did not follow the portal switching to light"
+	fi
 fi
+
+# Taskbar, media controls and notifications must all point at the installed launcher.
+probe_args=(--mpris-entry "${MPRIS_DESKTOP_ENTRY:-}" --notify-entry "${NOTIFY_DESKTOP_ENTRY:-}")
+{ [ "$WINDOW_BACKEND" != atspi ] || [ -n "${WAYLAND_DEBUG:-}" ]; } && [ -n "$WIN" ] && probe_args+=(--class "$(cut -f2 <<<"$WIN")")
+python3 "$HERE/desktop_probe.py" "${probe_args[@]}" >"$OUT/desktop.txt" 2>&1
+while IFS='=' read -r k v; do
+	case $k in DESKTOP_ID | DESKTOP_ICON_FILE | TASKBAR_LINK | MPRIS_LINK | NOTIFY_LINK | NOTIFY_ICON_FILE | DEEPLINK_HANDLER) R "$k" "$v" ;; esac
+	[ "$k" = NOTIFY_ICON_FILE ] && [ "$v" != none ] && NOTIFY_OWN_ICON+=$v
+done < <(grep -E '^[A-Z_]+=' "$OUT/desktop.txt")
+# The notification icon: an image, an app_icon, or the icon of the entry its desktop-entry hint names.
+[ -n "${NOTIFY_DESKTOP_ENTRY:-}" ] && [ -z "${NOTIFY_OWN_ICON:-}" ] && ! grep -q '^NOTIFY_LINK=none' "$OUT/desktop.txt" &&
+	fail "notifications have no icon: no image, no app_icon, and desktop-entry '$NOTIFY_DESKTOP_ENTRY' resolves to no icon"
+while read -r reason; do fail "$reason"; done < <(sed -n 's/^FAIL //p' "$OUT/desktop.txt")
+while read -r reason; do warn "$reason"; done < <(sed -n 's/^WARN //p' "$OUT/desktop.txt")
 
 # ------------------------------------------------------------ screenshot ---
 screenshot() { # $1 = file
@@ -301,17 +439,77 @@ screenshot() { # $1 = file
 }
 screenshot "$OUT/screenshot.png"
 
+# Checks that need the web app (https://www.deezer.com), so a logged-in session.
+mpris_sync() { # $1 = label: MPRIS metadata must match the page's current song (#250)
+	local page mpris
+	sleep 1 # the page pushes MPRIS updates every 250 ms
+	page=$(cdp eval 'window.dzPlayer?.getCurrentSong?.()?.SNG_TITLE || navigator.mediaSession?.metadata?.title || ""' | python3 -c 'import json, sys; print(json.load(sys.stdin) or "")')
+	mpris=$(mpris_title)
+	R "MPRIS_SYNC_$1" "$([ "$page" = "$mpris" ] && echo yes || echo "no (page '$page', mpris '$mpris')")"
+	[ "$page" = "$mpris" ] || fail "MPRIS metadata out of sync with the page $1 (#250): page '$page', MPRIS '$mpris'"
+}
+css_check() { # $1 = flag, $2 = JS returning true when the injected CSS is active
+	has_arg "$1" || return 0
+	local ok
+	ok=$(cdp eval "$2")
+	R "CHECK_${1#--}" "$ok"
+	[ "$ok" = true ] || fail "$1 has no effect on the page"
+}
+logged_in_checks() {
+	[ "$CDP_OK" = yes ] || return 0
+	if ! page_is_deezer; then
+		warn "logged in, but the page is $(cdp url): in-page checks skipped"
+		return 0
+	fi
+	[ -n "$MPRIS_NAME" ] && mpris_sync AT_LOAD
+	# Patches 07-09 and 16 inject CSS on did-finish-load; probe each with a throwaway element.
+	css_check --hide-offline-banner '(() => { const w = document.createElement("div"); w.className = "alert-wrapper";
+		w.innerHTML = "<div data-testid=\"alert-AppOffline\"></div>"; document.body.append(w);
+		const hidden = getComputedStyle(w).display === "none"; w.remove(); return hidden; })()'
+	css_check --disable-animations '(() => { const d = document.createElement("div"); d.style.transition = "opacity 3s";
+		document.body.append(d); const off = getComputedStyle(d).transitionDuration === "0s"; d.remove(); return off; })()'
+	css_check --custom-theme '!!document.getElementById("dz-custom-theme")'
+	if [ "${PLAY:-0}" = 1 ] && [ -n "$MPRIS_NAME" ]; then
+		# The player may still be loading its queue: poll, and send Play again once.
+		local t status=
+		for t in $(seq $((${PLAY_WAIT:-20} * 2))); do
+			[ "$t" = 1 ] || [ "$t" = 20 ] &&
+				mpris_call Play
+			sleep 0.5
+			status=$(mpris_get org.mpris.MediaPlayer2.Player PlaybackStatus)
+			[ "$status" = Playing ] && break
+		done
+		sleep 3 # let the audio stream open
+		R PLAY_STATUS "$(mpris_get org.mpris.MediaPlayer2.Player PlaybackStatus)"
+		R PLAY_TITLE "$(mpris_title)"
+		have pactl && R AUDIO_STREAM "$(pactl list sink-inputs 2>/dev/null | grep -m1 'application.name' | cut -d'"' -f2)"
+		[ "$status" = Playing ] || warn "playback did not start"
+		mpris_sync PLAYING
+		mpris_call Pause
+	fi
+}
+
 # ----------------------------------------------------------------- login ---
 read_arl() { grep -E '^[[:space:]]*DEEZER_ARL=' "$1" | tail -1 | cut -d= -f2- | tr -d "\"' \r"; }
+startup_login() { # the app's own check at start: yes | no | "" (still running)
+	grep -q 'User autolog succeeded, loading' "$OUT/app.log" && { echo yes; return; }
+	grep -qE 'User autolog failed|must re-authenticate|loading login page' "$OUT/app.log" && echo no
+}
 ARL=""
 [ -n "${SESSION_FILE:-}" ] && [ -r "$SESSION_FILE" ] && ARL=$(read_arl "$SESSION_FILE")
 if [ -n "${SESSION_FILE:-}" ]; then
-	if [ -z "$ARL" ]; then
-		R LOGGED_IN no
+	R PROFILE_CACHE "${PROFILE_RESTORED:-no}"
+	for _ in $(seq 40); do [ -n "$(startup_login)" ] && break; sleep 0.5; done
+	if [ "$(startup_login)" = yes ]; then
+		LOGGED=yes
+		R LOGIN_SOURCE cache
+	elif [ -z "$ARL" ]; then
+		LOGGED=no
 		fail "SESSION_FILE has no DEEZER_ARL"
 	elif ! alive; then
-		R LOGGED_IN no
+		LOGGED=no
 	else
+		R LOGIN_SOURCE deep-link
 		ok_before=$(grep -c 'User autolog succeeded, loading' "$OUT/app.log")
 		lines_before=$(wc -l <"$OUT/app.log")
 		# A second instance hands the deep link to the running one, like a browser would.
@@ -323,23 +521,16 @@ if [ -n "${SESSION_FILE:-}" ]; then
 				grep -qE 'User autolog failed|must re-authenticate|Arl token is not found' && { LOGGED=no; break; }
 			sleep 0.5
 		done
-		R LOGGED_IN "${LOGGED:-timeout}"
-		[ "$LOGGED" = yes ] || fail "login with the shared session failed (${LOGGED:-timeout})"
+	fi
+	R LOGGED_IN "${LOGGED:-timeout}"
+	[ "$LOGGED" = yes ] || fail "login with the shared session failed (${LOGGED:-timeout})"
+	if [ "$LOGGED" = yes ]; then
+		for _ in $(seq 60); do grep -q 'Page loaded' "$OUT/app.log" && break; sleep 0.5; done
 		sleep "${LOGIN_SETTLE:-8}"
 		screenshot "$OUT/screenshot-logged-in.png"
-		if [ "$LOGGED" = yes ] && [ "${PLAY:-0}" = 1 ] && [ -n "$MPRIS_NAME" ]; then
-			dbus-send --session --dest="$MPRIS_NAME" /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Play
-			sleep "${PLAY_WAIT:-10}"
-			R PLAY_STATUS "$(mpris_get org.mpris.MediaPlayer2.Player PlaybackStatus)"
-			R PLAY_TITLE "$(dbus-send --session --print-reply --dest="$MPRIS_NAME" /org/mpris/MediaPlayer2 \
-				org.freedesktop.DBus.Properties.Get string:org.mpris.MediaPlayer2.Player string:Metadata 2>/dev/null |
-				grep -A1 '"xesam:title"' | tail -1 | grep -o '"[^"]*"' | tr -d '"')"
-			have pactl && R AUDIO_STREAM "$(pactl list sink-inputs 2>/dev/null | grep -m1 'application.name' | cut -d'"' -f2)"
-			[ "$(mpris_get org.mpris.MediaPlayer2.Player PlaybackStatus)" = Playing ] || warn "playback did not start"
-		fi
+		logged_in_checks
 	fi
 fi
-
 # ----------------------------------------------------------------- close ---
 # Closing the window hides it to the tray, or quits with --disable-systray.
 [[ " $APP_ARGS " == *" --disable-systray "* ]] && CLOSE=1
@@ -363,6 +554,8 @@ if [ "${CLOSE:-0}" = 1 ] && [ -n "$WIN" ] && alive; then
 fi
 
 # ------------------------------------------------------------------ logs ---
+# Drop the Wayland protocol trace (WAYLAND_DEBUG) once the app_id has been read.
+[ -n "${WAYLAND_DEBUG:-}" ] && sed -i -E '/^\[ *[0-9]+\.[0-9]+\] /d' "$OUT/app.log"
 FATAL_RE='Cannot find module|FATAL:|Failed to connect to Wayland display|Segmentation fault|Zygote process exited|Uncaught Exception|Missing X server'
 grep -E "$FATAL_RE" "$OUT/app.log" >"$OUT/fatal.txt" 2>/dev/null
 R LOG_FATAL "$(wc -l <"$OUT/fatal.txt")"
@@ -396,6 +589,18 @@ if [ "${HOLD:-0}" != 0 ]; then
 fi
 
 stop_app
+# Save the logged-in profile for the next run (cookies only, no caches). It holds
+# the session: it goes to PROFILE_OUT, never to $OUT.
+if [ "${LOGGED:-}" = yes ] && [ -n "${PROFILE_OUT:-}" ] && [ -n "$PROFILE_BASE" ]; then
+	sleep 2 # let Chromium flush the cookie store
+	for name in deezer-desktop Deezer; do
+		[ -f "$PROFILE_BASE/$name/Cookies" ] || continue
+		(umask 077 && tar -cf "$PROFILE_OUT" -C "$PROFILE_BASE" --exclude=Cache --exclude='Code Cache' \
+			--exclude=GPUCache --exclude='Service Worker' --exclude=DawnGraphiteCache --exclude=DawnWebGPUCache \
+			--exclude='*.log' --exclude=logs "$name") && echo "--- session cached for the next run"
+		break
+	done
+fi
 for p in "${PIDS[@]}"; do kill "$p" 2>/dev/null; done
 have pulseaudio && pulseaudio --kill >/dev/null 2>&1
 [ ${#FAILURES[@]} -eq 0 ]

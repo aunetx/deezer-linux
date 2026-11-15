@@ -1,0 +1,20 @@
+# One line per patch in patches/: "<patch name> <marker>". The marker is a string
+# the patch adds, so it must appear in the built app.asar when the patch is applied.
+# tests/unit checks this list against patches/; the smoke test checks it against
+# the running app's app.asar.
+01-start-in-tray                 "--start-in-tray"
+02-start-without-tray            "--disable-systray"
+03-disable-auto-updater          (isWindowsStore() ||
+04-remove-os-information         "--keep-kernel"
+05-provide-metadata-mpris        channel-mpris-control
+06-control-log-level             DZ_LOG_LEVEL
+07-improve-responsiveness        .ads-top { min-width: 0 !important; }
+08-hide-offline-banner           "--hide-offline-banner"
+09-disable-animations            "--disable-animations"
+10-disable-notifications         "--disable-notifications"
+11-fix-thumbar-actions           player-play-thumbar
+12-adjust-volume-on-wheel        volume_button_
+13-disable-hardware-acceleration "--disable-hardware-acceleration"
+14-override-resources-path       DZ_RESOURCES_PATH
+15-sync-theme                    org.freedesktop.appearance
+16-custom-theme                  dz-custom-theme

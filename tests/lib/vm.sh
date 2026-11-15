@@ -3,20 +3,24 @@
 # VM tier: throwaway QEMU VMs (cloud image + cloud-init), with or without a real
 # desktop session. Sourced by tests/run.sh, which sets the option variables.
 
-VM_PROFILES="ubuntu-headless fedora-headless ubuntu-gnome fedora-gnome fedora-kde ubuntu-sway debian-xfce"
+VM_PROFILES="ubuntu-headless ubuntu26-headless fedora-headless ubuntu-gnome ubuntu26-gnome fedora-gnome fedora-kde ubuntu-sway debian-xfce popos-cosmic"
 FEDORA_VERSION=${FEDORA_VERSION:-45}
 
-# profile -> "image display-mode native-package memory-MiB sessions"
+# profile -> "image display-mode native-package memory-MiB sessions [seed]"
 # display-mode: x11 = Xvfb inside the VM, host = the VM's own desktop session.
+# seed: tests/vm/seeds/<seed>.yaml (default: the profile name).
 vm_profile_info() {
 	case $1 in
 	ubuntu-headless) echo "ubuntu-24.04 x11 deb 3072 x11" ;;
+	ubuntu26-headless) echo "ubuntu-26.04 x11 deb 3072 x11 ubuntu-headless" ;;
 	fedora-headless) echo "fedora x11 rpm 3072 x11" ;;
 	ubuntu-gnome) echo "ubuntu-24.04 host deb 4096 wayland,xwayland,x11" ;;
+	ubuntu26-gnome) echo "ubuntu-26.04 host deb 4096 wayland,xwayland ubuntu-gnome" ;; # GNOME 50: no Xorg session
 	fedora-gnome) echo "fedora host rpm 4096 wayland,xwayland" ;;
 	fedora-kde) echo "fedora host rpm 6144 wayland,xwayland" ;;
 	ubuntu-sway) echo "ubuntu-24.04 host deb 3072 wayland,xwayland" ;;
 	debian-xfce) echo "debian-13 host deb 3072 x11" ;;
+	popos-cosmic) echo "ubuntu-24.04 host deb 4096 wayland,xwayland" ;; # Pop!_OS 24.04 repos on Ubuntu 24.04
 	*) return 1 ;;
 	esac
 }
@@ -124,7 +128,7 @@ vm_stop() {
 
 # Provisions a profile once (cloud-init: packages, desktop, autologin) and keeps
 # the result as a cached disk image, so later runs boot straight to the desktop.
-vm_profile_image() { # $1 = profile, $2 = image name, $3 = memory
+vm_profile_image() { # $1 = profile, $2 = image name, $3 = memory, $4 = seed
 	local golden=$CACHE_DIR/profiles/$1-$ARCH.qcow2 seed=$CACHE_DIR/profiles/$1-$ARCH-seed.iso
 	if [ -f "$golden" ] && [ "${VM_FRESH:-0}" != 1 ]; then echo "$golden"; return; fi
 	need qemu-img ssh scp
@@ -145,7 +149,7 @@ users:
     ssh_authorized_keys: ["$(cat "$(vm_key).pub")"]
 ssh_pwauth: false
 EOF
-		cat "$TESTS_DIR/vm/seeds/$1.yaml"
+		cat "$TESTS_DIR/vm/seeds/${4:-$1}.yaml"
 	} >"$tmp/user-data"
 	printf 'instance-id: %s\nlocal-hostname: %s\n' "deezer-$1" "deezer-$1" >"$tmp/meta-data"
 	local iso
@@ -181,8 +185,8 @@ vm_wait_desktop() {
 }
 
 vm_main() {
-	local image display native mem sessions
-	read -r image display native mem sessions <<<"$(vm_profile_info "$PROFILE")" ||
+	local image display native mem sessions seed
+	read -r image display native mem sessions seed <<<"$(vm_profile_info "$PROFILE")" ||
 		die "unknown profile '$PROFILE' (one of: $VM_PROFILES)"
 	PKG=${PKG:-$native}
 	SESSION=${SESSION:-$([ "$display" = x11 ] || [ "$sessions" = x11 ] && echo x11 || echo wayland)}
@@ -192,7 +196,7 @@ vm_main() {
 	[ "$LOGIN" = 1 ] && SESSION_SRC=$(resolve_session)
 
 	local golden
-	golden=$(vm_profile_image "$PROFILE" "$image" "$mem")
+	golden=$(vm_profile_image "$PROFILE" "$image" "$mem" "$seed")
 	OUT=${OUT:-$(new_out_dir vm "$PROFILE" "$PKG" "$SESSION")}
 	log "vm: $PROFILE ($ARCH) / $PKG / $SESSION ($(basename "$FILE")) -> $OUT"
 	vm_boot "$golden" "$CACHE_DIR/profiles/$PROFILE-$ARCH-seed.iso" "$mem" "$(mktemp -d "$CACHE_DIR/run.XXXX")"
@@ -226,13 +230,22 @@ vm_main() {
 	if [ "$LOGIN" = 1 ]; then
 		vm_scp_to "$SESSION_SRC" /tmp/dz/session.env
 		vm_ssh 'chmod 600 /tmp/dz/session.env'
-		smoke_env+=" SESSION_FILE=/tmp/dz/session.env"
+		smoke_env+=" SESSION_FILE=/tmp/dz/session.env PROFILE_OUT=/tmp/dz/profile-out.tar"
+		local cache
+		cache=$(session_cache_dir)
+		if [ -s "$cache/profile.tar" ]; then
+			vm_scp_to "$cache/profile.tar" /tmp/dz/profile-in.tar
+			smoke_env+=" PROFILE_IN=/tmp/dz/profile-in.tar"
+		fi
 	fi
 
 	log "running the smoke test"
 	vm_ssh "$smoke_env /tmp/dz/tests/smoke.sh" >"$OUT/run.log" 2>&1 || true
 	vm_qmp screendump "$OUT/vm-screen.png" || true
-	vm_ssh 'rm -f /tmp/dz/session.env'
+	if [ "$LOGIN" = 1 ] && vm_ssh 'test -s /tmp/dz/profile-out.tar'; then
+		(umask 077 && vm_scp_from /tmp/dz/profile-out.tar "$(session_cache_dir)/profile.tar") || true
+	fi
+	vm_ssh 'rm -f /tmp/dz/session.env /tmp/dz/profile-in.tar /tmp/dz/profile-out.tar'
 	vm_scp_from '/tmp/dz/out/*' "$OUT/" || true
 	scrub_out "$OUT" "$SESSION_SRC"
 
@@ -240,7 +253,7 @@ vm_main() {
 		log "VM kept running. Ctrl+C (or 'exit' in the shell) destroys it."
 		echo "  ssh:  ssh -i $(vm_key) -p $VM_SSH_PORT -o StrictHostKeyChecking=no tester@127.0.0.1   (password: tester)" >&2
 		echo "  vnc:  vncviewer 127.0.0.1:$VM_VNC" >&2
-		echo "  app:  $smoke_env /tmp/dz/tests/smoke.sh" | sed 's/SESSION_FILE=[^ ]*//' >&2
+		echo "  app:  $smoke_env /tmp/dz/tests/smoke.sh" | sed 's/SESSION_FILE=[^ ]*//; s/PROFILE_[A-Z]*=[^ ]*//g' >&2
 		if [ "$HOLD" = shell ]; then
 			ssh -t "${VM_SSH_OPTS[@]}" -i "$(vm_key)" -p "$VM_SSH_PORT" tester@127.0.0.1 || true
 		else

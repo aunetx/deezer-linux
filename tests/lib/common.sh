@@ -67,6 +67,15 @@ session_file() {
 	fi
 }
 
+# Logged-in app profile saved after a successful login, reused by later runs so
+# the account logs in once instead of on every run. Same secrecy as session.env.
+session_cache_dir() {
+	local d=$CACHE_DIR/session
+	(umask 077 && mkdir -p "$d")
+	chmod 700 "$d"
+	echo "$d"
+}
+
 # Prints a readable session file path, or dies. CI can pass DEEZER_ARL instead.
 resolve_session() {
 	if [ -n "${DEEZER_ARL:-}" ]; then

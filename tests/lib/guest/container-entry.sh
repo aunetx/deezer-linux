@@ -30,8 +30,15 @@ if [ -r /run/secrets/deezer-session.env ]; then
 	install -m 600 ${RUN_AS:+-o tester} /run/secrets/deezer-session.env /tmp/session.env
 	export SESSION_FILE=/tmp/session.env
 fi
+# Session cache (host: ~/.cache/deezer-linux-tests/session): a logged-in app profile.
+CACHE=/run/secrets/profile-cache
+if [ -n "${SESSION_FILE:-}" ] && [ -d "$CACHE" ]; then
+	[ -s "$CACHE/profile.tar" ] && install -m 600 ${RUN_AS:+-o tester} "$CACHE/profile.tar" /tmp/profile-in.tar &&
+		export PROFILE_IN=/tmp/profile-in.tar
+	export PROFILE_OUT=/tmp/profile-out.tar
+fi
 
-"${RUN_AS[@]}" env APP="$APP" OUT="$OUT" "$HERE/smoke.sh"
+"${RUN_AS[@]}" env APP="$APP" OUT="$OUT" PROFILE_IN="${PROFILE_IN:-}" PROFILE_OUT="${PROFILE_OUT:-}" "$HERE/smoke.sh"
 status=$?
 grep -q '^RESULT=' "$OUT/result.env" 2>/dev/null ||
 	printf 'RESULT=fail\nFAILURES=smoke test did not run (see run.log)\n' >>"$OUT/result.env"
@@ -43,5 +50,8 @@ if [ -s "$OUT/missing-libs.txt" ]; then
 	status=1
 fi
 cat "$OUT/install.env" >>"$OUT/result.env"
-rm -f /tmp/session.env
+if [ -s /tmp/profile-out.tar ] && [ -d "$CACHE" ]; then
+	install -m 600 -o "$(stat -c %u "$CACHE")" -g "$(stat -c %g "$CACHE")" /tmp/profile-out.tar "$CACHE/profile.tar"
+fi
+rm -f /tmp/session.env /tmp/profile-in.tar /tmp/profile-out.tar
 exit $status
