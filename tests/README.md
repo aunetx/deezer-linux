@@ -5,23 +5,46 @@
 | Tier          | Where the app runs                                              | Good for                                                    | Speed          |
 | ------------- | --------------------------------------------------------------- | ----------------------------------------------------------- | -------------- |
 | `container`   | Docker/Podman, headless Xvfb or sway                            | deb, rpm, AppImage, tar.xz, unpacked, nix; X11/Wayland/Xwayland | ~30 s per run   |
-| `vm`          | QEMU VM from a cloud image, headless or with a real desktop     | snap, flatpak, GNOME/KDE/Sway/XFCE sessions, real tray      | ~1–2 min (first run of a profile: +5–15 min) |
+| `vm`          | QEMU VM from a cloud image, headless or with a real desktop     | snap, flatpak, GNOME/KDE/Sway/XFCE/COSMIC sessions, real tray | ~1–2 min (first run of a profile: +5–15 min) |
 | `host`        | this machine, in your current session                           | Raspberry Pi, NixOS, your own desktop                        | ~20 s           |
+| `unit`        | the host, no app needed                                         | packaging metadata, patches, documented fixes, the tooling   | ~1 s            |
+
+Ubuntu 24.04 and 26.04 run in every tier: containers (`-d ubuntu-24.04|ubuntu-26.04`, any session), VMs (`ubuntu-headless`, `ubuntu-gnome`, `ubuntu26-headless`, `ubuntu26-gnome`) and the host. `popos-cosmic` is Ubuntu 24.04 with the COSMIC desktop from the Pop!_OS repository (#156).
 
 ## What gets checked
 
 Each run produces a `result.env` with:
 
 - **Process**: the app starts and stays alive, with no fatal log lines (missing modules, Wayland connection failures, segfaults, zygote crashes).
-- **Window**: it appears, how long that takes (a warning above 5 s), and its X11 class or Wayland `app_id`, which must be `dev.aunetx.deezer`.
-- **MPRIS**: the player registers with the right `Identity` and `DesktopEntry`, and reports a `PlaybackStatus`.
-- **Tray**: the app registers a StatusNotifierItem. A stub watcher stands in when there is no panel.
+- **Window**: it appears, how long that takes (a warning above 5 s), and its X11 class or Wayland `app_id`, which must be `dev.aunetx.deezer` (c093311). On GNOME/KDE Wayland, where AT-SPI has no `app_id`, it is read from the Wayland protocol (`WAYLAND_DEBUG`).
+- **Taskbar / dock linking** (#156, #229): an installed desktop entry must match the window, by file name (`<app_id>.desktop`) or `StartupWMClass`. Its `Icon` must resolve in an icon theme, and it must handle `deezer://` links.
+- **MPRIS**: the bus name is `org.mpris.MediaPlayer2.deezer`, with the right `Identity` and a `DesktopEntry` that names an installed desktop file. Without that file, GNOME's media controls show a generic icon (#189).
+- **Tray**: the app registers a StatusNotifierItem, and its icon resolves for a host outside the sandbox: a pixmap, or a file the host can read (a9aad21, snap). A stub watcher stands in when there is no panel.
+- **Notifications**: a test notification is sent from the page and captured on the bus, through a stub server, or a monitor when a real one runs. It must carry an icon: an image, an `app_icon`, or a `desktop-entry` hint naming an installed entry whose icon resolves (#189). With `--disable-notifications`, nothing may be sent.
+- **Patches**: each of the 16 patches leaves a marker (`lib/guest/patch-markers.txt`) in the `app.asar` that the running process opened.
+- **Page** (over the DevTools protocol): the user agent hides the kernel version, `linux/6.4.0`, unless `--keep-kernel` is set. With `--sync-theme --portal`, `prefers-color-scheme` follows the portal, including a live dark → light switch (#238).
 - **Packaging**: no unresolved libraries in `ldd`, and how long the install took.
 - **Patched features**:
   - `--start-in-tray`: no window appears.
   - `--disable-systray`, or `--close`: closing the window quits the app, or hides it to the tray.
-  - `--sync-theme` together with `--portal`: the app reads the portal setting.
-- **Logged in**, with `--login` and `--play`: autologin succeeds, and MPRIS playback starts and outputs audio.
+- **Logged in**, with `--login` and `--play`:
+  - Autologin succeeds.
+  - The page's current track matches the MPRIS title at load and while playing (#250).
+  - MPRIS `Play` starts playback and an audio stream.
+  - `--hide-offline-banner`, `--disable-animations` and `--custom-theme` take effect in the page. `--args "--custom-theme=@TESTS@/test-theme.css"` uses the theme shipped with the tests, because `@TESTS@` expands to the guest's test directory.
+
+`tests/run.sh unit` runs fast checks on the repository itself, with no package or app needed:
+
+- the desktop identity (`appId`, `desktopName`, `StartupWMClass`, scheme handler);
+- the Flatpak permissions (#271);
+- the snap and Flatpak `TMPDIR`;
+- the Electron version;
+- every patch adds its marker;
+- the documented fixes are still present (#250 polling, #238 portal, log level, scoped CSS, isolated custom theme);
+- patch 04's kernel-version logic, executed with node;
+- redaction of the lines the app really logs;
+- the desktop-linking rules;
+- every matrix line names a known distro, profile and session.
 
 ## Host requirements
 
@@ -87,6 +110,15 @@ How the session is handled:
 - Before you see the output, the `arl` and anything that looks like a token (JWTs, `sid`, `autolog/…`) are redacted. The run fails if the literal value is still present anywhere under `tests/out/`.
 - `tests/session.env` and `tests/out/` are git-ignored. Even so, read a log before you attach it to a public issue.
 
+### Logging in as rarely as possible
+
+Logging in again on every run looks like abuse to Deezer, so a run logs in through the deep link only once. After that, runs reuse the profile:
+
+- After a successful logged-in run, the app's profile is saved without caches or logs to `~/.cache/deezer-linux-tests/session/profile.tar` (directory mode 700, file mode 600). It never goes under `tests/out/`.
+- The next `--login` run restores that profile before starting the app, in containers and VMs alike. The app then logs in by itself from its cookies, like a desktop app that was already logged in. `result.env` records `LOGIN_SOURCE=cache` in that case, and `deep-link` when the deep link had to be used.
+- Runs use `--password-store=basic`, so the cookies can be decrypted in another guest.
+- `tests/run.sh session forget` deletes the cached profile. Do this after changing account. Snap is not supported: it always uses the deep link.
+
 ## Debugging
 
 | Option     | Effect                                                                                       |
@@ -128,7 +160,15 @@ tests/
     install.sh           installs one package, prints the launch command
     smoke.sh             starts display, bus and app, runs every check, writes result.env
     container-entry.sh   container entrypoint (install, then smoke test as an unprivileged user)
-    *.py                 sway, AT-SPI and tray window probes, fake portal, redaction
+    cdp.py               evaluates JavaScript in the page (DevTools protocol, stdlib only)
+    notify_probe.py      notification server or bus monitor that records Notify calls
+    tray_probe.py        reads registered tray items and resolves their icons
+    desktop_probe.py     desktop entry / taskbar / MPRIS / notification linking
+    asar_probe.py        patch markers in the running app.asar
+    patch-markers.txt    one marker per patch
+    test-theme.css       theme for --custom-theme=@TESTS@/test-theme.css
+    *.py                 sway and AT-SPI window probes, fake portal, redaction
+  unit/                  `tests/run.sh unit` (python unittest)
 ```
 
-To add a distro, add a line to `distro_info` in `lib/common.sh` (with a Dockerfile if it is a new family). To add a desktop, add a seed under `vm/seeds/` and a line to `vm_profile_info` in `lib/vm.sh`.
+When a patch is added, add its marker to `lib/guest/patch-markers.txt`. `tests/run.sh unit` fails until you do. To add a distro, add a line to `distro_info` in `lib/common.sh` (with a Dockerfile if it is a new family). To add a desktop, add a seed under `vm/seeds/` and a line to `vm_profile_info` in `lib/vm.sh`.
