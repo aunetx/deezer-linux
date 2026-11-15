@@ -65,11 +65,24 @@ def serve(conn):
     conn.register_object("/org/freedesktop/Notifications", node.interfaces[0], on_call, None, None)
 
 
+def monitor_rule(server):
+    """Only calls TO the server: GNOME 50 relays each one (org.gnome.Shell.Notifications, a gjs
+    process, -> gnome-shell), which would otherwise be recorded twice."""
+    return f"type='method_call',interface='{NAME}',member='Notify',destination='{server}'"
+
+
 def monitor():
     addr = Gio.dbus_address_get_for_bus_sync(Gio.BusType.SESSION, None)
     conn = Gio.DBusConnection.new_for_address_sync(
         addr, Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT | Gio.DBusConnectionFlags.MESSAGE_BUS_CONNECTION,
         None, None)
+
+    # Sync calls first, the filter last: the filter drops every message it sees, including the replies
+    # a call_sync waits for, so adding it first makes BecomeMonitor block forever.
+    server = conn.call_sync("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "GetNameOwner",
+                            GLib.Variant("(s)", (NAME,)), None, 0, 5000, None).unpack()[0]
+    conn.call_sync("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus.Monitoring",
+                   "BecomeMonitor", GLib.Variant("(asu)", ([monitor_rule(server)], 0)), None, 0, 5000, None)
 
     def on_message(conn, msg, incoming):
         if (msg.get_message_type() == Gio.DBusMessageType.METHOD_CALL and msg.get_member() == "Notify"
@@ -78,20 +91,22 @@ def monitor():
         return None  # a monitor only observes
 
     conn.add_filter(on_message)
-    rule = f"type='method_call',interface='{NAME}',member='Notify'"
-    conn.call_sync("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus.Monitoring",
-                   "BecomeMonitor", GLib.Variant("(asu)", ([rule], 0)), None, 0, -1, None)
     print("NOTIFY_MONITOR_READY", flush=True)
     return conn
 
 
-bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
-owner = bus.call_sync("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameHasOwner",
-                      GLib.Variant("(s)", (NAME,)), None, 0, -1, None).unpack()[0]
-if owner:
-    keep = monitor()
-else:
-    Gio.bus_own_name_on_connection(bus, NAME, 0, lambda c, n: print("NOTIFY_SERVER_READY", flush=True),
-                                   lambda c, n: sys.exit(1))
-    serve(bus)
-GLib.MainLoop().run()
+def main():
+    bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+    owner = bus.call_sync("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameHasOwner",
+                          GLib.Variant("(s)", (NAME,)), None, 0, 5000, None).unpack()[0]
+    if owner:
+        keep = monitor()
+    else:
+        Gio.bus_own_name_on_connection(bus, NAME, 0, lambda c, n: print("NOTIFY_SERVER_READY", flush=True),
+                                       lambda c, n: sys.exit(1))
+        serve(bus)
+    GLib.MainLoop().run()
+
+
+if __name__ == "__main__":
+    main()

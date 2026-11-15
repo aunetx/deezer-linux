@@ -9,16 +9,19 @@ apt:
       keyserver: keyserver.ubuntu.com
 package_update: true
 packages: [cosmic-session, xdg-desktop-portal-cosmic, xwayland, at-spi2-core, python3-gi, gir1.2-atspi-2.0,
-           x11-utils, dbus-x11, flatpak, libfuse2t64, fonts-dejavu-core]
+           x11-utils, xdotool, dbus-x11, flatpak, libfuse2t64, fonts-dejavu-core]
 write_files:
   - path: /etc/systemd/system/getty@tty1.service.d/autologin.conf
     content: |
       [Service]
       ExecStart=
       ExecStart=-/sbin/agetty --autologin tester --noclear %I $TERM
+  # start-cosmic re-executes itself through "$SHELL -l", which reads this file
+  # again: the exported guard stops the loop (without it, tty1 never leaves bash).
   - path: /etc/profile.d/zz-cosmic.sh
     content: |
-      if [ "$(tty)" = /dev/tty1 ] && [ -z "$WAYLAND_DISPLAY" ]; then
+      if [ "$(tty)" = /dev/tty1 ] && [ -z "$WAYLAND_DISPLAY" ] && [ -z "$COSMIC_AUTOSTART" ]; then
+        export COSMIC_AUTOSTART=1
         exec start-cosmic >/tmp/cosmic.log 2>&1
       fi
 runcmd:

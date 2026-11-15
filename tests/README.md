@@ -9,18 +9,18 @@
 | `host`        | this machine, in your current session                           | Raspberry Pi, NixOS, your own desktop                        | ~20 s           |
 | `unit`        | the host, no app needed                                         | packaging metadata, patches, documented fixes, the tooling   | ~1 s            |
 
-Ubuntu 24.04 and 26.04 run in every tier: containers (`-d ubuntu-24.04|ubuntu-26.04`, any session), VMs (`ubuntu-headless`, `ubuntu-gnome`, `ubuntu26-headless`, `ubuntu26-gnome`) and the host. `popos-cosmic` is Ubuntu 24.04 with the COSMIC desktop from the Pop!_OS repository (#156).
+Ubuntu 24.04 and 26.04 run in every tier: containers (`-d ubuntu-24.04|ubuntu-26.04`, any session), VMs (`ubuntu-headless`, `ubuntu-gnome`, `ubuntu26-headless`, `ubuntu26-gnome`) and the host. `popos-cosmic` is Ubuntu 24.04 with the COSMIC desktop from the Pop!_OS repository (#156), autologged into a real COSMIC session (Wayland, with Xwayland for `-s xwayland`).
 
 ## What gets checked
 
 Each run produces a `result.env` with:
 
 - **Process**: the app starts and stays alive, with no fatal log lines (missing modules, Wayland connection failures, segfaults, zygote crashes).
-- **Window**: it appears, how long that takes (a warning above 5 s), and its X11 class or Wayland `app_id`, which must be `dev.aunetx.deezer` (c093311). On GNOME/KDE Wayland, where AT-SPI has no `app_id`, it is read from the Wayland protocol (`WAYLAND_DEBUG`).
+- **Window**: it appears, how long that takes (a warning above 5 s), and its X11 class or Wayland `app_id`, which must be `dev.aunetx.deezer` (c093311). On GNOME it is read from the shell (`org.gnome.Shell.Introspect`, which the GNOME test VMs open with `gnome-shell --unsafe-mode`; a host session is never switched to it). On compositors that offer the `ext-foreign-toplevel-list-v1` protocol (COSMIC, and other wlroots-style ones), it is read from the compositor's toplevel list (`toplevel` backend; it cannot close the window, so `--close` is skipped with a warning there). Elsewhere on Wayland (KDE, or GNOME without unsafe mode), where AT-SPI has no `app_id`, it is read from the Wayland protocol (`WAYLAND_DEBUG`), once the toplevel is mapped. Finding: on Wayland the window maps only after about 10 s, which is a real app behaviour (`ready-to-show` never fires for a hidden window on Wayland, so the app waits for its 10 s fallback); the >5 s warning there is expected.
 - **Taskbar / dock linking** (#156, #229): an installed desktop entry must match the window, by file name (`<app_id>.desktop`) or `StartupWMClass`. Its `Icon` must resolve in an icon theme, and it must handle `deezer://` links.
 - **MPRIS**: the bus name is `org.mpris.MediaPlayer2.deezer`, with the right `Identity` and a `DesktopEntry` that names an installed desktop file. Without that file, GNOME's media controls show a generic icon (#189).
 - **Tray**: the app registers a StatusNotifierItem, and its icon resolves for a host outside the sandbox: a pixmap, or a file the host can read (a9aad21, snap). A stub watcher stands in when there is no panel.
-- **Notifications**: a test notification is sent from the page and captured on the bus, through a stub server, or a monitor when a real one runs. It must carry an icon: an image, an `app_icon`, or a `desktop-entry` hint naming an installed entry whose icon resolves (#189). With `--disable-notifications`, nothing may be sent.
+- **Notifications**: a test notification is sent from the page and captured on the bus, through a stub server, or a monitor when a real one runs (`NOTIFY_PROBE=server|monitor` in `result.env`; on the host, a stub server means the session has no notification server and is warned about). It must carry an icon: an image, an `app_icon`, or a `desktop-entry` hint naming an installed entry whose icon resolves (#189). With `--disable-notifications`, nothing may be sent.
 - **Patches**: each of the 16 patches leaves a marker (`lib/guest/patch-markers.txt`) in the `app.asar` that the running process opened.
 - **Page** (over the DevTools protocol): the user agent hides the kernel version, `linux/6.4.0`, unless `--keep-kernel` is set. With `--sync-theme --portal`, `prefers-color-scheme` follows the portal, including a live dark → light switch (#238).
 - **Packaging**: no unresolved libraries in `ldd`, and how long the install took.
@@ -167,7 +167,7 @@ tests/
     asar_probe.py        patch markers in the running app.asar
     patch-markers.txt    one marker per patch
     test-theme.css       theme for --custom-theme=@TESTS@/test-theme.css
-    *.py                 sway and AT-SPI window probes, fake portal, redaction
+    *.py                 sway, GNOME Shell, foreign-toplevel and AT-SPI window probes, fake portal, redaction
   unit/                  `tests/run.sh unit` (python unittest)
 ```
 

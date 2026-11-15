@@ -176,6 +176,47 @@ class Matrix(unittest.TestCase):
                 self.assertTrue(os.path.isfile(os.path.join(TESTS, "vm", "seeds", f"{seed}.yaml")))
 
 
+class GuestProbes(unittest.TestCase):
+    def test_gnome_windows_rows(self):
+        windows = {
+            7: {"wm-class": "dev.aunetx.deezer", "app-id": "deezer-desktop.desktop", "title": "Deezer",
+                "client-type": 0, "is-hidden": False},
+            8: {"wm-class": "deezer-desktop", "app-id": "window:3", "title": "Deezer", "client-type": 1},
+            9: {"wm-class": "dev.aunetx.deezer", "title": "hidden", "is-hidden": True},
+            10: {"wm-class": "org.gnome.Terminal", "app-id": "org.gnome.Terminal.desktop", "title": "tester"},
+        }
+        self.assertEqual(list(load("gnome_windows").rows(windows)), [
+            "7\tdev.aunetx.deezer\tDeezer\twayland\tdeezer-desktop.desktop",
+            "8\tdeezer-desktop\tDeezer\tx11\twindow:3",
+        ])
+
+    def test_toplevel_windows_wire_format(self):
+        tl = load("toplevel_windows")
+        # Events as the compositor sends them for two handles (3, 4), split across reads.
+        wire = (tl.message(3, tl.HANDLE_IDENTIFIER, tl.string("a1b2"))
+                + tl.message(3, tl.HANDLE_APP_ID, tl.string("dev.aunetx.deezer"))
+                + tl.message(3, tl.HANDLE_TITLE, tl.string("Deezer"))
+                + tl.message(4, tl.HANDLE_APP_ID, tl.string("com.system76.CosmicTerm"))
+                + tl.message(4, tl.HANDLE_TITLE, tl.string("tester@vm")))
+        first, rest = tl.split(wire[:21])
+        self.assertEqual(first, [(3, tl.HANDLE_IDENTIFIER, tl.string("a1b2"))])
+        msgs, rest = tl.split(rest + wire[21:])
+        self.assertEqual((len(msgs), rest), (4, b""))
+        handles = {3: {"id": "", "app_id": "", "title": ""}, 4: {"id": "", "app_id": "", "title": ""}}
+        for obj, op, body in first + msgs:
+            tl.update(handles, obj, op, body)
+        self.assertEqual(list(tl.rows(handles)), ["a1b2\tdev.aunetx.deezer\tDeezer\tforeign-toplevel"])
+        self.assertEqual(len(list(tl.rows(handles, show_all=True))), 2)
+        tl.update(handles, 3, tl.HANDLE_CLOSED, b"")
+        self.assertEqual(list(tl.rows(handles)), [])
+
+    @unittest.skipUnless(importlib.util.find_spec("gi"), "needs PyGObject")
+    def test_notify_monitor_rule_targets_the_server(self):
+        rule = load("notify_probe").monitor_rule(":1.42")
+        self.assertIn("member='Notify'", rule)
+        self.assertTrue(rule.endswith("destination=':1.42'"))
+
+
 class Scripts(unittest.TestCase):
     def test_shell_syntax(self):
         for path in [os.path.join(TESTS, "run.sh")] + glob.glob(os.path.join(TESTS, "lib", "**", "*.sh"),

@@ -144,6 +144,10 @@ host)
 		WINDOW_BACKEND=sway
 	elif { [ "${XDG_SESSION_TYPE:-}" = x11 ] || has_arg --ozone-platform=x11; } && [ -n "${DISPLAY:-}" ] && have xdotool; then
 		WINDOW_BACKEND=xdotool # exact WM_CLASS and can close windows, unlike AT-SPI (also Xwayland clients)
+	elif have python3 && python3 "$HERE/gnome_windows.py" >/dev/null 2>&1; then
+		WINDOW_BACKEND=gnome # GNOME Shell Introspect (gnome-shell --unsafe-mode): app_id, title, mapped state
+	elif [ "${XDG_SESSION_TYPE:-}" = wayland ] && have python3 && python3 "$HERE/toplevel_windows.py" --all >/dev/null 2>&1; then
+		WINDOW_BACKEND=toplevel # ext-foreign-toplevel-list (COSMIC, wlroots): app_id of mapped toplevels
 	elif have python3 && python3 -c 'import gi; gi.require_version("Atspi", "2.0")' 2>/dev/null; then
 		WINDOW_BACKEND=atspi
 		APP_FLAGS+=(--force-renderer-accessibility)
@@ -194,7 +198,7 @@ if [ "$SNI_STUB" = yes ]; then
 	SNI_LOG="$OUT/sni.log" bg python3 "$HERE/sni_watcher.py" >/dev/null 2>&1
 	sleep 0.5
 fi
-NOTIFY_LOG="$OUT/notify.log" bg python3 "$HERE/notify_probe.py" >/dev/null 2>"$OUT/notify-probe.log"
+NOTIFY_LOG="$OUT/notify.log" bg python3 "$HERE/notify_probe.py" >"$OUT/notify-probe.log" 2>&1
 if [ "${FAKE_PORTAL:-0}" = 1 ]; then
 	PORTAL_LOG="$OUT/portal.log" bg python3 "$HERE/fake_portal.py" >/dev/null 2>&1
 	sleep 0.5
@@ -259,8 +263,22 @@ windows() {
 	sway)
 		swaymsg -t get_tree 2>/dev/null | python3 "$HERE/sway_windows.py"
 		;;
+	gnome)
+		python3 "$HERE/gnome_windows.py" 2>/dev/null | cut -f1-4
+		;;
+	toplevel)
+		python3 "$HERE/toplevel_windows.py" 2>/dev/null
+		;;
 	atspi)
-		python3 "$HERE/atspi_windows.py" 2>/dev/null | awk -F'\t' '$3 == "yes" { print NR "\t" $1 "\t" $2 "\tatspi" }'
+		local app_id=""
+		if [ -n "${WAYLAND_DEBUG:-}" ]; then
+			# AT-SPI calls the frame "showing" long before the compositor maps it (on Wayland the app
+			# maps its toplevel only after a 10 s fallback): wait for xdg_toplevel.set_app_id.
+			app_id=$(grep -m1 -aoE 'xdg_toplevel#[0-9]+\.set_app_id\("[^"]*"\)' "$OUT/app.log" | cut -d'"' -f2)
+			[ -n "$app_id" ] || return 0
+		fi
+		python3 "$HERE/atspi_windows.py" 2>/dev/null |
+			awk -F'\t' -v id="$app_id" '$3 == "yes" { print NR "\t" (id != "" ? id : $1) "\t" $2 "\tatspi" }'
 		;;
 	esac
 }
@@ -280,11 +298,7 @@ done
 alive && R ALIVE yes || { R ALIVE no; fail "process exited"; }
 R TIME_TO_WINDOW "${TWIN:-none}"
 WIN=$(windows | head -1)
-if [ -n "${WAYLAND_DEBUG:-}" ] && [ -n "$WIN" ]; then
-	APP_ID=$(grep -m1 -oE 'set_app_id\("[^"]*"\)' "$OUT/app.log" | cut -d'"' -f2)
-	R WAYLAND_APP_ID "${APP_ID:-none}"
-	WIN=$(awk -F'\t' -v id="${APP_ID:-?}" 'BEGIN { OFS = FS } { $2 = id; print }' <<<"$WIN")
-fi
+[ -n "${WAYLAND_DEBUG:-}" ] && R WAYLAND_APP_ID "$(cut -f2 <<<"$WIN" | grep . || echo none)"
 R WINDOW_CLASS "$(cut -f2 <<<"$WIN")"
 R WINDOW_TITLE "$(cut -f3 <<<"$WIN")"
 R WINDOW_SHELL "$(cut -f4 <<<"$WIN")"
@@ -381,6 +395,11 @@ if [ "$CDP_OK" = yes ]; then
 	sleep 1
 	NOTIFS=$(tail -n +"$((before + 1))" "$OUT/notify.log")
 	R NOTIFY_COUNT "$(grep -c . <<<"$NOTIFS")"
+	# monitor: watched a real notification server; server: the probe had to be the server itself.
+	NOTIFY_PROBE=$(grep -m1 -oE '^NOTIFY_(MONITOR|SERVER)_READY' "$OUT/notify-probe.log" | cut -d_ -f2 | tr '[:upper:]' '[:lower:]')
+	R NOTIFY_PROBE "${NOTIFY_PROBE:-none}"
+	[ "$DISPLAY_MODE" = host ] && [ "$NOTIFY_PROBE" = server ] &&
+		warn "no notification server in this desktop session: the probe answered the app itself"
 	if has_arg --disable-notifications; then
 		[ -n "$NOTIFS" ] && fail "a notification was sent although --disable-notifications is set (patch 10)"
 	elif [ -z "$NOTIFS" ]; then
@@ -538,6 +557,8 @@ if [ "${CLOSE:-0}" = 1 ] && [ -n "$WIN" ] && alive; then
 	case $WINDOW_BACKEND in
 	xdotool) xdotool windowactivate --sync "$(cut -f1 <<<"$WIN")" key --clearmodifiers alt+F4 ;;
 	sway) swaymsg "[con_id=$(cut -f1 <<<"$WIN")] kill" ;;
+	gnome) gdbus call --session -d org.gnome.Shell -o /org/gnome/Shell -m org.gnome.Shell.Eval \
+		"global.get_window_actors().map((a) => a.meta_window).find((w) => w.get_id() == $(cut -f1 <<<"$WIN"))?.delete(global.get_current_time())" ;;
 	*) WIN="" ;;
 	esac >/dev/null 2>&1
 	if [ -z "$WIN" ]; then
