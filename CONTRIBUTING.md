@@ -32,6 +32,8 @@ By participating in this project, you agree to maintain a respectful and inclusi
 7. Open a Pull Request
 8. Provide information about the changes made and the packages built and manually tested
 
+To check a package on several distros, sessions (X11, Wayland, Xwayland) and desktops without installing them, see [tests/README.md](./tests/README.md). For example, `tests/run.sh matrix` runs the default matrix, and `tests/run.sh report` turns the results into a table you can paste into a PR.
+
 ### Build Requirements
 
 Ensure you have all required dependencies:
