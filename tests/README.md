@@ -64,14 +64,15 @@ The VM tier caches cloud images, an SSH key and provisioned profile disks in `~/
 ## Quick start
 
 ```sh
-tests/run.sh fetch                                # latest release packages → artifacts/<arch>/ (or build them)
+tests/run.sh build                                # build every package from this checkout → artifacts/<arch>/
+tests/run.sh fetch                                # or: download the latest RELEASED packages (checks a release, not your change)
 tests/run.sh container                            # Ubuntu 24.04, .deb, X11
 tests/run.sh container -d fedora -s wayland       # Fedora, .rpm, headless sway
 tests/run.sh container -d arch -p appimage -s xwayland
 tests/run.sh vm -P ubuntu-gnome -s wayland        # real GNOME session, AppIndicator tray
 tests/run.sh vm -P ubuntu-headless -p snap
 tests/run.sh host                                 # the installed app, in your session
-tests/run.sh matrix                               # everything in tests/matrix.txt, then a report
+tests/run.sh matrix                               # build, then everything in tests/matrix.txt, then a report (--no-build: reuse artifacts/)
 tests/run.sh report                               # Markdown table of tests/out/, ready to paste into an issue
 ```
 
@@ -101,7 +102,7 @@ No step waits for a fixed time. Each wait is a condition with a maximum time, an
 
 VMs start the app only once the desktop is ready, meaning the logind session is active and the desktop owns its bus names: shell, tray watcher, notification server (`vm_profile_ready` in `lib/vm.sh`). A notification server that is only D-Bus activatable is started before it is watched. Every wait and its duration is logged to `waits.log`. A timeout fails the check that depends on it, and never passes silently. `tests/run.sh unit` rejects any new `sleep` that is not the poll interval of such a wait.
 
-`tests/run.sh help` lists every option, and `tests/run.sh list` lists the distros, VM profiles and sessions. By default each run tests the newest matching package in `artifacts/<arch>/`. Pass `-f path/to/package` to test a different file.
+`tests/run.sh help` lists every option, and `tests/run.sh list` lists the distros, VM profiles and sessions. The tests run before a release, so `matrix` first runs `build` (`make install_deps`, which wipes `artifacts/` and re-applies every patch, then each `make build_<type>_<arch>`; snap and flatpak are skipped with a warning when `snapcraft` or `flatpak-builder` is missing). The single-run commands (`container`, `vm`, `host`) do not build: they test the newest matching package in `artifacts/<arch>/`, so run `build` first, or they test whatever an earlier build left. Pass `-f path/to/package` to test a different file.
 
 The command exits non-zero on failure. Results go in `tests/out/<timestamp>-<environment>/`:
 

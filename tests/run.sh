@@ -15,11 +15,13 @@ Commands
   container   smoke test in a throwaway container (X11 / Wayland / Xwayland, headless)
   vm          smoke test in a throwaway QEMU VM with a real desktop session
   host        smoke test on this machine, in your current session (Raspberry Pi, NixOS...)
-  matrix      run every line of a matrix file (default: tests/matrix.txt), then report
+  matrix      build the packages, run every line of a matrix file (default: tests/matrix.txt), then report
+              [--no-build] to test the packages already in artifacts/
+  build       build the packages from this checkout into artifacts/<arch>/  [-a ARCH] [TYPE...]
   report      summarise results under tests/out/ as Markdown (paste into an issue)
   unit        fast checks of the repo and of the test tooling (no package, no display)
   session     manage the shared Deezer session: check | path | import-firefox | forget
-  fetch       download release packages into artifacts/<arch>/  [--version vX.Y.Z] [--arch x64|arm64|all]
+  fetch       download RELEASED packages (to check a release, not a change) into artifacts/<arch>/  [--version vX.Y.Z] [--arch x64|arm64|all]
   doctor      show which host tools are present for each tier
   list        list distros, VM profiles, sessions and package types
 
@@ -187,8 +189,18 @@ cmd_vm() {
 
 # -------------------------------------------------------------- matrix ---
 cmd_matrix() {
-	local file=${1:-$TESTS_DIR/matrix.txt} n=0 failed=0 root
+	local file=$TESTS_DIR/matrix.txt n=0 failed=0 root build=1
+	while [ $# -gt 0 ]; do
+		case $1 in
+		--no-build) build=0 ;;
+		-*) die "usage: tests/run.sh matrix [--no-build] [FILE]" ;;
+		*) file=$1 ;;
+		esac
+		shift
+	done
 	[ -f "$file" ] || die "no matrix file $file"
+	# Tests run before a release: they must test this checkout, not older packages.
+	[ $build = 1 ] && cmd_build
 	root=$(new_out_dir matrix)
 	while read -r line; do
 		line=${line%%#*}
@@ -258,6 +270,34 @@ cmd_session() {
 	esac
 }
 
+# --------------------------------------------------------------- build ---
+# Builds the packages from this checkout (patches, package-append.json, snapcraft.yaml...),
+# so a run tests the change and never a package built earlier. `make install_deps` starts
+# from a clean tree: it wipes artifacts/ and re-applies every patch.
+BUILD_TYPES="deb rpm appimage tar.xz flatpak snap"
+cmd_build() {
+	local arch=$(host_arch) types=() t
+	while [ $# -gt 0 ]; do
+		case $1 in
+		-a | --arch) arch=$2; shift ;;
+		*) [[ " $BUILD_TYPES " == *" $1 "* ]] || die "unknown package type '$1' (one of: $BUILD_TYPES)"; types+=("$1") ;;
+		esac
+		shift
+	done
+	[ ${#types[@]} -gt 0 ] || types=($BUILD_TYPES)
+	need make jq
+	[ "$arch" = "$(host_arch)" ] || warn "building $arch on a $(host_arch) host: only formats electron-builder can cross-build will work"
+	log "building from $(git -C "$REPO_DIR" rev-parse --short HEAD)$(git -C "$REPO_DIR" diff --quiet HEAD -- || echo '+uncommitted changes'): ${types[*]} ($arch)"
+	make -C "$REPO_DIR" install_deps
+	for t in "${types[@]}"; do
+		case $t in
+		snap) have snapcraft || { warn "snapcraft is missing: not building the snap"; continue; } ;;
+		flatpak) have flatpak-builder || { warn "flatpak-builder is missing: not building the flatpak"; continue; } ;;
+		esac
+		make -C "$REPO_DIR" "build_${t}_${arch}"
+	done
+}
+
 # --------------------------------------------------------------- fetch ---
 cmd_fetch() {
 	local version=latest arch
@@ -325,7 +365,7 @@ cmd_list() {
 }
 
 case ${1:-help} in
-container | vm | host | matrix | report | unit | session | fetch | doctor | list)
+container | vm | host | matrix | build | report | unit | session | fetch | doctor | list)
 	c=$1
 	shift
 	"cmd_$c" "$@"
