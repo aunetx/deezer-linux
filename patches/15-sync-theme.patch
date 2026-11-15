@@ -11,7 +11,7 @@ diff --git a/build/main.js b/build/main.js
 index d848a8d..7f265b9 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3918,6 +3918,52 @@
+@@ -3922,6 +3922,52 @@
          this.window.on("unresponsive", () => {
            external_electron_log_default().warn("Window is not responsive");
          });

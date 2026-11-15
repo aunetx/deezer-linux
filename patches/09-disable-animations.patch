@@ -11,7 +11,7 @@ diff --git a/build/main.js b/build/main.js
 index 2362cc8..a178ef3 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3819,6 +3819,18 @@
+@@ -3823,6 +3823,18 @@
            }),
          isPlatform(PLATFORM.WINDOWS) && this.loadMenu(),
          this.appService.loadPage(this.deepLink.getPathFromArgv(process.argv));

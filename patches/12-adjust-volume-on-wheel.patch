@@ -11,7 +11,7 @@ diff --git a/build/main.js b/build/main.js
 index 5a6fb0c..cee786e 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3878,6 +3878,22 @@
+@@ -3882,6 +3882,22 @@
              external_electron_namespaceObject.shell.openExternal(targetUrl);
          }
        };

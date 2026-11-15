@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: josselinonduty <contact@josselinonduty.fr>
+Date: Sun, 15 Nov 2026 18:53:24 +0100
+Subject: [PATCH] fix: name the desktop id after the snap desktop file
+
+---
+ build/main.js | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/build/main.js b/build/main.js
+--- a/build/main.js
++++ b/build/main.js
+@@ -3497,6 +3497,15 @@
+       if (process.argv.includes("--disable-notifications") || process.env.DZ_DISABLE_NOTIFICATIONS === "yes") {
+         external_electron_namespaceObject.app.commandLine.appendSwitch("disable-notifications");
+       }
++      // snapd installs the desktop file as <snap instance>_<app>.desktop, the app
++      // being "deezer-desktop" in snapcraft.yaml: name the windows, notifications
++      // and MPRIS player after it (before any window exists) so that shells
++      // resolve them to the launcher.
++      if (process.env.SNAP && process.env.SNAP_INSTANCE_NAME) {
++        external_electron_namespaceObject.app.setDesktopName(
++          `${process.env.SNAP_INSTANCE_NAME}_deezer-desktop.desktop`
++        );
++      }
+       external_electron_log_default().debug("Init App"),
+         external_electron_namespaceObject.app.commandLine.appendSwitch(
+           "autoplay-policy",

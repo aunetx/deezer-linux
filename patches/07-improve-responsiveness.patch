@@ -15,7 +15,7 @@ diff --git a/build/main.js b/build/main.js
 index cbfa0c5..d801768 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3572,8 +3572,8 @@
+@@ -3576,8 +3576,8 @@
          },
          windowOptions = {
            title: "Deezer Desktop",
@@ -26,7 +26,7 @@ index cbfa0c5..d801768 100644
            icon: external_electron_namespaceObject.nativeImage.createFromPath(
              getAppIcon(external_electron_namespaceObject.app)
            ),
-@@ -3710,6 +3710,69 @@
+@@ -3714,6 +3714,69 @@
          });
      }
      loadWindow() {
