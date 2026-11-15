@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Record desktop notifications (org.freedesktop.Notifications.Notify).
 
-If nobody owns org.freedesktop.Notifications (headless guests), this acts as a
-minimal notification server. Otherwise (GNOME, KDE, XFCE...), it watches the
-calls as a bus monitor, so the real server still shows them.
+If the desktop has a notification server (GNOME, KDE, XFCE...), this watches the
+calls as a bus monitor, so the real server still shows them. A server that is
+only D-Bus activatable is started first, so the probe never races its
+activation. Without any server (headless guests), this acts as a minimal one.
 
 Every Notify call is written as one JSON line to $NOTIFY_LOG (and stdout):
   {"app_name", "app_icon", "summary", "desktop_entry", "image": "data WxH" | "path ..." | ""}
@@ -95,10 +96,17 @@ def monitor():
     return conn
 
 
+def bus_call(bus, method, args):
+    return bus.call_sync("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", method,
+                         args, None, 0, 25000, None).unpack()[0]
+
+
 def main():
     bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
-    owner = bus.call_sync("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameHasOwner",
-                          GLib.Variant("(s)", (NAME,)), None, 0, 5000, None).unpack()[0]
+    owner = bus_call(bus, "NameHasOwner", GLib.Variant("(s)", (NAME,)))
+    if not owner and NAME in bus_call(bus, "ListActivatableNames", None):
+        bus_call(bus, "StartServiceByName", GLib.Variant("(su)", (NAME, 0)))  # returns once it owns the name
+        owner = True
     if owner:
         keep = monitor()
     else:

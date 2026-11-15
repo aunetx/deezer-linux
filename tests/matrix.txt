@@ -28,6 +28,7 @@ container -d nix          -p nix      -s x11
 container -d ubuntu-24.04 -p deb -s x11 --close
 container -d ubuntu-24.04 -p deb -s x11 --args "--disable-systray"
 container -d ubuntu-24.04 -p deb -s x11 --args "--start-in-tray"
+container -d ubuntu-24.04 -p deb -s wayland --args "--start-in-tray"  # the 10 s show fallback must not show it
 container -d ubuntu-24.04 -p deb -s x11 --args "--disable-notifications"
 container -d ubuntu-24.04 -p deb -s x11 --args "--keep-kernel"
 container -d fedora       -p rpm -s wayland --portal --args "--sync-theme"

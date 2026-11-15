@@ -10,7 +10,13 @@ or when the entry's StartupWMClass equals the class (X11 WM_CLASS or Wayland
 app_id). MPRIS DesktopEntry and the notification "desktop-entry" hint must name
 an installed desktop file id, without ".desktop".
 
-Prints KEY=VALUE lines, then "FAIL <reason>" / "WARN <reason>" lines.
+A StartupWMClass match only works on shells that read StartupWMClass. Shells
+that look the app_id up as a desktop file id (COSMIC, KDE Plasma on Wayland,
+portals, notification and MPRIS lookups) need "<app_id>.desktop", so a link
+through StartupWMClass alone fails with the "desktop-id" tag.
+
+Prints KEY=VALUE lines, then "FAIL <reason>" / "WARN <reason>" lines. A reason
+starting with "[<id>]" names a known issue (known-issues.txt).
 Background: #156 (COSMIC dock icon), #189 (GNOME media controls icon), #229 (KDE duplicate entry).
 """
 import argparse
@@ -77,7 +83,10 @@ def resolve_icon(icon):
 
 
 def links_window(did, entry, wm_class):
-    return did == f"{wm_class}.desktop" or entry.get("StartupWMClass") == wm_class
+    """How a shell can map the window to this entry: "file-name", "StartupWMClass" or ""."""
+    if did == f"{wm_class}.desktop":
+        return "file-name"
+    return "StartupWMClass" if entry.get("StartupWMClass") == wm_class else ""
 
 
 def main():
@@ -117,10 +126,15 @@ def main():
             warns.append(f"deezer:// is handled by '{handler or 'nothing'}', not by the app")
 
     if a.wm_class:
-        linked = [d for d, (_, e) in mine.items() if links_window(d, e, a.wm_class)]
+        links = {d: links_window(d, e, a.wm_class) for d, (_, e) in mine.items()}
+        linked = sorted(d for d, how in links.items() if how)
         print(f"TASKBAR_LINK={','.join(linked) or 'none'}")
+        print(f"TASKBAR_LINK_BY={','.join(sorted({links[d] for d in linked})) or 'none'}")
         if not linked:
             fails.append(f"window class '{a.wm_class}' matches no desktop entry (no taskbar icon / grouping)")
+        elif "file-name" not in links.values():
+            fails.append(f"[desktop-id] window '{a.wm_class}' links to {', '.join(linked)} through StartupWMClass only:"
+                         f" shells that look up '{a.wm_class}.desktop' show a generic icon (#156, #229)")
     # GNOME's media controls (#189) and notification icons resolve the app through these ids.
     for label, value, what in (("MPRIS_LINK", a.mpris_entry, "MPRIS DesktopEntry"),
                                ("NOTIFY_LINK", a.notify_entry, "notification desktop-entry hint")):
@@ -131,7 +145,7 @@ def main():
         if linked and label == "NOTIFY_LINK":
             print(f"NOTIFY_ICON_FILE={resolve_icon(linked[1].get('Icon', '')) or 'none'}")
         if not linked:
-            fails.append(f"{what} '{value}' names no installed desktop file (installed: {', '.join(sorted(mine))}):"
+            fails.append(f"[desktop-id] {what} '{value}' names no installed desktop file (installed: {', '.join(sorted(mine))}):"
                          " shells show a generic icon (#189)")
     for f in fails:
         print(f"FAIL {f}")

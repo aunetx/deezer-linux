@@ -105,18 +105,31 @@ new_out_dir() { # $@ = name parts
 	echo "$d"
 }
 
-# Prints a one-line verdict for a finished run and returns its status.
+# Polls a condition once per second until it holds (0) or <max> seconds pass (1).
+wait_until() { # $1 = max seconds, $2... = condition
+	local end=$((SECONDS + $1))
+	shift
+	until "$@"; do
+		[ "$SECONDS" -ge "$end" ] && return 1
+		sleep 1 # poll interval
+	done
+}
+
+# Prints a one-line verdict for a finished run and returns its status. KNOWN means
+# only known issues (tests/lib/guest/known-issues.txt) failed: not working, but
+# already tracked, so it does not fail a batch.
 verdict() { # $1 = out dir
 	local env=$1/result.env r
 	[ -f "$env" ] || { printf '%sFAIL%s %s (no result.env)\n' "$C_R" "$C_0" "$1"; return 1; }
 	r=$(grep -m1 '^RESULT=' "$env" | cut -d= -f2)
-	if [ "$r" = pass ]; then
-		printf '%sPASS%s %s\n' "$C_G" "$C_0" "$1"
-	else
-		printf '%sFAIL%s %s: %s\n' "$C_R" "$C_0" "$1" "$(grep -m1 '^FAILURES=' "$env" | cut -d= -f2-)"
-	fi
+	case $r in
+	pass) printf '%sPASS%s %s\n' "$C_G" "$C_0" "$1" ;;
+	known) printf '%sKNOWN%s %s\n' "$C_Y" "$C_0" "$1" ;;
+	*) printf '%sFAIL%s %s: %s\n' "$C_R" "$C_0" "$1" "$(grep -m1 '^FAILURES=' "$env" | cut -d= -f2-)" ;;
+	esac
+	grep -m1 '^KNOWN_ISSUES=.' "$env" | cut -d= -f2- | tr ';' '\n' | sed "s/^/  ${C_Y}known${C_0} /"
 	grep -m1 '^WARNINGS=.' "$env" | cut -d= -f2- | tr ';' '\n' | sed "s/^/  ${C_Y}warn${C_0} /"
-	[ "$r" = pass ]
+	[ "$r" = pass ] || [ "$r" = known ]
 }
 
 # Last line of defence: refuse to leave the session secret in an output tree.

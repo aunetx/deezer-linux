@@ -23,6 +23,12 @@
 #   PROFILE_IN     tar of a logged-in app profile to start from (skips the deep-link login)
 #   PROFILE_OUT    where to save the app profile after a successful login (session cache)
 #   CDP            0 = do not open the DevTools port (skips the in-page checks)
+#
+# No fixed sleeps: every wait polls for a specific signal (a socket, a bus name,
+# a log line, a page state) and gives up after a maximum time. Each wait is
+# logged to $OUT/waits.log with how long it took. Failures tagged "[<id>]" whose
+# id is listed in known-issues.txt are known issues: they end the run as
+# RESULT=known instead of pass or fail.
 set -u
 
 HERE=$(cd "$(dirname "$0")" && pwd)
@@ -42,17 +48,63 @@ fi
 
 mkdir -p "$OUT"
 : >"$OUT/result.env"
+: >"$OUT/waits.log"
 PIDS=()
 FAILURES=()
 WARNINGS=()
+KNOWN=()
+KNOWN_IDS=$(sed -n 's/^\([a-z0-9-]\{1,\}\)[[:space:]].*/\1/p' "$HERE/known-issues.txt" 2>/dev/null)
 
 R() { printf '%s=%s\n' "$1" "$2" | tee -a "$OUT/result.env"; }
-fail() { FAILURES+=("$1"); }
+fail() { # "[<id>] reason" with an id from known-issues.txt is a known issue, not a failure
+	if [[ $1 =~ ^\[([a-z0-9-]+)\]\  ]] && grep -qx "${BASH_REMATCH[1]}" <<<"$KNOWN_IDS"; then
+		KNOWN+=("$1")
+	else
+		FAILURES+=("$1")
+	fi
+}
 warn() { WARNINGS+=("$1"); }
 have() { command -v "$1" >/dev/null 2>&1; }
 now() { date +%s.%N; }
 elapsed() { awk -v a="$1" -v b="$(now)" 'BEGIN { printf "%.2f", b - a }'; }
 bg() { "$@" & PIDS+=($!); }
+usec() { local t=${EPOCHREALTIME/[.,]/}; echo "$t"; } # bash 5; the decimal mark follows the locale
+
+# Polls a condition until it holds (returns 0) or <max> seconds pass (returns 1).
+wait_for() { # $1 = label (waits.log), $2 = max seconds, $3... = condition
+	local label=$1 max=$2 start end
+	shift 2
+	start=$(usec)
+	end=$((start + max * 1000000))
+	until "$@"; do
+		if [ "$(usec)" -ge "$end" ]; then
+			printf '%s timeout %ss\n' "$label" "$max" >>"$OUT/waits.log"
+			return 1
+		fi
+		sleep 0.1 # poll interval
+	done
+	printf '%s ok %s\n' "$label" "$(awk -v a="$start" -v b="$(usec)" 'BEGIN { printf "%.2fs", (b - a) / 1e6 }')" >>"$OUT/waits.log"
+}
+# The opposite: checks that something does NOT happen within <max> seconds (returns 0
+# if it held). Use it only with a max taken from the app's own deadline.
+holds_for() { # $1 = label, $2 = max seconds, $3... = condition that breaks it
+	local label=$1 max=$2
+	shift 2
+	if wait_for "$label" "$max" "$@" 2>/dev/null; then
+		sed -i "\$s/^$label ok /$label broken after /" "$OUT/waits.log"
+		return 1
+	fi
+	sed -i "\$s/^$label timeout /$label held /" "$OUT/waits.log"
+}
+in_log() { grep -qE "$2" "$OUT/$1" 2>/dev/null; } # $1 = file in $OUT, $2 = regex
+# A setup step that cannot complete makes every later check meaningless: stop here.
+abort() {
+	fail "$1"
+	R FAILURES "$(IFS=';'; echo "${FAILURES[*]}")"
+	R RESULT fail
+	for p in "${PIDS[@]}"; do kill "$p" 2>/dev/null; done
+	exit 1
+}
 
 # ---------------------------------------------------------------- display ---
 start_sway() { # $1 = xwayland setting (disable | force)
@@ -65,20 +117,17 @@ start_sway() { # $1 = xwayland setting (disable | force)
 	local xsockets_before
 	xsockets_before=$(ls /tmp/.X11-unix 2>/dev/null)
 	bg sway --unsupported-gpu -c "$XDG_RUNTIME_DIR/sway.cfg" >"$OUT/compositor.log" 2>&1
-	for _ in $(seq 100); do
-		ls "$XDG_RUNTIME_DIR"/sway-ipc.* >/dev/null 2>&1 && ls "$XDG_RUNTIME_DIR"/wayland-? >/dev/null 2>&1 && break
-		sleep 0.1
-	done
+	sway_up() { ls "$XDG_RUNTIME_DIR"/sway-ipc.* "$XDG_RUNTIME_DIR"/wayland-? >/dev/null 2>&1 && swaymsg -t get_version >/dev/null 2>&1; }
+	SWAYSOCK=""
+	sway_ipc() { SWAYSOCK=$(ls "$XDG_RUNTIME_DIR"/sway-ipc.* 2>/dev/null | head -1); [ -n "$SWAYSOCK" ] && SWAYSOCK=$SWAYSOCK sway_up; }
+	wait_for sway 20 sway_ipc || abort "sway did not start (see compositor.log)"
 	WAYLAND_DISPLAY=$(basename "$(ls "$XDG_RUNTIME_DIR"/wayland-? | head -1)")
-	SWAYSOCK=$(ls "$XDG_RUNTIME_DIR"/sway-ipc.* | head -1)
 	export WAYLAND_DISPLAY SWAYSOCK
 	if [ "$1" = force ]; then
-		for _ in $(seq 100); do
-			local new
-			new=$(comm -13 <(echo "$xsockets_before") <(ls /tmp/.X11-unix 2>/dev/null) | head -1)
-			[ -n "$new" ] && { export DISPLAY=":${new#X}"; break; }
-			sleep 0.1
-		done
+		local new=""
+		new_xsocket() { new=$(comm -13 <(echo "$xsockets_before") <(ls /tmp/.X11-unix 2>/dev/null) | head -1); [ -n "$new" ]; }
+		wait_for xwayland 20 new_xsocket || abort "sway started no Xwayland server (see compositor.log)"
+		export DISPLAY=":${new#X}"
 	fi
 }
 
@@ -124,8 +173,14 @@ x11)
 	export DISPLAY=:99
 	unset WAYLAND_DISPLAY
 	bg Xvfb :99 -screen 0 1280x800x24 -nolisten tcp >"$OUT/compositor.log" 2>&1
-	for _ in $(seq 50); do xdpyinfo >/dev/null 2>&1 && break; sleep 0.1; done
-	have openbox && bg openbox >"$OUT/wm.log" 2>&1
+	x_up() { xdpyinfo >/dev/null 2>&1; }
+	wait_for xvfb 20 x_up || abort "Xvfb did not start (see compositor.log)"
+	if have openbox; then
+		bg openbox >"$OUT/wm.log" 2>&1
+		# An EWMH window manager announces itself on the root window.
+		wm_up() { xprop -root _NET_SUPPORTING_WM_CHECK 2>/dev/null | grep -q 'window id'; }
+		wait_for openbox 20 wm_up || abort "openbox did not start (see wm.log)"
+	fi
 	WINDOW_BACKEND=xdotool
 	;;
 wayland)
@@ -194,19 +249,24 @@ SNI_STUB=${SNI_STUB:-auto}
 if [ "$SNI_STUB" = auto ]; then
 	bus_names | grep -qx org.kde.StatusNotifierWatcher && SNI_STUB=no || SNI_STUB=yes
 fi
+# Every helper must own its bus name before the app starts, or the app misses it.
 if [ "$SNI_STUB" = yes ]; then
 	SNI_LOG="$OUT/sni.log" bg python3 "$HERE/sni_watcher.py" >/dev/null 2>&1
-	sleep 0.5
+	wait_for sni-watcher 10 in_log sni.log '^SNI_WATCHER_READY' || abort "the tray watcher stub did not start"
 fi
 NOTIFY_LOG="$OUT/notify.log" bg python3 "$HERE/notify_probe.py" >"$OUT/notify-probe.log" 2>&1
+wait_for notify-probe 10 in_log notify-probe.log '^NOTIFY_(MONITOR|SERVER)_READY' ||
+	abort "the notification probe did not start (see notify-probe.log)"
 if [ "${FAKE_PORTAL:-0}" = 1 ]; then
 	PORTAL_LOG="$OUT/portal.log" bg python3 "$HERE/fake_portal.py" >/dev/null 2>&1
-	sleep 0.5
+	wait_for portal 10 in_log portal.log '^PORTAL_READY' || abort "the fake portal did not start"
 fi
 # Headless guests get a null audio sink so playback can start after login.
 if [ "$DISPLAY_MODE" != host ] && have pulseaudio && ! pactl info >/dev/null 2>&1; then
 	pulseaudio --daemonize=yes --exit-idle-time=-1 --log-target=file:/tmp/pulse.log \
 		-n -L module-null-sink -L module-native-protocol-unix -L module-always-sink >/dev/null 2>&1
+	pulse_up() { pactl info >/dev/null 2>&1; }
+	wait_for pulseaudio 10 pulse_up || warn "PulseAudio did not start: playback checks will fail"
 fi
 
 # --------------------------------------------------------- session cache ---
@@ -244,10 +304,11 @@ else
 	alive() { kill -0 "$APP_PID" 2>/dev/null; }
 	stop_app() { # SIGTERM first: Chromium then shuts down cleanly and flushes its cookie store
 		kill "$APP_PID" 2>/dev/null
-		for _ in $(seq 20); do alive || break; sleep 0.25; done
-		kill -9 "$APP_PID" 2>/dev/null; pkill -f deezer-desktop 2>/dev/null
+		wait_for app-exit 20 dead || { APP_KILLED=yes; kill -9 "$APP_PID" 2>/dev/null; }
+		pkill -f deezer-desktop 2>/dev/null
 	}
 fi
+dead() { ! alive; }
 
 # Prints "<id>\t<class or app_id>\t<title>\t<shell>" for each visible app window.
 windows() {
@@ -287,13 +348,29 @@ case ${EXPECT_WINDOW:-auto} in
 auto) [[ " $APP_ARGS " == *" --start-in-tray "* ]] && EXPECT_WINDOW=no || EXPECT_WINDOW=yes ;;
 esac
 
+# The app shows its window on ready-to-show, or after a 10 s fallback (setTimeout 1e4 after
+# "Creating Window", main.js). With --start-in-tray, ready-to-show hides it; the window must
+# still be hidden once that fallback has passed. WINDOW_GRACE covers the compositor mapping it.
+SHOW_FALLBACK=10
+WINDOW_GRACE=${WINDOW_GRACE:-3}
+window_or_exit() { dead || [ -n "$(windows | head -1)" ]; }
+created_or_exit() { dead || in_log app.log 'Creating Window'; }
 TWIN=""
-for _ in $(seq $((WAIT * 5))); do
-	alive || break
-	if [ -n "$(windows | head -1)" ]; then TWIN=$(elapsed "$T0"); break; fi
-	sleep 0.2
-done
-[ "$EXPECT_WINDOW" = no ] && sleep "${SETTLE:-5}" || sleep "${SETTLE:-2}"
+if [ "$EXPECT_WINDOW" = yes ]; then
+	wait_for window "$WAIT" window_or_exit && alive && TWIN=$(elapsed "$T0")
+else
+	wait_for window-created "$WAIT" created_or_exit
+	holds_for window-stays-hidden $((SHOW_FALLBACK + WINDOW_GRACE)) window_or_exit || { alive && TWIN=$(elapsed "$T0"); }
+fi
+# The app registers its MPRIS player and tray icon at startup; wait for both before checking them.
+mpris_up() { dead || bus_names | grep -q '^org.mpris.MediaPlayer2\.'; }
+wait_for mpris 20 mpris_up
+tray_up() {
+	dead && return 0
+	if [ "$SNI_STUB" = yes ]; then in_log sni.log '^SNI_REGISTERED'
+	else python3 "$HERE/tray_probe.py" 2>/dev/null | grep -qiE '"(id|title)": "(chrome_status_icon|deezer)'; fi
+}
+has_arg --disable-systray || wait_for tray 20 tray_up
 
 alive && R ALIVE yes || { R ALIVE no; fail "process exited"; }
 R TIME_TO_WINDOW "${TWIN:-none}"
@@ -386,13 +463,21 @@ if [ "$CDP_OK" = yes ]; then
 	# Notifications: the app's own path is the page's Notification API -> libnotify.
 	: >>"$OUT/notify.log"
 	before=$(wc -l <"$OUT/notify.log")
+	# With --disable-notifications (patch 10), Chromium removes the Notification API altogether.
 	cdp eval '(async () => {
+		if (typeof Notification === "undefined") return "none unavailable";
 		const icon = (() => { const c = document.createElement("canvas"); c.width = c.height = 64;
 			const g = c.getContext("2d"); g.fillStyle = "#a238ff"; g.fillRect(0, 0, 64, 64); return c.toDataURL(); })();
-		new Notification("deezer-linux smoke test", { body: "notification check", icon, silent: true });
-		await new Promise((r) => setTimeout(r, 2000));
-		return Notification.permission; })()' >"$OUT/notify-permission.txt"
-	sleep 1
+		const n = new Notification("deezer-linux smoke test", { body: "notification check", icon, silent: true });
+		// Chromium fires "show" once the desktop took it, "error" when it refused it.
+		const event = await new Promise((r) => { n.onshow = () => r("show"); n.onerror = () => r("error");
+			n.onclose = () => r("close"); setTimeout(() => r("none"), 10000); });
+		return Notification.permission + " " + event; })()' | tr -d '"' >"$OUT/notify-permission.txt"
+	NOTIFY_EVENT=$(awk '{ print $2 }' "$OUT/notify-permission.txt")
+	R NOTIFY_EVENT "${NOTIFY_EVENT:-none}"
+	notified() { [ "$(wc -l <"$OUT/notify.log")" -gt "$before" ]; }
+	# "show" comes once the Notify call was answered: the probe has seen it by then, or will in a moment.
+	[ "$NOTIFY_EVENT" = show ] && wait_for notification 10 notified
 	NOTIFS=$(tail -n +"$((before + 1))" "$OUT/notify.log")
 	R NOTIFY_COUNT "$(grep -c . <<<"$NOTIFS")"
 	# monitor: watched a real notification server; server: the probe had to be the server itself.
@@ -401,7 +486,8 @@ if [ "$CDP_OK" = yes ]; then
 	[ "$DISPLAY_MODE" = host ] && [ "$NOTIFY_PROBE" = server ] &&
 		warn "no notification server in this desktop session: the probe answered the app itself"
 	if has_arg --disable-notifications; then
-		[ -n "$NOTIFS" ] && fail "a notification was sent although --disable-notifications is set (patch 10)"
+		{ [ -n "$NOTIFS" ] || [ "$NOTIFY_EVENT" != unavailable ]; } &&
+			fail "the page can still send notifications although --disable-notifications is set (patch 10): ${NOTIFY_EVENT:-no answer}"
 	elif [ -z "$NOTIFS" ]; then
 		fail "no notification reached org.freedesktop.Notifications (permission: $(cat "$OUT/notify-permission.txt"))"
 	else
@@ -425,9 +511,11 @@ fi
 
 if [ "${FAKE_PORTAL:-0}" = 1 ]; then
 	pkill -USR1 -f fake_portal.py
-	sleep 2
+	wait_for portal-flip 10 in_log portal.log '^PORTAL_FLIP' || fail "the fake portal did not switch to light"
 	R PORTAL_READS "$(grep -c 'PORTAL_Read' "$OUT/portal.log" 2>/dev/null)"
 	if [ "$CDP_OK" = yes ] && has_arg --sync-theme; then
+		light() { [ "$(dark)" = false ]; }
+		wait_for theme-follows-portal 10 light
 		R THEME_DARK_AFTER_FLIP "$(dark)"
 		[ "$(dark)" = false ] || fail "--sync-theme: the page did not follow the portal switching to light"
 	fi
@@ -438,7 +526,7 @@ probe_args=(--mpris-entry "${MPRIS_DESKTOP_ENTRY:-}" --notify-entry "${NOTIFY_DE
 { [ "$WINDOW_BACKEND" != atspi ] || [ -n "${WAYLAND_DEBUG:-}" ]; } && [ -n "$WIN" ] && probe_args+=(--class "$(cut -f2 <<<"$WIN")")
 python3 "$HERE/desktop_probe.py" "${probe_args[@]}" >"$OUT/desktop.txt" 2>&1
 while IFS='=' read -r k v; do
-	case $k in DESKTOP_ID | DESKTOP_ICON_FILE | TASKBAR_LINK | MPRIS_LINK | NOTIFY_LINK | NOTIFY_ICON_FILE | DEEPLINK_HANDLER) R "$k" "$v" ;; esac
+	case $k in DESKTOP_ID | DESKTOP_ICON_FILE | TASKBAR_LINK | TASKBAR_LINK_BY | MPRIS_LINK | NOTIFY_LINK | NOTIFY_ICON_FILE | DEEPLINK_HANDLER) R "$k" "$v" ;; esac
 	[ "$k" = NOTIFY_ICON_FILE ] && [ "$v" != none ] && NOTIFY_OWN_ICON+=$v
 done < <(grep -E '^[A-Z_]+=' "$OUT/desktop.txt")
 # The notification icon: an image, an app_icon, or the icon of the entry its desktop-entry hint names.
@@ -459,11 +547,15 @@ screenshot() { # $1 = file
 screenshot "$OUT/screenshot.png"
 
 # Checks that need the web app (https://www.deezer.com), so a logged-in session.
+page_title() {
+	cdp eval 'window.dzPlayer?.getCurrentSong?.()?.SNG_TITLE || navigator.mediaSession?.metadata?.title || ""' |
+		python3 -c 'import json, sys; print(json.load(sys.stdin) or "")' 2>/dev/null
+}
 mpris_sync() { # $1 = label: MPRIS metadata must match the page's current song (#250)
 	local page mpris
-	sleep 1 # the page pushes MPRIS updates every 250 ms
-	page=$(cdp eval 'window.dzPlayer?.getCurrentSong?.()?.SNG_TITLE || navigator.mediaSession?.metadata?.title || ""' | python3 -c 'import json, sys; print(json.load(sys.stdin) or "")')
-	mpris=$(mpris_title)
+	# Patch 05 polls the page every 250 ms: MPRIS catches up within a few polls, or never.
+	in_sync() { page=$(page_title); mpris=$(mpris_title); [ -n "$page" ] && [ "$page" = "$mpris" ]; }
+	wait_for "mpris-sync-$1" 10 in_sync
 	R "MPRIS_SYNC_$1" "$([ "$page" = "$mpris" ] && echo yes || echo "no (page '$page', mpris '$mpris')")"
 	[ "$page" = "$mpris" ] || fail "MPRIS metadata out of sync with the page $1 (#250): page '$page', MPRIS '$mpris'"
 }
@@ -489,16 +581,13 @@ logged_in_checks() {
 		document.body.append(d); const off = getComputedStyle(d).transitionDuration === "0s"; d.remove(); return off; })()'
 	css_check --custom-theme '!!document.getElementById("dz-custom-theme")'
 	if [ "${PLAY:-0}" = 1 ] && [ -n "$MPRIS_NAME" ]; then
-		# The player may still be loading its queue: poll, and send Play again once.
-		local t status=
-		for t in $(seq $((${PLAY_WAIT:-20} * 2))); do
-			[ "$t" = 1 ] || [ "$t" = 20 ] &&
-				mpris_call Play
-			sleep 0.5
-			status=$(mpris_get org.mpris.MediaPlayer2.Player PlaybackStatus)
-			[ "$status" = Playing ] && break
-		done
-		sleep 3 # let the audio stream open
+		local status
+		playing() { [ "$(mpris_get org.mpris.MediaPlayer2.Player PlaybackStatus)" = Playing ]; }
+		audio_up() { pactl list sink-inputs 2>/dev/null | grep -q 'application.name'; }
+		mpris_call Play
+		wait_for playing "${PLAY_WAIT:-20}" playing
+		status=$(mpris_get org.mpris.MediaPlayer2.Player PlaybackStatus)
+		have pactl && [ "$status" = Playing ] && wait_for audio-stream 15 audio_up
 		R PLAY_STATUS "$(mpris_get org.mpris.MediaPlayer2.Player PlaybackStatus)"
 		R PLAY_TITLE "$(mpris_title)"
 		have pactl && R AUDIO_STREAM "$(pactl list sink-inputs 2>/dev/null | grep -m1 'application.name' | cut -d'"' -f2)"
@@ -518,7 +607,8 @@ ARL=""
 [ -n "${SESSION_FILE:-}" ] && [ -r "$SESSION_FILE" ] && ARL=$(read_arl "$SESSION_FILE")
 if [ -n "${SESSION_FILE:-}" ]; then
 	R PROFILE_CACHE "${PROFILE_RESTORED:-no}"
-	for _ in $(seq 40); do [ -n "$(startup_login)" ] && break; sleep 0.5; done
+	startup_decided() { dead || [ -n "$(startup_login)" ]; }
+	wait_for startup-login 30 startup_decided
 	if [ "$(startup_login)" = yes ]; then
 		LOGGED=yes
 		R LOGIN_SOURCE cache
@@ -534,18 +624,22 @@ if [ -n "${SESSION_FILE:-}" ]; then
 		# A second instance hands the deep link to the running one, like a browser would.
 		"${CMD[@]}" "deezer://$DEEP_LINK_HOST/autolog/$ARL" >"$OUT/second-instance.log" 2>&1
 		LOGGED=""
-		for _ in $(seq $((${LOGIN_WAIT:-45} * 2))); do
-			[ "$(grep -c 'User autolog succeeded, loading' "$OUT/app.log")" -gt "$ok_before" ] && { LOGGED=yes; break; }
+		login_decided() {
+			[ "$(grep -c 'User autolog succeeded, loading' "$OUT/app.log")" -gt "$ok_before" ] && { LOGGED=yes; return 0; }
 			tail -n +"$((lines_before + 1))" "$OUT/app.log" |
-				grep -qE 'User autolog failed|must re-authenticate|Arl token is not found' && { LOGGED=no; break; }
-			sleep 0.5
-		done
+				grep -qE 'User autolog failed|must re-authenticate|Arl token is not found' && { LOGGED=no; return 0; }
+			dead
+		}
+		wait_for deep-link-login "${LOGIN_WAIT:-45}" login_decided
 	fi
 	R LOGGED_IN "${LOGGED:-timeout}"
 	[ "$LOGGED" = yes ] || fail "login with the shared session failed (${LOGGED:-timeout})"
 	if [ "$LOGGED" = yes ]; then
-		for _ in $(seq 60); do grep -q 'Page loaded' "$OUT/app.log" && break; sleep 0.5; done
-		sleep "${LOGIN_SETTLE:-8}"
+		# "Page loaded" is did-finish-load, where patches 07-09 and 16 inject their CSS. The player
+		# is ready once it has a current track (restored from the account's queue).
+		wait_for page-loaded 60 in_log app.log 'Page loaded https://' || fail "the web app did not finish loading"
+		player_ready() { [ -n "$(page_title)" ]; }
+		wait_for player-ready 30 player_ready || warn "the web player has no current track: the track checks will fail"
 		screenshot "$OUT/screenshot-logged-in.png"
 		logged_in_checks
 	fi
@@ -564,12 +658,19 @@ if [ "${CLOSE:-0}" = 1 ] && [ -n "$WIN" ] && alive; then
 	if [ -z "$WIN" ]; then
 		warn "closing the window is not supported with the $WINDOW_BACKEND backend"
 	else
-		sleep "${CLOSE_WAIT:-5}"
-		alive && R ALIVE_AFTER_CLOSE yes || R ALIVE_AFTER_CLOSE no
+		no_window() { [ -z "$(windows | head -1)" ]; }
+		wait_for window-closed 10 no_window || fail "the window is still visible 10 s after closing it"
+		if [[ " $APP_ARGS " == *" --disable-systray "* ]]; then
+			wait_for app-quits 20 dead
+		fi
+		# The close handler runs before the window goes away: by now the app either hid the window
+		# (nothing logged) or started quitting ("Window All Closed", "App on before quit").
+		quitting() { dead || in_log app.log 'Window All Closed|App on before quit'; }
+		quitting && R ALIVE_AFTER_CLOSE no || R ALIVE_AFTER_CLOSE yes
 		if [[ " $APP_ARGS " == *" --disable-systray "* ]]; then
 			alive && fail "app still running after closing its window with --disable-systray"
 		else
-			alive || fail "app quit when its window was closed (expected: hide to tray)"
+			quitting && fail "app quit when its window was closed (expected: hide to tray)"
 		fi
 	fi
 fi
@@ -584,8 +685,11 @@ R LOG_FATAL "$(wc -l <"$OUT/fatal.txt")"
 
 # ---------------------------------------------------------------- verdict ---
 R WARNINGS "$(IFS=';'; echo "${WARNINGS[*]}")"
+R KNOWN_ISSUES "$(IFS=';'; echo "${KNOWN[*]}")"
 R FAILURES "$(IFS=';'; echo "${FAILURES[*]}")"
-[ ${#FAILURES[@]} -eq 0 ] && R RESULT pass || R RESULT fail
+if [ ${#FAILURES[@]} -gt 0 ]; then R RESULT fail
+elif [ ${#KNOWN[@]} -gt 0 ]; then R RESULT known # not working, but already tracked
+else R RESULT pass; fi
 
 # Scrub session secrets before anything leaves the guest.
 python3 "$HERE/redact.py" "$OUT" "$ARL"
@@ -611,9 +715,10 @@ fi
 
 stop_app
 # Save the logged-in profile for the next run (cookies only, no caches). It holds
-# the session: it goes to PROFILE_OUT, never to $OUT.
-if [ "${LOGGED:-}" = yes ] && [ -n "${PROFILE_OUT:-}" ] && [ -n "$PROFILE_BASE" ]; then
-	sleep 2 # let Chromium flush the cookie store
+# the session: it goes to PROFILE_OUT, never to $OUT. A killed app may not have
+# flushed its cookie store: keep the previous cache then.
+[ "${APP_KILLED:-}" = yes ] && echo "--- the app ignored SIGTERM for 20 s and was killed: session not cached"
+if [ "${LOGGED:-}" = yes ] && [ -n "${PROFILE_OUT:-}" ] && [ -n "$PROFILE_BASE" ] && [ "${APP_KILLED:-}" != yes ]; then
 	for name in deezer-desktop Deezer; do
 		[ -f "$PROFILE_BASE/$name/Cookies" ] || continue
 		(umask 077 && tar -cf "$PROFILE_OUT" -C "$PROFILE_BASE" --exclude=Cache --exclude='Code Cache' \

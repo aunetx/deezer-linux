@@ -44,7 +44,7 @@ grep -q '^RESULT=' "$OUT/result.env" 2>/dev/null ||
 	printf 'RESULT=fail\nFAILURES=smoke test did not run (see run.log)\n' >>"$OUT/result.env"
 
 if [ -s "$OUT/missing-libs.txt" ]; then
-	sed -i 's/^RESULT=pass$/RESULT=fail/' "$OUT/result.env"
+	sed -i 's/^RESULT=\(pass\|known\)$/RESULT=fail/' "$OUT/result.env"
 	sed -i "s/^FAILURES=\(.*\)$/FAILURES=\1;unresolved libraries: $(awk '{print $1}' "$OUT/missing-libs.txt" | paste -sd,)/" "$OUT/result.env"
 	sed -i 's/^FAILURES=;/FAILURES=/' "$OUT/result.env"
 	status=1

@@ -17,7 +17,7 @@ Each run produces a `result.env` with:
 
 - **Process**: the app starts and stays alive, with no fatal log lines (missing modules, Wayland connection failures, segfaults, zygote crashes).
 - **Window**: it appears, how long that takes (a warning above 5 s), and its X11 class or Wayland `app_id`, which must be `dev.aunetx.deezer` (c093311). On GNOME it is read from the shell (`org.gnome.Shell.Introspect`, which the GNOME test VMs open with `gnome-shell --unsafe-mode`; a host session is never switched to it). On compositors that offer the `ext-foreign-toplevel-list-v1` protocol (COSMIC, and other wlroots-style ones), it is read from the compositor's toplevel list (`toplevel` backend; it cannot close the window, so `--close` is skipped with a warning there). Elsewhere on Wayland (KDE, or GNOME without unsafe mode), where AT-SPI has no `app_id`, it is read from the Wayland protocol (`WAYLAND_DEBUG`), once the toplevel is mapped. Finding: on Wayland the window maps only after about 10 s, which is a real app behaviour (`ready-to-show` never fires for a hidden window on Wayland, so the app waits for its 10 s fallback); the >5 s warning there is expected.
-- **Taskbar / dock linking** (#156, #229): an installed desktop entry must match the window, by file name (`<app_id>.desktop`) or `StartupWMClass`. Its `Icon` must resolve in an icon theme, and it must handle `deezer://` links.
+- **Taskbar / dock linking** (#156, #229): an installed desktop entry must match the window. Its `Icon` must resolve in an icon theme, and it must handle `deezer://` links. A match through `StartupWMClass` alone is not counted as working: GNOME accepts it, but shells that look up `<app_id>.desktop` (COSMIC, KDE Plasma on Wayland) show a generic icon. It is reported as the known issue `desktop-id` (`TASKBAR_LINK_BY` in `result.env`).
 - **MPRIS**: the bus name is `org.mpris.MediaPlayer2.deezer`, with the right `Identity` and a `DesktopEntry` that names an installed desktop file. Without that file, GNOME's media controls show a generic icon (#189).
 - **Tray**: the app registers a StatusNotifierItem, and its icon resolves for a host outside the sandbox: a pixmap, or a file the host can read (a9aad21, snap). A stub watcher stands in when there is no panel.
 - **Notifications**: a test notification is sent from the page and captured on the bus, through a stub server, or a monitor when a real one runs (`NOTIFY_PROBE=server|monitor` in `result.env`; on the host, a stub server means the session has no notification server and is warned about). It must carry an icon: an image, an `app_icon`, or a `desktop-entry` hint naming an installed entry whose icon resolves (#189). With `--disable-notifications`, nothing may be sent.
@@ -25,7 +25,7 @@ Each run produces a `result.env` with:
 - **Page** (over the DevTools protocol): the user agent hides the kernel version, `linux/6.4.0`, unless `--keep-kernel` is set. With `--sync-theme --portal`, `prefers-color-scheme` follows the portal, including a live dark → light switch (#238).
 - **Packaging**: no unresolved libraries in `ldd`, and how long the install took.
 - **Patched features**:
-  - `--start-in-tray`: no window appears.
+  - `--start-in-tray`: no window appears, and none appears once the app's own 10 s show fallback has passed.
   - `--disable-systray`, or `--close`: closing the window quits the app, or hides it to the tray.
 - **Logged in**, with `--login` and `--play`:
   - Autologin succeeds.
@@ -75,13 +75,40 @@ tests/run.sh matrix                               # everything in tests/matrix.t
 tests/run.sh report                               # Markdown table of tests/out/, ready to paste into an issue
 ```
 
+### Results: pass, known, fail
+
+A run ends with one of three results:
+
+- `pass`: every check passed.
+- `known`: the only failures are known issues. They are listed in `lib/guest/known-issues.txt` and reported as `KNOWN_ISSUES`. Such a run is **not working**: the report shows ⚠️ and never ✅. It does not fail a batch, though, so new failures stand out. When an issue is fixed, delete its line: its checks fail again from then on, so the fix stays covered.
+- `fail`: anything else.
+
+A failure reason starting with `[<id>]` belongs to that known issue. The only one today is `desktop-id`. Packages install `deezer-desktop.desktop`, or `dev.aunetx.deezer.desktop` for the Flatpak. Meanwhile the window `app_id`, the notification `desktop-entry` hint and the MPRIS `DesktopEntry` do not all name the same file (#156, #189, #229).
+
+### Deterministic waits
+
+No step waits for a fixed time. Each wait is a condition with a maximum time, and the condition is a specific signal:
+
+- the compositor socket, or the window manager announcing itself on the root window;
+- a helper owning its bus name before the app starts;
+- the app's own log lines: `Creating Window`, `User autolog …`, `Page loaded`, `Window All Closed`;
+- the MPRIS player and the tray item being registered;
+- the page's notification `show`/`error` event;
+- the player having a current track;
+- `PlaybackStatus=Playing`, then an audio stream;
+- the window disappearing after a close;
+- the process exiting.
+
+VMs start the app only once the desktop is ready, meaning the logind session is active and the desktop owns its bus names: shell, tray watcher, notification server (`vm_profile_ready` in `lib/vm.sh`). A notification server that is only D-Bus activatable is started before it is watched. Every wait and its duration is logged to `waits.log`. A timeout fails the check that depends on it, and never passes silently. `tests/run.sh unit` rejects any new `sleep` that is not the poll interval of such a wait.
+
 `tests/run.sh help` lists every option, and `tests/run.sh list` lists the distros, VM profiles and sessions. By default each run tests the newest matching package in `artifacts/<arch>/`. Pass `-f path/to/package` to test a different file.
 
 The command exits non-zero on failure. Results go in `tests/out/<timestamp>-<environment>/`:
 
 | File                                   | Content                                                    |
 | -------------------------------------- | ---------------------------------------------------------- |
-| `result.env`                           | every check, plus `RESULT`, `FAILURES` and `WARNINGS`      |
+| `result.env`                           | every check, plus `RESULT`, `FAILURES`, `KNOWN_ISSUES` and `WARNINGS` |
+| `waits.log`                            | every wait: its signal, and how long it took (or `timeout`) |
 | `app.log`, `fatal.txt`                 | app output, at `--log-level=debug`                         |
 | `screenshot.png`, `vm-screen.png`      | the display at the end of the run                          |
 | `env.txt`, `install.log`, `missing-libs.txt` | guest environment, install output, unresolved libraries |
@@ -166,9 +193,11 @@ tests/
     desktop_probe.py     desktop entry / taskbar / MPRIS / notification linking
     asar_probe.py        patch markers in the running app.asar
     patch-markers.txt    one marker per patch
+    known-issues.txt     known issues: their failures end the run as RESULT=known, not pass
+    desktop-ready.sh     waits until a VM's desktop session is ready (session, display, bus names)
     test-theme.css       theme for --custom-theme=@TESTS@/test-theme.css
     *.py                 sway, GNOME Shell, foreign-toplevel and AT-SPI window probes, fake portal, redaction
   unit/                  `tests/run.sh unit` (python unittest)
 ```
 
-When a patch is added, add its marker to `lib/guest/patch-markers.txt`. `tests/run.sh unit` fails until you do. To add a distro, add a line to `distro_info` in `lib/common.sh` (with a Dockerfile if it is a new family). To add a desktop, add a seed under `vm/seeds/` and a line to `vm_profile_info` in `lib/vm.sh`.
+When a patch is added, add its marker to `lib/guest/patch-markers.txt`. `tests/run.sh unit` fails until you do. To add a distro, add a line to `distro_info` in `lib/common.sh` (with a Dockerfile if it is a new family). To add a desktop, add a seed under `vm/seeds/` and a line to both `vm_profile_info` and `vm_profile_ready` in `lib/vm.sh`.

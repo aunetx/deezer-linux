@@ -2,6 +2,7 @@
 import glob
 import importlib.util
 import os
+import re
 import shlex
 import subprocess
 import tempfile
@@ -96,15 +97,21 @@ class DesktopLinking(unittest.TestCase):
                              capture_output=True, text=True, check=True).stdout
         return out
 
-    def test_window_links_through_startup_wm_class(self):
-        self.install("deezer-desktop.desktop", "dev.aunetx.deezer")  # what the .deb installs
+    def test_startup_wm_class_only_is_a_known_issue(self):
+        # What the .deb installs: GNOME links it, shells that look up "<app_id>.desktop" do not (#156).
+        self.install("deezer-desktop.desktop", "dev.aunetx.deezer")
         out = self.run_probe("--class", "dev.aunetx.deezer")
         self.assertIn("TASKBAR_LINK=deezer-desktop.desktop", out)
-        self.assertNotIn("window class", out)
+        self.assertIn("TASKBAR_LINK_BY=StartupWMClass", out)
+        self.assertIn("FAIL [desktop-id] window 'dev.aunetx.deezer'", out)
+        self.assertNotIn("matches no desktop entry", out)
 
     def test_window_links_through_desktop_id(self):
         self.install("dev.aunetx.deezer.desktop", "dev.aunetx.deezer")  # what the Flatpak exports
-        self.assertIn("TASKBAR_LINK=dev.aunetx.deezer.desktop", self.run_probe("--class", "dev.aunetx.deezer"))
+        out = self.run_probe("--class", "dev.aunetx.deezer")
+        self.assertIn("TASKBAR_LINK=dev.aunetx.deezer.desktop", out)
+        self.assertIn("TASKBAR_LINK_BY=file-name", out)
+        self.assertNotIn("[desktop-id]", out)
 
     def test_old_class_does_not_link(self):
         # Before c093311, StartupWMClass=deezer-desktop never matched the dev.aunetx.deezer window.
@@ -118,7 +125,7 @@ class DesktopLinking(unittest.TestCase):
         self.install("dev.aunetx.deezer.desktop", "dev.aunetx.deezer")
         out = self.run_probe("--mpris-entry", "deezer-desktop")
         self.assertIn("MPRIS_LINK=none", out)
-        self.assertIn("FAIL MPRIS DesktopEntry 'deezer-desktop'", out)
+        self.assertIn("FAIL [desktop-id] MPRIS DesktopEntry 'deezer-desktop'", out)
         self.assertIn("MPRIS_LINK=dev.aunetx.deezer.desktop", self.run_probe("--mpris-entry", "dev.aunetx.deezer"))
 
     def test_notification_icon_comes_from_the_linked_entry(self):
@@ -215,6 +222,78 @@ class GuestProbes(unittest.TestCase):
         rule = load("notify_probe").monitor_rule(":1.42")
         self.assertIn("member='Notify'", rule)
         self.assertTrue(rule.endswith("destination=':1.42'"))
+
+
+class Determinism(unittest.TestCase):
+    """Runs wait for signals with a deadline, never for a fixed time."""
+
+    def test_no_fixed_sleeps(self):
+        files = [os.path.join(TESTS, "run.sh")] + glob.glob(os.path.join(TESTS, "lib", "**", "*.*"), recursive=True)
+        for path in files:
+            if not path.endswith((".sh", ".py")):
+                continue
+            with open(path, encoding="utf-8") as f:
+                for n, line in enumerate(f, 1):
+                    code = line.split("#", 1)[0] if path.endswith(".sh") else line
+                    if not re.search(r"\bsleep\b|time\.sleep\(", code):
+                        continue
+                    with self.subTest(where=f"{os.path.relpath(path, TESTS)}:{n}"):
+                        # Allowed: the poll interval of a wait with a deadline, and holding for debugging.
+                        self.assertTrue("# poll interval" in line or "sleep infinity" in line, line.strip())
+
+    def bash(self, script):
+        return subprocess.run(["bash", "-c", f'. "{TESTS}/lib/common.sh"; {script}'], capture_output=True, text=True)
+
+    def test_wait_until(self):
+        self.assertEqual(self.bash("wait_until 5 true").returncode, 0)
+        self.assertEqual(self.bash("wait_until 1 false").returncode, 1)
+        self.assertEqual(self.bash("f=$(mktemp -u); (sleep 1; touch $f) & wait_until 5 test -e $f; r=$?; rm -f $f; exit $r")
+                         .returncode, 0)
+
+    def test_smoke_waits(self):
+        # wait_for / holds_for from smoke.sh, extracted so they run without a display.
+        script = textwrap.dedent(f"""\
+            OUT=$(mktemp -d); source <(sed -n '/^usec()/,/^in_log()/p' "{GUEST}/smoke.sh")
+            wait_for up 2 true; echo "up $?"
+            wait_for never 1 false; echo "never $?"
+            holds_for hidden 1 false; echo "hidden $?"
+            holds_for shown 1 true; echo "shown $?"
+            cat "$OUT/waits.log"; rm -r "$OUT"
+            """)
+        out = subprocess.run(["bash", "-c", script], capture_output=True, text=True, check=True).stdout
+        for line in ("up 0", "never 1", "hidden 0", "shown 1", "never timeout 1s", "hidden held 1s", "shown broken after"):
+            self.assertIn(line, out)
+
+    def test_verdict_known(self):
+        with tempfile.TemporaryDirectory() as d:
+            for result, code in (("pass", 0), ("known", 0), ("fail", 1)):
+                with self.subTest(result=result):
+                    with open(os.path.join(d, "result.env"), "w") as f:
+                        f.write(f"RESULT={result}\nKNOWN_ISSUES=[desktop-id] x\nFAILURES=\n")
+                    r = self.bash(f'verdict "{d}"')
+                    self.assertEqual(r.returncode, code)
+                    self.assertIn({"pass": "PASS", "known": "KNOWN", "fail": "FAIL"}[result], r.stdout)
+
+    def test_known_issue_ids_are_used(self):
+        with open(os.path.join(GUEST, "known-issues.txt"), encoding="utf-8") as f:
+            ids = [line.split()[0] for line in f if line.strip() and not line.startswith("#")]
+        self.assertTrue(ids)
+        sources = ""
+        for path in glob.glob(os.path.join(GUEST, "*.py")) + glob.glob(os.path.join(GUEST, "*.sh")):
+            with open(path, encoding="utf-8") as f:
+                sources += f.read()
+        for known in ids:
+            with self.subTest(id=known):
+                self.assertRegex(known, r"^[a-z0-9-]+$")
+                self.assertIn(f"[{known}]", sources, "a known issue that no check reports: remove it")
+
+    @unittest.skipUnless(os.path.isfile(os.path.join(TESTS, "..", "app", "build", "main.js")), "needs make prepare")
+    def test_window_show_fallback(self):
+        # smoke.sh SHOW_FALLBACK mirrors the app's fallback that shows the window without ready-to-show.
+        with open(os.path.join(TESTS, "..", "app", "build", "main.js"), encoding="utf-8") as f:
+            self.assertRegex(f.read(), r"isVisible\(\)[^;]*?show\(\)\);?\s*\},\s*1e4\)")
+        with open(os.path.join(GUEST, "smoke.sh"), encoding="utf-8") as f:
+            self.assertIn("SHOW_FALLBACK=10\n", f.read())
 
 
 class Scripts(unittest.TestCase):

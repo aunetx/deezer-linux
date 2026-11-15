@@ -25,6 +25,22 @@ vm_profile_info() {
 	esac
 }
 
+# profile -> "<session check> <bus names>": what tells that the autologin desktop is
+# ready. "logind" also waits for an active logind session of the run's type (GNOME,
+# KDE and XFCE log in through a display manager; COSMIC and sway start from tty1).
+# The names are those the desktop owns once its shell, tray host and notification
+# server are up, so the app never starts before them.
+vm_profile_ready() {
+	case $1 in
+	ubuntu-gnome | ubuntu26-gnome) echo "logind org.gnome.Shell org.gnome.Shell.Introspect org.freedesktop.Notifications org.kde.StatusNotifierWatcher" ;;
+	fedora-gnome) echo "logind org.gnome.Shell org.gnome.Shell.Introspect org.freedesktop.Notifications" ;;
+	fedora-kde) echo "logind org.kde.plasmashell org.kde.StatusNotifierWatcher" ;;
+	debian-xfce) echo "logind org.xfce.Panel org.kde.StatusNotifierWatcher" ;;
+	popos-cosmic) echo "any com.system76.CosmicComp org.kde.StatusNotifierWatcher org.freedesktop.Notifications" ;;
+	*) echo "any" ;;
+	esac
+}
+
 free_port() { python3 -c 'import socket; s = socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])'; }
 
 vm_key() {
@@ -110,19 +126,18 @@ vm_scp_to() { scp -q -r "${VM_SSH_OPTS[@]}" -i "$(vm_key)" -P "$VM_SSH_PORT" "$1
 vm_scp_from() { scp -q -r "${VM_SSH_OPTS[@]}" -i "$(vm_key)" -P "$VM_SSH_PORT" "tester@127.0.0.1:$1" "$2"; }
 vm_qmp() { python3 -I "$TESTS_DIR/lib/qmp.py" "$VM_QMP" "$@"; }
 
-vm_wait_ssh() {
-	local _i
-	for _i in $(seq "${1:-300}"); do
-		vm_ssh true 2>/dev/null && return 0
-		kill -0 "$(cat "$VM_DIR/qemu.pid" 2>/dev/null)" 2>/dev/null || die "QEMU exited (see $VM_DIR/serial.log)"
-		sleep 2
-	done
-	die "no SSH after $((${1:-300} * 2))s (see $VM_DIR/serial.log)"
+qemu_running() { kill -0 "$(cat "$VM_DIR/qemu.pid" 2>/dev/null)" 2>/dev/null; }
+qemu_gone() { ! qemu_running; }
+ssh_up() { qemu_running || die "QEMU exited (see $VM_DIR/serial.log)"; vm_ssh true 2>/dev/null; }
+
+vm_wait_ssh() { # $1 = max seconds
+	wait_until "$1" ssh_up || die "no SSH after $1 s (see $VM_DIR/serial.log)"
 }
 
 vm_stop() {
+	[ -n "${VM_DIR:-}" ] || return 0
 	[ -n "${VM_QMP:-}" ] && [ -S "$VM_QMP" ] && vm_qmp quit 2>/dev/null
-	sleep 1
+	wait_until 15 qemu_gone || kill -9 "$(cat "$VM_DIR/qemu.pid" 2>/dev/null)" 2>/dev/null
 	return 0
 }
 
@@ -159,29 +174,25 @@ EOF
 	log "provisioning $1 ($ARCH), first run only: a few minutes"
 	trap 'vm_stop; rm -rf "$tmp"' EXIT
 	vm_boot "$base" "$seed" "$3" "$tmp/vm"
-	vm_wait_ssh 300
+	vm_wait_ssh 600
 	vm_ssh 'sudo cloud-init status --wait >/dev/null; sudo cloud-init status --long' | tail -3 >&2
 	vm_ssh 'sudo poweroff' 2>/dev/null || true
-	local _i
-	for _i in $(seq 60); do kill -0 "$(cat "$tmp/vm/qemu.pid" 2>/dev/null)" 2>/dev/null || break; sleep 1; done
+	# Converting a disk the guest is still writing would cache a broken image.
+	wait_until 300 qemu_gone || die "the VM did not power off after provisioning (see $tmp/vm/serial.log)"
 	qemu-img convert -O qcow2 "$tmp/vm/disk.qcow2" "$golden.part" && mv "$golden.part" "$golden"
 	rm -rf "$tmp"
 	trap - EXIT
 	echo "$golden"
 }
 
-# Waits until the autologin session is up (session bus + Wayland or X socket).
-vm_wait_desktop() {
-	local _i
-	for _i in $(seq 90); do
-		vm_ssh 'r=/run/user/$(id -u); [ -S $r/bus ] && { ls $r/wayland-? || ls /tmp/.X11-unix/X?; } >/dev/null 2>&1' && {
-			sleep "${DESKTOP_SETTLE:-10}"
-			return 0
-		}
-		sleep 2
-	done
+# Waits until the autologin desktop is ready (see vm_profile_ready), in the guest.
+vm_wait_desktop() { # $1 = session type: wayland | x11
+	local check names
+	read -r check names <<<"$(vm_profile_ready "$PROFILE")"
+	[ "$check" = logind ] || check=any
+	vm_ssh "/tmp/dz/tests/desktop-ready.sh ${DESKTOP_WAIT:-180} $([ "$check" = logind ] && echo "$1" || echo any) $names" >&2 && return 0
 	vm_qmp screendump "$OUT/no-desktop.png"
-	die "the desktop session did not start (screenshot: $OUT/no-desktop.png)"
+	die "the desktop session is not ready (screenshot: $OUT/no-desktop.png)"
 }
 
 vm_main() {
@@ -202,20 +213,29 @@ vm_main() {
 	vm_boot "$golden" "$CACHE_DIR/profiles/$PROFILE-$ARCH-seed.iso" "$mem" "$(mktemp -d "$CACHE_DIR/run.XXXX")"
 	# shellcheck disable=SC2064 # expand now: these are this run's paths
 	trap "vm_stop; rm -rf '$VM_DIR'; cleanup_session" EXIT
-	vm_wait_ssh 150
+	vm_wait_ssh 300
+	vm_ssh 'rm -rf /tmp/dz && mkdir -p /tmp/dz/out'
+	vm_scp_to "$GUEST_DIR" /tmp/dz/tests
 
 	# Session flavour, decided at run time on top of the cached image.
 	local app_args=$APP_ARGS
 	case $PROFILE/$SESSION in
-	ubuntu-gnome/x11) vm_ssh 'sudo sed -i "s/^WaylandEnable=.*/WaylandEnable=false/" /etc/gdm3/custom.conf && sudo systemctl restart gdm3' ;;
+	ubuntu-gnome/x11)
+		# GDM autologs in once per boot (a restarted gdm3 shows the greeter): reboot into Xorg,
+		# and know the new boot is up when its boot id differs.
+		local boot
+		boot=$(vm_ssh 'cat /proc/sys/kernel/random/boot_id')
+		vm_ssh 'sudo sed -i "s/^WaylandEnable=.*/WaylandEnable=false/" /etc/gdm3/custom.conf && sudo systemctl reboot' || true
+		rebooted() { local b; b=$(vm_ssh 'cat /proc/sys/kernel/random/boot_id' 2>/dev/null) && [ -n "$b" ] && [ "$b" != "$boot" ]; }
+		wait_until 300 rebooted || die "the VM did not come back after switching GDM to Xorg"
+		vm_ssh 'mkdir -p /tmp/dz/out' && vm_scp_to "$GUEST_DIR" /tmp/dz/tests # /tmp is cleared on boot
+		;;
 	*/xwayland) app_args="--ozone-platform=x11 $app_args" ;;
 	*/wayland) [ "$display" = host ] && app_args="--ozone-platform=wayland $app_args" ;;
 	esac
-	[ "$display" = host ] && vm_wait_desktop
+	[ "$display" = host ] && vm_wait_desktop "$([ "$SESSION" = x11 ] && echo x11 || echo wayland)"
 
 	log "installing $(basename "$FILE")"
-	vm_ssh 'rm -rf /tmp/dz && mkdir -p /tmp/dz/out'
-	vm_scp_to "$GUEST_DIR" /tmp/dz/tests
 	if [ "$PKG" = unpacked ]; then vm_scp_to "$FILE" /tmp/dz/pkg; else vm_scp_to "$FILE" "/tmp/dz/$(basename "$FILE")"; fi
 	local guest_pkg
 	guest_pkg=/tmp/dz/$(basename "$FILE")

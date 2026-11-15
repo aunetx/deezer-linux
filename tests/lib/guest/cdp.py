@@ -116,7 +116,7 @@ def main():
         except (OSError, ConnectionError) as e:
             if time.time() > deadline:
                 sys.exit(f"cdp: {e}")
-            time.sleep(0.5)
+            time.sleep(0.5)  # poll interval
 
 
 if __name__ == "__main__":
