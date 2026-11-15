@@ -1,0 +1,3 @@
+# Fedora, no desktop: Xvfb + openbox inside the VM. Good for rpm, AppImage, flatpak.
+packages: [xorg-x11-server-Xvfb, openbox, xdotool, xwininfo, xprop, xdpyinfo, ImageMagick, dbus-daemon, dbus-tools,
+           python3-gobject-base, pulseaudio, pulseaudio-utils, flatpak, fuse-libs, gawk]

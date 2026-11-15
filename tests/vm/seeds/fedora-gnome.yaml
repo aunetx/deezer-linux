@@ -1,0 +1,14 @@
+# Fedora GNOME (Wayland only since GNOME 49), GDM autologin. No tray host: upstream GNOME has none.
+packages: [gdm, gnome-shell, gnome-session-wayland-session, gnome-terminal, xdg-desktop-portal-gnome,
+           xorg-x11-server-Xwayland, at-spi2-core, python3-gobject, dbus-daemon, dbus-tools, xdotool, xprop,
+           alsa-lib, flatpak, fuse-libs, dejavu-sans-fonts]
+write_files:
+  - path: /etc/gdm/custom.conf
+    content: |
+      [daemon]
+      AutomaticLoginEnable=True
+      AutomaticLogin=tester
+runcmd:
+  - [sudo, -u, tester, dbus-run-session, --, gsettings, set, org.gnome.desktop.session, idle-delay, "0"]
+  - [sudo, -u, tester, dbus-run-session, --, gsettings, set, org.gnome.desktop.interface, toolkit-accessibility, "true"]
+  - [systemctl, set-default, graphical.target]

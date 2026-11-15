@@ -1,0 +1,17 @@
+# Ubuntu 24.04 GNOME (Ubuntu session, AppIndicator tray), GDM autologin.
+# Wayland by default; `--session x11` switches GDM to Xorg at run time.
+package_update: true
+packages: [gdm3, gnome-shell, gnome-session, ubuntu-session, gnome-shell-extension-appindicator, gnome-terminal,
+           xwayland, xserver-xorg-core, xserver-xorg-video-fbdev, xserver-xorg-input-libinput, xdg-desktop-portal-gnome,
+           at-spi2-core, python3-gi, gir1.2-atspi-2.0, x11-utils, xdotool, dbus-x11, flatpak, libfuse2t64, fonts-dejavu-core]
+write_files:
+  - path: /etc/gdm3/custom.conf
+    content: |
+      [daemon]
+      AutomaticLoginEnable=true
+      AutomaticLogin=tester
+      WaylandEnable=true
+runcmd:
+  - [sudo, -u, tester, dbus-run-session, --, gsettings, set, org.gnome.desktop.session, idle-delay, "0"]
+  - [sudo, -u, tester, dbus-run-session, --, gsettings, set, org.gnome.desktop.interface, toolkit-accessibility, "true"]
+  - [systemctl, set-default, graphical.target]
