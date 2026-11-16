@@ -1,0 +1,28 @@
+# Ubuntu 24.04 GNOME (Ubuntu session, AppIndicator tray), GDM autologin.
+# Wayland by default; `--session x11` switches GDM to Xorg at run time.
+# Also the ubuntu26-gnome seed (GNOME 50). gjs runs GNOME's notification service (missing from the
+# Ubuntu 24.04 cloud image).
+package_update: true
+packages: [gdm3, gnome-shell, gnome-session, ubuntu-session, gnome-shell-extension-appindicator, gnome-terminal,
+           xwayland, xserver-xorg-core, xserver-xorg-video-fbdev, xserver-xorg-input-libinput, xdg-desktop-portal-gnome,
+           at-spi2-core, python3-gi, gir1.2-atspi-2.0, x11-utils, xdotool, dbus-x11, gjs, flatpak, libfuse2t64, fonts-dejavu-core]
+write_files:
+  - path: /etc/gdm3/custom.conf
+    content: |
+      [daemon]
+      AutomaticLoginEnable=true
+      AutomaticLogin=tester
+      WaylandEnable=true
+runcmd:
+  - [sudo, -u, tester, dbus-run-session, --, gsettings, set, org.gnome.desktop.session, idle-delay, "0"]
+  - [sudo, -u, tester, dbus-run-session, --, gsettings, set, org.gnome.desktop.interface, toolkit-accessibility, "true"]
+  # Test VM only: gnome-shell --unsafe-mode, so smoke.sh can read window app_ids through
+  # org.gnome.Shell.Introspect.GetWindows (and close windows with Eval). GNOME 46 runs
+  # org.gnome.Shell@wayland.service, GNOME 47+ the org.gnome.Shell@.service template.
+  - |
+    for u in org.gnome.Shell@wayland.service org.gnome.Shell@.service; do
+      [ -f /usr/lib/systemd/user/$u ] || continue
+      mkdir -p /etc/systemd/user/$u.d
+      printf '[Service]\nExecStart=\nExecStart=%s --unsafe-mode\n' "$(sed -n 's/^ExecStart=//p' /usr/lib/systemd/user/$u)" >/etc/systemd/user/$u.d/unsafe-mode.conf
+    done
+  - [systemctl, set-default, graphical.target]

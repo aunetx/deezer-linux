@@ -1,0 +1,4 @@
+# Ubuntu, no desktop: Xvfb + openbox inside the VM. Good for deb, AppImage, snap, flatpak.
+package_update: true
+packages: [xvfb, openbox, x11-utils, xdotool, imagemagick, dbus-x11, python3-gi, gir1.2-glib-2.0,
+           pulseaudio, pulseaudio-utils, flatpak, libfuse2t64]

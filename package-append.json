@@ -50,6 +50,7 @@
     "linux": {
       "maintainer": "aunetx <me@aunetx.dev>",
       "icon": "../icons",
+      "syncDesktopName": true,
       "category": "AudioVideo;Audio;Player;Music;",
       "desktop": {
         "entry": {
@@ -64,7 +65,8 @@
           "Keywords": "Music;Player;Streaming;Online;",
           "StartupWMClass": "dev.aunetx.deezer",
           "SingleMainWindow": "true",
-          "X-GNOME-UsesNotifications": "true"
+          "X-GNOME-UsesNotifications": "true",
+          "X-Flatpak-RenamedFrom": "deezer-desktop.desktop;"
         }
       },
       "artifactName": "${productName}-${version}-${arch}.${ext}"

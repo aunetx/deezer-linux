@@ -1,0 +1,17 @@
+# Ubuntu + Sway (wlroots), autologin on tty1. Wayland with Xwayland available.
+package_update: true
+packages: [sway, foot, xwayland, grim, jq, python3-gi, gir1.2-glib-2.0, dbus-x11, libasound2t64,
+           fonts-dejavu-core, flatpak, libfuse2t64]
+write_files:
+  - path: /etc/systemd/system/getty@tty1.service.d/autologin.conf
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=-/sbin/agetty --autologin tester --noclear %I $TERM
+  - path: /etc/profile.d/zz-sway.sh
+    content: |
+      if [ "$(tty)" = /dev/tty1 ] && [ -z "$WAYLAND_DISPLAY" ]; then
+        WLR_RENDERER=pixman WLR_NO_HARDWARE_CURSORS=1 exec sway >/tmp/sway.log 2>&1
+      fi
+runcmd:
+  - [systemctl, daemon-reload]

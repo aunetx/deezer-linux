@@ -25,17 +25,21 @@ index 648d55d..cbfa0c5 100644
      }
    };
    MediaService = MediaService_decorate(
-@@ -1565,6 +1569,201 @@
+@@ -1565,6 +1569,205 @@
      ],
      MediaService
    );
 +  function initMpris(media, appService, domain) {
 +    const MprisPlayer = require("@jellybrick/mpris-service");
 +    const repeatModes = ["None", "Playlist", "Track"];
++    // Shells look DesktopEntry up as a desktop file id: name the one the app's
++    // windows and notifications use (desktopName, exported as CHROME_DESKTOP).
++    const desktopFile =
++      process.env.CHROME_DESKTOP || "dev.aunetx.deezer.desktop";
 +    const player = new MprisPlayer({
 +      name: "deezer",
 +      identity: "Deezer",
-+      desktopEntry: "deezer-desktop",
++      desktopEntry: require("path").basename(desktopFile, ".desktop"),
 +      supportedInterfaces: ["player"],
 +    });
 +    let position = 0;
@@ -227,7 +231,7 @@ index 648d55d..cbfa0c5 100644
    const services_MediaService = MediaService;
    var MenuService_decorate = function (decorators, target, key, desc) {
        var d,
-@@ -3303,6 +3502,7 @@
+@@ -3303,6 +3506,7 @@
                }),
                external_electron_log_default().debug("Creating Window"),
                this.createWindow(),

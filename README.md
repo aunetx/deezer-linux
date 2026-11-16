@@ -238,12 +238,12 @@ Artifacts will be generated in `artifacts/x64`.
 >
 > 1. Move the AppImage somewhere stable (e.g. `~/Applications/deezer-desktop.AppImage`) and make it executable with `chmod +x`.
 > 2. Extract or download the app icon and place it in a standard location, for example `~/.local/share/icons/deezer-desktop.png`.
-> 3. Create a desktop entry at `~/.local/share/applications/deezer-desktop.desktop` pointing `Exec=` to the AppImage (with `%u` so deep links are forwarded) and `Icon=` to the icon path, and declaring the `x-scheme-handler/deezer` MIME type so the app is registered as the `deezer://` handler
+> 3. Create a desktop entry at `~/.local/share/applications/dev.aunetx.deezer.desktop` pointing `Exec=` to the AppImage (with `%u` so deep links are forwarded) and `Icon=` to the icon path, and declaring the `x-scheme-handler/deezer` MIME type so the app is registered as the `deezer://` handler. Keep this file name: desktops match the app's windows, media controls and notifications to `dev.aunetx.deezer.desktop`. The AppImage ships one you can start from (`./deezer-desktop-*.AppImage --appimage-extract '*.desktop'`).
 > 4. Reload the deep link / MIME associations so the system picks up the new handler, either by running:
 >
 > ```sh
 > update-desktop-database ~/.local/share/applications
-> xdg-mime default deezer-desktop.desktop x-scheme-handler/deezer
+> xdg-mime default dev.aunetx.deezer.desktop x-scheme-handler/deezer
 > ```
 >
 > or simply by reloading your user session (log out and back in). The app should now display its icon and correctly open `deezer://` deep links.

@@ -25,7 +25,7 @@ icon: dev.aunetx.deezer.svg
 apps:
   deezer-desktop:
     command: opt/deezer-desktop/deezer-desktop --no-sandbox
-    desktop: usr/share/applications/deezer-desktop.desktop
+    desktop: usr/share/applications/dev.aunetx.deezer.desktop
     common-id: dev.aunetx.deezer
     extensions: [gnome]
     environment:
@@ -64,6 +64,10 @@ parts:
       fi
 
       dpkg-deb -x "$DEB_FILE" "$CRAFT_PART_INSTALL"
+      # snapd installs the desktop file as <snap>_<app>.desktop, and the app names
+      # its windows after that file when it runs in a snap (patch 17).
+      sed -i "s/^StartupWMClass=.*/StartupWMClass=${CRAFT_PROJECT_NAME}_deezer-desktop/" \
+        "$CRAFT_PART_INSTALL/usr/share/applications/dev.aunetx.deezer.desktop"
       chmod -R a+rX "$CRAFT_PART_INSTALL"
       VERSION=$(echo "$(basename "$DEB_FILE")" | cut -d'_' -f2)
       craftctl set version="$VERSION"

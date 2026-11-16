@@ -1,0 +1,13 @@
+# Debian 13 XFCE (X11), LightDM autologin. Real StatusNotifier tray (xfce4-panel).
+package_update: true
+packages: [xfce4, xfce4-terminal, lightdm, xserver-xorg-core, xserver-xorg-video-fbdev, xserver-xorg-input-libinput,
+           at-spi2-core, python3-gi, gir1.2-atspi-2.0, x11-utils, xdotool, imagemagick, dbus-x11, flatpak, libfuse2t64,
+           fonts-dejavu-core]
+write_files:
+  - path: /etc/lightdm/lightdm.conf.d/50-autologin.conf
+    content: |
+      [Seat:*]
+      autologin-user=tester
+      autologin-session=xfce
+runcmd:
+  - [systemctl, set-default, graphical.target]

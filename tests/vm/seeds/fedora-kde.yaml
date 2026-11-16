@@ -1,0 +1,13 @@
+# Fedora KDE Plasma (Wayland), SDDM autologin. Real StatusNotifier tray.
+packages: [sddm, sddm-wayland-plasma, plasma-workspace, kwin, konsole, xdg-desktop-portal-kde,
+           xorg-x11-server-Xwayland, at-spi2-core, python3-gobject, dbus-daemon, dbus-tools, xdotool, xprop,
+           alsa-lib, flatpak, fuse-libs, dejavu-sans-fonts, spectacle]
+write_files:
+  - path: /etc/sddm.conf.d/autologin.conf
+    content: |
+      [Autologin]
+      User=tester
+      Session=plasma.desktop
+runcmd:
+  - [systemctl, enable, sddm.service]
+  - [systemctl, set-default, graphical.target]

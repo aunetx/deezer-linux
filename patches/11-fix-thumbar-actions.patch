@@ -19,7 +19,7 @@ index 648d55d..124baf2 100644
          (MenuItemType.PlayerNext = "player-next"),
          (MenuItemType.PlayerPrev = "player-prev"),
          (MenuItemType.PlayerShuffle = "player-shuffle"),
-@@ -1845,6 +1846,8 @@
+@@ -1849,6 +1850,8 @@
            return this.getPasteOptions();
          case MenuItemType.PlayerPlay:
            return this.getPlayerPlayOptions();
@@ -28,7 +28,7 @@ index 648d55d..124baf2 100644
          case MenuItemType.PlayerNext:
            return this.getPlayerNextOptions();
          case MenuItemType.PlayerPrev:
-@@ -1986,15 +1989,26 @@
+@@ -1990,15 +1993,26 @@
          }),
        };
      }
@@ -57,7 +57,7 @@ index 648d55d..124baf2 100644
        };
      }
      getPlayerPrevOptions() {
-@@ -2003,9 +2017,9 @@
+@@ -2007,9 +2021,9 @@
          label: i18n_t("menu_previous_label"),
          enabled: this.user.isLoggedIn() && canPrev,
          accelerator: "Shift+Left",
@@ -69,7 +69,7 @@ index 648d55d..124baf2 100644
        };
      }
      getPlayerShuffleOptions() {
-@@ -2652,7 +2666,7 @@
+@@ -2656,7 +2670,7 @@
              this.menu.getItem(MenuItemType.Open),
              this.menu.getItem(MenuItemType.Separator),
              Object.assign(

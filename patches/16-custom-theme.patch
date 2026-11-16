@@ -11,7 +11,7 @@ diff --git a/build/main.js b/build/main.js
 index 7f265b9..dacf629 100644
 --- a/build/main.js
 +++ b/build/main.js
-@@ -3432,6 +3432,36 @@
+@@ -3436,6 +3436,36 @@
        step((generator = generator.apply(thisArg, _arguments || [])).next());
      });
    };
@@ -48,7 +48,7 @@ index 7f265b9..dacf629 100644
    const application = new (class {
      constructor() {
        (this.originalUserAgent = ""),
-@@ -3718,6 +3748,7 @@
+@@ -3722,6 +3752,7 @@
          else this.window.hide();
        }),
          this.appService.enableDevMode();
