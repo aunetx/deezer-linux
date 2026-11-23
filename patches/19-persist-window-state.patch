@@ -1,0 +1,42 @@
+From: josselinonduty <contact@josselinonduty.fr>
+Subject: [PATCH] fix: persist the window position and size
+
+The window state was never restored on Linux, for two reasons:
+
+- Settings were always written to ~/.config/deezer-desktop. In a Flatpak $HOME
+  is not the sandboxed config directory and ~/.config is not mounted, so the
+  file did not survive a restart. Honour XDG_CONFIG_HOME, which Flatpak and
+  Snap point at the app's own storage and which defaults to ~/.config
+  elsewhere.
+- The state was only saved on the "moved" and "resized" events, which Electron
+  emits on macOS and Windows but not on Linux. Save it on "close" too, which
+  also covers hiding the window to the tray and quitting.
+---
+diff --git a/build/main.js b/build/main.js
+--- a/build/main.js
++++ b/build/main.js
+@@ -3715,6 +3715,9 @@
+         this.window.on("moved", () => {
+           this.windowState.save();
+         });
++      this.window.on("close", () => {
++        this.windowState.save();
++      });
+       this.window.on("resized", () => {
+         this.isFrameless && this._adjustViewToContentSize(),
+           this.windowState.save();
+@@ -4054,8 +4057,12 @@
+   })();
+   external_electron_settings_default().configure({
+     dir: external_path_default().join(
+-      external_electron_namespaceObject.app.getPath("home"),
+-      ".config/deezer-desktop"
++      process.env.XDG_CONFIG_HOME ||
++        external_path_default().join(
++          external_electron_namespaceObject.app.getPath("home"),
++          ".config"
++        ),
++      "deezer-desktop"
+     ),
+     fileName: "settings.json",
+   }),
