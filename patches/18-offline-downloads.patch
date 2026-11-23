@@ -1,5 +1,5 @@
 From: josselinonduty <contact@josselinonduty.fr>
-Subject: [PATCH] feat: open downloads when starting offline
+Subject: [PATCH] fix: open downloads when starting offline
 
 When the app starts without internet, open the downloads library instead of a
 page that cannot load, so downloaded songs stay available. Check the network in
@@ -7,8 +7,7 @@ parallel with the login and bound the login request to 10s, so a link that is up
 but dead does not keep the window blank.
 
 Known limitation: on a link that is up but carries no traffic, Chromium still
-reports online, so the downloads page opens but lists nothing until the link
-drops or recovers.
+reports online, so the downloads page opens but lists nothing.
 ---
 diff --git a/build/main.js b/build/main.js
 --- a/build/main.js
