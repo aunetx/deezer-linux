@@ -6,7 +6,6 @@ APPNAME = dev.aunetx.deezer
 BASE_URL = $(shell jq ".modules[0].sources[0].url" dev.aunetx.deezer.json)
 SHA256 = $(shell jq ".modules[0].sources[0].sha256" dev.aunetx.deezer.json)
 PKGVER = $(shell echo $(BASE_URL) | grep -Eo "([0-9]+\.[0-9]+\.[0-9]+)" | head -1)
-VERSION_REGEX = ^v$(PKGVER)-[0-9]{1,}$$
 SOURCE_DIR ?= ./source
 APP_DIR ?= ./app
 PACKAGE_MANAGER ?= npm
@@ -141,21 +140,6 @@ patch-gen:
 	@cd $(APP_DIR) && git format-patch -1 HEAD --stdout > ../patches/$(shell date +%y%m%d-%s).patch
 
 #! UTILS
-
-prepare-release:
-	@echo $(DEEZER_RELEASE) | egrep "$(VERSION_REGEX)" > /dev/null || \
-		(echo "$(DEEZER_RELEASE) is not a correct release version of v$(PKGVER)" && false)
-
-	@desktop-file-validate $(APPNAME).desktop || \
-		(echo "Desktop file validation failed" && false)
-
-
-release: prepare-release
-	@echo "Updating to $(DEEZER_RELEASE)..."
-	git tag -s $(DEEZER_RELEASE) -m ""
-	git push origin $(DEEZER_RELEASE)
-	git push
-
 
 clean:
 	@rm -rf ./$(APP_DIR) flatpak node_modules ./$(SOURCE_DIR) artifacts package-lock.json yarn.lock

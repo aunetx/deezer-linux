@@ -1,16 +1,80 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
-      - "v[0-9]+.[0-9]+.[0-9]+-[0-9]+"
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
+  version:
+    name: "Compute release tag"
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - name: ensure running on master
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          if [ "$REF" != "refs/heads/master" ]; then
+            echo "::error::Releases can only be started from master (got ${REF})"
+            exit 1
+          fi
+
+      - name: checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+
+      - name: compute tag
+        id: tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          url="$(jq -r '.modules[0].sources[0].url' dev.aunetx.deezer.json)"
+          current="$(grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' <<< "$url" | head -1)"
+          [ -n "$current" ] || { echo "::error::no M.m.p version found in $url"; exit 1; }
+
+          if out="$(gh release view --json tagName --jq .tagName 2>&1)"; then
+            latest="$out"
+          elif grep -qi 'not found' <<< "$out"; then
+            latest=""
+          else
+            echo "::error::cannot read latest release: $out"
+            exit 1
+          fi
+          latest_base="$(grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' <<< "$latest" | head -1 || true)"
+
+          if [ "$current" != "$latest_base" ]; then
+            tag="v${current}"
+          else
+            n="$(sed -nE 's/^v?[0-9]+\.[0-9]+\.[0-9]+-([0-9]+).*/\1/p' <<< "$latest")"
+            tag="v${current}-$(( ${n:-0} + 1 ))"
+          fi
+
+          if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+            echo "::error::tag ${tag} already exists"
+            exit 1
+          fi
+
+          echo "Latest release: ${latest:-none} -> new tag: ${tag}"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+
   packages:
     name: "Build packages"
+    needs: version
     runs-on: ubuntu-latest
-    if: github.event.base_ref == 'refs/heads/master'
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ needs.version.outputs.tag }}
     steps:
       - name: checkout repo
         uses: actions/checkout@v4
@@ -20,7 +84,7 @@ jobs:
       - name: prepare runner
         run: |
           sudo apt-get update
-          sudo apt-get install -y flatpak-builder qemu-user-binfmt binfmt-support
+          sudo apt-get install -y flatpak-builder qemu-user-binfmt binfmt-support desktop-file-utils
           flatpak remote-add --if-not-exists --user flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           sudo snap install snapcraft --classic
           sudo snap install lxd
@@ -35,6 +99,9 @@ jobs:
             sudo ip6tables -I DOCKER-USER -i lxdbr0 -j ACCEPT
             sudo ip6tables -I DOCKER-USER -o lxdbr0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
           fi
+
+      - name: validate desktop file
+        run: desktop-file-validate dev.aunetx.deezer.desktop
 
       - name: install_deps
         run: make install_deps
@@ -86,17 +153,24 @@ jobs:
       - name: build_flatpak_arm64
         run: make build_flatpak_arm64
 
-      - name: Get the version
-        run: echo "version=${GITHUB_REF/refs\/tags\//}" >> "$GITHUB_ENV"
-
       - name: Generate sha256
         run: echo "$(sha256sum artifacts/{x64,arm64}/*.{deb,rpm,AppImage,tar.xz,snap,flatpak})" > sha256
+
+      - name: ensure tag is still free
+        run: |
+          git fetch --tags --quiet
+          if git rev-parse -q --verify "refs/tags/${RELEASE_TAG}" >/dev/null; then
+            echo "::error::tag ${RELEASE_TAG} appeared during the build"
+            exit 1
+          fi
 
       - name: create release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.version }}
-          body: "Update to version ${{ env.version }}"
+          tag_name: ${{ env.RELEASE_TAG }}
+          fail_on_unmatched_files: true
+          target_commitish: ${{ github.sha }}
+          body: "Update to version ${{ env.RELEASE_TAG }}"
           draft: false
           files: |
             artifacts/x64/*.deb
