@@ -21,7 +21,7 @@ Each run produces a `result.env` with:
 - **MPRIS**: the bus name is `org.mpris.MediaPlayer2.deezer`, with the right `Identity` and a `DesktopEntry` that names an installed desktop file. Without that file, GNOME's media controls show a generic icon (#189).
 - **Tray**: the app registers a StatusNotifierItem, and its icon resolves for a host outside the sandbox: a pixmap, or a file the host can read (a9aad21, snap). A stub watcher stands in when there is no panel.
 - **Notifications**: a test notification is sent from the page and captured on the bus, through a stub server, or a monitor when a real one runs (`NOTIFY_PROBE=server|monitor` in `result.env`; on the host, a stub server means the session has no notification server and is warned about). It must carry an icon: an image, an `app_icon`, or a `desktop-entry` hint naming an installed entry whose icon resolves (#189). With `--disable-notifications`, nothing may be sent.
-- **Patches**: each of the 17 patches leaves a marker (`lib/guest/patch-markers.txt`) in the `app.asar` that the running process opened.
+- **Patches**: each patch leaves a marker (`lib/guest/patch-markers.txt`) in the `app.asar` that the running process opened.
 - **Page** (over the DevTools protocol): the user agent hides the kernel version, `linux/6.4.0`, unless `--keep-kernel` is set. With `--sync-theme --portal`, `prefers-color-scheme` follows the portal, including a live dark → light switch (#238).
 - **Packaging**: no unresolved libraries in `ldd`, and how long the install took.
 - **Patched features**:

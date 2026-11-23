@@ -19,3 +19,4 @@
 15-sync-theme                    org.freedesktop.appearance
 16-custom-theme                  dz-custom-theme
 17-snap-desktop-name          SNAP_INSTANCE_NAME}_deezer-desktop
+18-offline-downloads         "/#/library/downloads"

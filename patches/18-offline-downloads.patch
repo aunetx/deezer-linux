@@ -1,0 +1,50 @@
+From: josselinonduty <contact@josselinonduty.fr>
+Subject: [PATCH] feat: add an offline mode that keeps downloads available
+
+Downloaded songs stay available whatever the network does. Without internet at
+startup, open the downloads library instead of a page that cannot load. Once
+running, network changes need no reload: going offline, coming back online and
+rapid flapping keep the page and playback alive. Check the network in parallel
+with the login and bound the login request to 10s, so a link that is up but
+dead does not keep the window blank.
+
+Known limitation: on a link that is up but carries no traffic, Chromium still
+reports online, so the downloads page opens but lists nothing.
+---
+diff --git a/build/main.js b/build/main.js
+--- a/build/main.js
++++ b/build/main.js
+@@ -550,7 +550,20 @@
+             err
+           )
+         )
+-        .then(() => this.checkUserAutolog())
++        .then(() =>
++          Promise.all([
++            this.checkUserAutolog(),
++            external_dns_default()
++              .promises.lookup("deezer.com")
++              .then(
++                () => !0,
++                () => !1
++              ),
++          ])
++        )
++        .then(([autolog, online]) => (
++          online || "/" !== hash || (hash = "/#/library/downloads"), autolog
++        ))
+         .then(({ logged }) => {
+           if (!logged)
+             return this.clearLogginInfo(), void this.loadLoginPage(domain);
+@@ -646,7 +659,10 @@
+                         : input.url,
+                   { mode, credentials } = init,
+                   electronInit = __rest(init, ["mode", "credentials"]);
+-                return main_namespaceObject.net.fetch(url, electronInit);
++                return main_namespaceObject.net.fetch(
++                  url,
++                  Object.assign({ signal: AbortSignal.timeout(1e4) }, electronInit)
++                );
+               },
+             }),
+             data = yield api.call({
