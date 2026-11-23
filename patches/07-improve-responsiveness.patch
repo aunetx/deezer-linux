@@ -8,8 +8,8 @@ Makes it possible to use the application for with a width as low as 550 pixels
 without problems, and is usable even below. Should not change anything for
 devices larger than 950 pixels, and nearly nothing above 800 pixels wide.
 ---
- build/main.js | 67 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 65 insertions(+), 2 deletions(-)
+ build/main.js | 74 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 72 insertions(+), 2 deletions(-)
 
 diff --git a/build/main.js b/build/main.js
 index cbfa0c5..d801768 100644
@@ -26,7 +26,7 @@ index cbfa0c5..d801768 100644
            icon: external_electron_namespaceObject.nativeImage.createFromPath(
              getAppIcon(external_electron_namespaceObject.app)
            ),
-@@ -3714,6 +3714,69 @@
+@@ -3714,6 +3714,76 @@
          });
      }
      loadWindow() {
@@ -65,16 +65,20 @@ index cbfa0c5..d801768 100644
 +        }
 +        @media screen and (max-width: 800px) {
 +          #page_player > div:first-child { min-width: auto !important; }
-+          #page_player > div:first-child > div:first-child {
-+            width: calc(49% - 52px) !important;
-+          }
-+          #page_player > div:first-child > div:nth-child(2) {
-+            padding-inline-start: unset !important;
-+            padding-inline-end: unset !important;
-+            width: calc(49% - 52px) !important;
-+          }
-+          #page_player > div:first-child > div:last-child {
++          #page_player > div:first-child > div:first-child > div {
++            flex: 1 1 0 !important;
 +            width: auto !important;
++            min-width: 0 !important;
++          }
++          #page_player > div:first-child > div:first-child > div:nth-child(2) {
++            flex-grow: 2 !important;
++            padding-inline: 8px !important;
++          }
++          #page_player > div:first-child > div:first-child > div:last-child {
++            flex: 0 0 auto !important;
++          }
++          #page_player > div:first-child > div:first-child > div:last-child > button:not(:has(> svg)) {
++            display: none !important;
 +          }
 +        }
 +        @media screen and (max-width: 550px) {
@@ -84,11 +88,14 @@ index cbfa0c5..d801768 100644
 +          .channel-section > section > div:has(> .chakra-button__group) {
 +            flex-wrap: wrap !important;
 +          }
-+          #page_player > div:first-child > div:first-child {
-+            min-width: 0 !important;
++          #page_player > div:first-child > div:first-child > div:first-child {
++            flex: 0 0 auto !important;
 +          }
-+          #page_player > div:first-child > div:nth-child(2) {
-+            min-width: max-content !important;
++          #page_player > div:first-child > div:first-child > div:first-child > div:not(:first-child) {
++            display: none !important;
++          }
++          #page_player > div:first-child > div:first-child > div:nth-child(2) {
++            min-width: 190px !important;
 +          }
 +        }
 +        `, { cssOrigin: "user" }).catch(console.warn);
